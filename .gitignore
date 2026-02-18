@@ -72,6 +72,7 @@ typings/
 
 # dotenv environment variables file
 .env
+server/.env
 .env.test
 .env.production
 .env.local
