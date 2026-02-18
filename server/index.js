@@ -63,8 +63,8 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start ───────────────────────────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`\n🚀 StyleSwap API v1.0.1 running on port ${PORT}`);
+app.listen(PORT, () => {
+    console.log(`\n🚀 StyleSwap API v1.0.2 running on port ${PORT}`);
     console.log(`   Host: 0.0.0.0 (Accessible externally)`);
     console.log(`📊 Prisma Studio: run "npm run db:studio" to view data\n`);
 
