@@ -41,8 +41,8 @@ model Product {
   securityDeposit   Float
   stockQuantity     Int
   availableQuantity Int
-  sizes             String   // JSON array as string e.g. '["S","M","L"]'
-  images            String   // JSON array as string
+  sizes             Json     // e.g. ["S", "M", "L"]
+  images            Json     // e.g. ["url1", "url2"]
   subAdminId        String
   vendor            User     @relation(fields: [subAdminId], references: [id], onDelete: Cascade)
   createdAt         DateTime @default(now())
@@ -56,14 +56,14 @@ model Order {
   vendorId        String
   shopName        String
   customerName    String
-  items           String   // JSON array of order items
+  items           Json     // JSON array of order items
   totalAmount     Float
   status          String   @default("Active")
   rentalStartDate String
   rentalEndDate   String
   paymentMethod   String?
-  feedback        String?  // JSON object
-  issues          String?  // JSON array
+  feedback        Json?    // JSON object
+  issues          Json?    // JSON array
   orderDate       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

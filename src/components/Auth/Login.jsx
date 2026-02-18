@@ -119,10 +119,9 @@ export default function Login({ onNavigate, onClose }) {
                     <p className="text-white text-xs font-semibold mb-3 text-center uppercase tracking-wider">Demo Credentials</p>
                     <div className="grid grid-cols-2 gap-2">
                         {[
-                            { label: '👑 Admin', email: 'admin@styleswap.com', password: 'admin123' },
-                            { label: '🏪 Vendor 1', email: 'elegance@styleswap.com', password: 'vendor123' },
-                            { label: '🏪 Vendor 2', email: 'formal@styleswap.com', password: 'vendor123' },
-                            { label: '🛍️ Customer', email: 'customer@styleswap.com', password: 'user123' },
+                            { label: '👑 Admin', email: 'admin@styleswap.com', password: 'password123' },
+                            { label: '🏪 Vendor', email: 'vendor@styleswap.com', password: 'password123' },
+                            { label: '🛍️ Customer', email: 'user@styleswap.com', password: 'password123' },
                         ].map(({ label, email, password }) => (
                             <button
                                 key={email}

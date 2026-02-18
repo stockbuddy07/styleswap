@@ -5,18 +5,21 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
 const router = express.Router();
 const prisma = new PrismaClient();
 
+// ─── Helper to ensure JSON fields are returned correctly ─────────────────────
+// With native Json type, Prisma returns objects. We might not need this helper anymore
+// but we keep it to ensure consistent structure if any processing is needed.
 const parseOrder = (order) => ({
     ...order,
-    items: JSON.parse(order.items || '[]'),
-    feedback: order.feedback ? JSON.parse(order.feedback) : null,
-    issues: order.issues ? JSON.parse(order.issues) : [],
+    items: order.items || [],
+    feedback: order.feedback || null,
+    issues: order.issues || [],
 });
 
 // ─── GET /api/orders — Admin: all orders ─────────────────────────────────────
 router.get('/', authenticate, requireAdmin, async (req, res) => {
     try {
         const orders = await prisma.order.findMany({ orderBy: { orderDate: 'desc' } });
-        res.json(orders.map(parseOrder));
+        res.json(orders);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch orders' });
     }
@@ -29,7 +32,7 @@ router.get('/mine', authenticate, async (req, res) => {
             where: { customerId: req.user.id },
             orderBy: { orderDate: 'desc' },
         });
-        res.json(orders.map(parseOrder));
+        res.json(orders);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch your orders' });
     }
@@ -42,7 +45,7 @@ router.get('/vendor', authenticate, async (req, res) => {
             where: { vendorId: req.user.id },
             orderBy: { orderDate: 'desc' },
         });
-        res.json(orders.map(parseOrder));
+        res.json(orders);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch vendor orders' });
     }
@@ -68,7 +71,7 @@ router.post('/', authenticate, async (req, res) => {
                 customerName: user?.name || req.user.name,
                 vendorId,
                 shopName,
-                items: JSON.stringify(items),
+                items, // Native JSON
                 totalAmount: Number(totalAmount),
                 rentalStartDate,
                 rentalEndDate,
@@ -77,7 +80,7 @@ router.post('/', authenticate, async (req, res) => {
             },
         });
 
-        res.status(201).json(parseOrder(order));
+        res.status(201).json(order);
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Failed to place order' });
@@ -99,7 +102,7 @@ router.put('/:id/status', authenticate, async (req, res) => {
             where: { id: req.params.id },
             data: { status },
         });
-        res.json(parseOrder(updated));
+        res.json(updated);
     } catch (err) {
         res.status(500).json({ error: 'Failed to update order status' });
     }
@@ -113,17 +116,17 @@ router.put('/:id/feedback', authenticate, async (req, res) => {
         if (!order) return res.status(404).json({ error: 'Order not found' });
         if (order.customerId !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
 
-        const feedback = JSON.stringify({
+        const feedback = {
             rating, review, tags: tags || [],
             itemIndex, itemName,
             submittedAt: new Date().toISOString(),
-        });
+        };
 
         const updated = await prisma.order.update({
             where: { id: req.params.id },
             data: { feedback },
         });
-        res.json(parseOrder(updated));
+        res.json(updated);
     } catch (err) {
         res.status(500).json({ error: 'Failed to submit feedback' });
     }
@@ -137,7 +140,7 @@ router.post('/:id/issues', authenticate, async (req, res) => {
         if (!order) return res.status(404).json({ error: 'Order not found' });
         if (order.customerId !== req.user.id) return res.status(403).json({ error: 'Forbidden' });
 
-        const existingIssues = order.issues ? JSON.parse(order.issues) : [];
+        const existingIssues = order.issues || [];
         const newIssue = {
             issueId: `issue-${Date.now()}`,
             type, description, itemIndex, itemName,
@@ -149,9 +152,9 @@ router.post('/:id/issues', authenticate, async (req, res) => {
 
         const updated = await prisma.order.update({
             where: { id: req.params.id },
-            data: { issues: JSON.stringify(existingIssues) },
+            data: { issues: existingIssues },
         });
-        res.json(parseOrder(updated));
+        res.json(updated);
     } catch (err) {
         res.status(500).json({ error: 'Failed to raise issue' });
     }
@@ -164,7 +167,7 @@ router.put('/:id/issues/:issueId', authenticate, requireAdmin, async (req, res) 
         const order = await prisma.order.findUnique({ where: { id: req.params.id } });
         if (!order) return res.status(404).json({ error: 'Order not found' });
 
-        const issues = order.issues ? JSON.parse(order.issues) : [];
+        const issues = order.issues || [];
         const idx = issues.findIndex(i => i.issueId === req.params.issueId);
         if (idx === -1) return res.status(404).json({ error: 'Issue not found' });
 
@@ -172,9 +175,9 @@ router.put('/:id/issues/:issueId', authenticate, requireAdmin, async (req, res) 
 
         const updated = await prisma.order.update({
             where: { id: req.params.id },
-            data: { issues: JSON.stringify(issues) },
+            data: { issues },
         });
-        res.json(parseOrder(updated));
+        res.json(updated);
     } catch (err) {
         res.status(500).json({ error: 'Failed to update issue' });
     }

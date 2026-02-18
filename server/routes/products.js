@@ -16,11 +16,10 @@ router.get('/', async (req, res) => {
                 },
             },
         });
-        // Parse JSON fields
         const parsed = products.map(p => ({
             ...p,
-            sizes: JSON.parse(p.sizes || '[]'),
-            images: JSON.parse(p.images || '[]'),
+            sizes: p.sizes || [],
+            images: p.images || [],
         }));
         res.json(parsed);
     } catch (err) {
@@ -37,8 +36,8 @@ router.get('/mine', authenticate, requireVendor, async (req, res) => {
         });
         const parsed = products.map(p => ({
             ...p,
-            sizes: JSON.parse(p.sizes || '[]'),
-            images: JSON.parse(p.images || '[]'),
+            sizes: p.sizes || [],
+            images: p.images || [],
         }));
         res.json(parsed);
     } catch (err) {
@@ -67,17 +66,13 @@ router.post('/', authenticate, requireVendor, async (req, res) => {
                 securityDeposit: Number(securityDeposit || 0),
                 stockQuantity: Number(stockQuantity),
                 availableQuantity: Number(stockQuantity),
-                sizes: JSON.stringify(sizes || []),
-                images: JSON.stringify(images || []),
+                sizes: sizes || [],
+                images: images || [],
                 subAdminId: req.user.id,
             },
         });
 
-        res.status(201).json({
-            ...product,
-            sizes: JSON.parse(product.sizes),
-            images: JSON.parse(product.images),
-        });
+        res.status(201).json(product);
     } catch (err) {
         res.status(500).json({ error: 'Failed to create product' });
     }
@@ -108,16 +103,12 @@ router.put('/:id', authenticate, requireVendor, async (req, res) => {
                 ...(securityDeposit !== undefined && { securityDeposit: Number(securityDeposit) }),
                 ...(stockQuantity !== undefined && { stockQuantity: Number(stockQuantity) }),
                 ...(availableQuantity !== undefined && { availableQuantity: Number(availableQuantity) }),
-                ...(sizes !== undefined && { sizes: JSON.stringify(sizes) }),
-                ...(images !== undefined && { images: JSON.stringify(images) }),
+                ...(sizes !== undefined && { sizes }),
+                ...(images !== undefined && { images }),
             },
         });
 
-        res.json({
-            ...updated,
-            sizes: JSON.parse(updated.sizes),
-            images: JSON.parse(updated.images),
-        });
+        res.json(updated);
     } catch (err) {
         res.status(500).json({ error: 'Failed to update product' });
     }
@@ -151,7 +142,7 @@ router.patch('/:id/availability', authenticate, async (req, res) => {
             where: { id: req.params.id },
             data: { availableQuantity: newQty },
         });
-        res.json({ ...updated, sizes: JSON.parse(updated.sizes), images: JSON.parse(updated.images) });
+        res.json(updated);
     } catch (err) {
         res.status(500).json({ error: 'Failed to update availability' });
     }

@@ -4,6 +4,7 @@
  */
 
 const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001').replace(/\/$/, '');
+console.log('✅ StyleSwap API URL:', BASE_URL); // Debugging line
 
 function getToken() {
     return localStorage.getItem('styleswap_token');
