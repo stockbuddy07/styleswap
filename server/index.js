@@ -7,27 +7,31 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// ─── Middleware ──────────────────────────────────────────────────────────────
+// ─── CORS ────────────────────────────────────────────────────────────────────
 const allowedOrigins = [
     'http://localhost:5173',
     'http://localhost:3000',
-    process.env.CLIENT_URL_PROD, // https://styleswap-tau.vercel.app
+    'https://styleswap-tau.vercel.app',
+    process.env.CLIENT_URL_PROD,
 ].filter(Boolean);
 
-app.use(cors({
+const corsOptions = {
     origin: (origin, callback) => {
         // Allow requests with no origin (curl, Postman, server-to-server)
         if (!origin) return callback(null, true);
         if (allowedOrigins.includes(origin)) return callback(null, true);
-        callback(new Error(`CORS: origin "${origin}" not allowed`));
+        console.warn(`CORS blocked origin: ${origin}`);
+        // Still call callback with false — don't throw, so error handler can respond
+        return callback(null, false);
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
-}));
+};
 
-// Handle OPTIONS preflight for all routes
-app.options('*', cors());
+// Apply CORS to all routes (including preflight OPTIONS)
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 
 app.use(express.json());
 
