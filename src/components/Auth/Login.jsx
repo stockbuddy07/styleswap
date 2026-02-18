@@ -1,16 +1,22 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../Shared/Button';
 import Input from '../Shared/Input';
 
-export default function Login({ onNavigate }) {
+export default function Login({ onNavigate, onClose }) {
     const { login } = useAuth();
     const [form, setForm] = useState({ email: '', password: '' });
     const [errors, setErrors] = useState({});
     const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [authError, setAuthError] = useState('');
+
+    // Handle Closing
+    const handleClose = () => {
+        if (onClose) onClose();
+        else if (onNavigate) onNavigate('catalog'); // Fallback
+    };
 
     const validate = () => {
         const errs = {};
@@ -42,23 +48,25 @@ export default function Login({ onNavigate }) {
     };
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-midnight via-blue-900 to-midnight flex items-center justify-center p-4">
-            <div className="w-full max-w-md">
-                {/* Logo */}
-                <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gold rounded-2xl mb-4 shadow-lg">
-                        <span className="font-playfair font-bold text-midnight text-2xl">S</span>
-                    </div>
-                    <h1 className="font-playfair text-3xl font-bold text-white">StyleSwap</h1>
-                    <p className="text-gray-400 mt-1 text-sm">Luxury Fashion Rentals</p>
-                </div>
-
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md p-4 transition-all duration-300">
+            <div className="w-full max-w-md relative">
                 {/* Card */}
-                <div className="bg-white rounded-2xl shadow-2xl p-8">
-                    <h2 className="font-playfair text-2xl font-semibold text-midnight mb-6">Welcome back</h2>
+                <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-2xl shadow-2xl p-8 relative">
+                    {/* Close Button */}
+                    <button
+                        onClick={handleClose}
+                        className="absolute top-4 right-4 text-midnight/60 hover:text-red-600 transition-colors"
+                    >
+                        <X size={24} />
+                    </button>
+
+                    <div className="text-center mb-8">
+                        <h1 className="font-playfair text-3xl font-bold text-midnight drop-shadow-sm">Welcome Back</h1>
+                        <p className="text-midnight/70 text-sm mt-1">Enter your details to sign in</p>
+                    </div>
 
                     {authError && (
-                        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
+                        <div className="mb-4 p-3 bg-red-50/90 border border-red-200 rounded-lg text-red-700 text-sm flex items-center gap-2">
                             <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                             </svg>

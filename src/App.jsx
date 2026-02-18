@@ -45,6 +45,14 @@ function AppContent() {
         return 'catalog';
     };
 
+    // If authenticated, we rely on getDefaultPage.
+    // If NOT authenticated, we default to 'catalog' if currentPage is null.
+    React.useEffect(() => {
+        if (!currentUser && !currentPage && !loading) {
+            setCurrentPage('catalog');
+        }
+    }, [currentUser, currentPage, loading]);
+
     React.useEffect(() => {
         if (currentUser && !currentPage) {
             setCurrentPage(getDefaultPage(currentUser));
@@ -56,11 +64,29 @@ function AppContent() {
 
     if (loading) return <Loader message="Loading StyleSwap..." />;
 
-    // Not authenticated → show login/register
-    if (!currentUser) {
-        return authPage === 'login'
-            ? <Login onNavigate={setAuthPage} />
-            : <Register onNavigate={setAuthPage} />;
+    // Handle Auth Requirement (from Child components)
+    const handleRequireAuth = () => {
+        setAuthPage('login');
+        // We show the auth screen by setting a temporary state or modal?
+        // Current implementation uses `if (!currentUser) return <Login ... />`
+        // We need to change that.
+        // Let's us a specific "auth" Page or overlay.
+        // For simplicity, let's just use a state to show the Modal OVER the app if needed,
+        // OR just switch the view if we want to keep it simple.
+
+        // Actually, looking at lines 60-64, it completely replaces the app.
+        // Let's keep that behavior IF the user explicitly asks for login.
+        // But how do we trigger it?
+        // We can add a 'login' and 'register' page to renderPage?
+    };
+
+    if (loading) return <Loader message="Loading StyleSwap..." />;
+
+    // Explicit Auth Pages (if user clicked "Sign In" / "Join Now" from Header)
+    if (!currentUser && (currentPage === 'login' || currentPage === 'register')) {
+        return currentPage === 'login'
+            ? <Login onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} />
+            : <Register onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} />;
     }
 
     // Vendor with incomplete profile → show full-screen onboarding
@@ -105,7 +131,38 @@ function AppContent() {
                 default: return <ProductCatalog searchTerm={searchTerm} />;
             }
         }
-        return null;
+
+        // Guest pages (Default)
+        switch (currentPage) {
+            case 'catalog': return <ProductCatalog searchTerm={searchTerm} onRequireAuth={() => setCurrentPage('login')} />;
+
+            // Render Modals OVER the Catalog
+            case 'login': return (
+                <>
+                    <ProductCatalog searchTerm={searchTerm} />
+                    <Login
+                        onNavigate={(p) => setCurrentPage(p === 'register' ? 'register' : 'catalog')}
+                        onClose={() => setCurrentPage('catalog')}
+                    />
+                </>
+            );
+            case 'register': return (
+                <>
+                    <ProductCatalog searchTerm={searchTerm} />
+                    <Register
+                        onNavigate={(p) => setCurrentPage(p === 'login' ? 'login' : 'catalog')}
+                        onClose={() => setCurrentPage('catalog')}
+                    />
+                </>
+            );
+
+            // If guest tries to access protected pages, redirect to login
+            case 'cart':
+            case 'rentals':
+                setTimeout(() => setCurrentPage('login'), 0);
+                return <Loader message="Redirecting to Login..." />;
+            default: return <ProductCatalog searchTerm={searchTerm} onRequireAuth={() => setCurrentPage('login')} />;
+        }
     };
 
     return (

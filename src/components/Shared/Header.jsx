@@ -99,42 +99,59 @@ export default function Header({
                         </button>
                     )}
 
-                    {/* User Menu */}
-                    <div className="relative" ref={userMenuRef}>
-                        <button
-                            onClick={() => setUserMenuOpen(v => !v)}
-                            className="flex items-center gap-2 text-white hover:text-gold transition-colors py-1 px-2 rounded-lg hover:bg-white hover:bg-opacity-10"
-                            aria-label="User menu"
-                            aria-expanded={userMenuOpen}
-                        >
-                            <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-midnight font-bold text-sm">
-                                {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
-                            </div>
-                            <span className="hidden sm:block text-sm font-medium max-w-[120px] truncate">
-                                {currentUser?.name}
-                            </span>
-                            <ChevronDown size={16} className={`transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
-                        </button>
-
-                        {userMenuOpen && (
-                            <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
-                                <div className="px-4 py-3 border-b border-gray-100">
-                                    <p className="font-semibold text-midnight text-sm truncate">{currentUser?.name}</p>
-                                    <p className="text-gray-500 text-xs truncate">{currentUser?.email}</p>
-                                    <span className={`badge mt-1 text-xs ${roleColors[currentUser?.role]}`}>
-                                        {currentUser?.role}
-                                    </span>
+                    {/* User Menu or Guest Buttons */}
+                    {currentUser ? (
+                        <div className="relative" ref={userMenuRef}>
+                            <button
+                                onClick={() => setUserMenuOpen(v => !v)}
+                                className="flex items-center gap-2 text-white hover:text-gold transition-colors py-1 px-2 rounded-lg hover:bg-white hover:bg-opacity-10"
+                                aria-label="User menu"
+                                aria-expanded={userMenuOpen}
+                            >
+                                <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-midnight font-bold text-sm">
+                                    {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
                                 </div>
-                                <button
-                                    onClick={() => { setUserMenuOpen(false); logout(); }}
-                                    className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                                >
-                                    <LogOut size={16} />
-                                    Sign Out
-                                </button>
-                            </div>
-                        )}
-                    </div>
+                                <span className="hidden sm:block text-sm font-medium max-w-[120px] truncate">
+                                    {currentUser?.name}
+                                </span>
+                                <ChevronDown size={16} className={`transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
+                            </button>
+
+                            {userMenuOpen && (
+                                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
+                                    <div className="px-4 py-3 border-b border-gray-100">
+                                        <p className="font-semibold text-midnight text-sm truncate">{currentUser?.name}</p>
+                                        <p className="text-gray-500 text-xs truncate">{currentUser?.email}</p>
+                                        <span className={`badge mt-1 text-xs ${roleColors[currentUser?.role]}`}>
+                                            {currentUser?.role}
+                                        </span>
+                                    </div>
+                                    <button
+                                        onClick={() => { setUserMenuOpen(false); logout(); }}
+                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                    >
+                                        <LogOut size={16} />
+                                        Sign Out
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={() => onNavigate && onNavigate('login')}
+                                className="text-white hover:text-gold font-medium text-sm transition-colors"
+                            >
+                                Sign In
+                            </button>
+                            <button
+                                onClick={() => onNavigate && onNavigate('register')}
+                                className="bg-gold text-midnight px-4 py-2 rounded-lg font-bold text-sm hover:bg-white transition-colors shadow-lg"
+                            >
+                                Join Now
+                            </button>
+                        </div>
+                    )}
                 </div>
             </div>
 

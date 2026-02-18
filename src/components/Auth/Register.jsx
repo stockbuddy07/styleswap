@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, User, Store } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, Store, X } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import Button from '../Shared/Button';
 import Input from '../Shared/Input';
 import { checkPasswordStrength } from '../../utils/helpers';
 
-export default function Register({ onNavigate }) {
+export default function Register({ onNavigate, onClose }) {
     const { register } = useAuth();
     const [form, setForm] = useState({
         name: '',
@@ -21,6 +21,12 @@ export default function Register({ onNavigate }) {
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
     const [authError, setAuthError] = useState('');
+
+    // Handle Closing
+    const handleClose = () => {
+        if (onClose) onClose();
+        else if (onNavigate) onNavigate('catalog');
+    };
 
     const validate = () => {
         const errs = {};
@@ -59,33 +65,44 @@ export default function Register({ onNavigate }) {
 
     if (success) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-midnight via-blue-900 to-midnight flex items-center justify-center p-4">
-                <div className="bg-white rounded-2xl shadow-2xl p-10 text-center max-w-sm w-full">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-md p-4">
+                <div className="bg-white/80 backdrop-blur-xl border border-white/40 rounded-2xl shadow-2xl p-10 text-center max-w-sm w-full relative">
+                    <button
+                        onClick={handleClose}
+                        className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                        <X size={20} />
+                    </button>
                     <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
                         <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                         </svg>
                     </div>
                     <h2 className="font-playfair text-2xl font-bold text-midnight mb-2">Account Created!</h2>
-                    <p className="text-gray-600 text-sm">Redirecting you to login...</p>
+                    <p className="text-gray-600 text-sm">Redirecting...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-midnight via-blue-900 to-midnight flex items-center justify-center p-4 py-8">
-            <div className="w-full max-w-md">
-                {/* Logo */}
-                <div className="text-center mb-6">
-                    <div className="inline-flex items-center justify-center w-14 h-14 bg-gold rounded-2xl mb-3 shadow-lg">
-                        <span className="font-playfair font-bold text-midnight text-xl">S</span>
-                    </div>
-                    <h1 className="font-playfair text-2xl font-bold text-white">Join StyleSwap</h1>
-                    <p className="text-gray-400 mt-1 text-sm">Create your account</p>
-                </div>
+        <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md p-4 py-8 transition-all duration-300">
+            <div className="w-full max-w-md relative">
+                <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-2xl shadow-2xl p-8 relative">
+                    {/* Close Button */}
+                    <button
+                        onClick={handleClose}
+                        className="absolute top-4 right-4 text-midnight/60 hover:text-red-600 transition-colors"
+                    >
+                        <X size={24} />
+                    </button>
 
-                <div className="bg-white rounded-2xl shadow-2xl p-8">
+                    {/* Logo Area */}
+                    <div className="text-center mb-8">
+                        <h1 className="font-playfair text-3xl font-bold text-midnight drop-shadow-sm">Join StyleSwap</h1>
+                        <p className="text-midnight/70 text-sm mt-1">Create your account today</p>
+                    </div>
+
                     <h2 className="font-playfair text-xl font-semibold text-midnight mb-5">Create Account</h2>
 
                     {authError && (

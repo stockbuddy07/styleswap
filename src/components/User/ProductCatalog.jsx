@@ -192,12 +192,23 @@ function ProductCard({ product, onRent }) {
     );
 }
 
-export default function ProductCatalog({ searchTerm = '' }) {
+export default function ProductCatalog({ searchTerm = '', onRequireAuth }) {
     const { allProducts } = useProducts();
+    const { currentUser } = useProducts(); // Assuming ProductContext or hook has access, or better pass it prop. 
+    // Actually, useAuth is better here.
     const [category, setCategory] = useState('All');
     const [sort, setSort] = useState('name_asc');
     const [selectedProduct, setSelectedProduct] = useState(null);
     const [showFilters, setShowFilters] = useState(false);
+
+    // Helper to handle rent click
+    const handleRentClick = (product) => {
+        if (!localStorage.getItem('styleswap_token')) {
+            if (onRequireAuth) onRequireAuth();
+            return;
+        }
+        setSelectedProduct(product);
+    };
 
     const filtered = useMemo(() => {
         let list = allProducts.filter(p => {
@@ -254,7 +265,7 @@ export default function ProductCatalog({ searchTerm = '' }) {
             ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
                     {filtered.map(product => (
-                        <ProductCard key={product.id} product={product} onRent={setSelectedProduct} />
+                        <ProductCard key={product.id} product={product} onRent={handleRentClick} />
                     ))}
                 </div>
             )}
