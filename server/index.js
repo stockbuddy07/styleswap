@@ -16,7 +16,7 @@ const corsOptions = {
         // Allow requests with no origin (curl, Postman, server-to-server)
         if (!origin) return callback(null, true);
         // Allow localhost dev
-        if (origin === 'http://localhost:5173' || origin === 'http://localhost:3000') {
+        if (origin === 'http://localhost:5175' || origin === 'http://localhost:3000' || origin === 'http://localhost:5175') {
             return callback(null, true);
         }
         // Allow all vercel.app origins (production + preview deployments)
