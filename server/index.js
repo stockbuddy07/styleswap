@@ -56,6 +56,29 @@ app.get('/api/health', (req, res) => {
 });
 
 // ─── 404 handler ─────────────────────────────────────────────────────────────
+app.get('/api/test-db', async (req, res) => {
+    try {
+        await prisma.$connect();
+        const userCount = await prisma.user.count();
+        res.json({
+            status: 'success',
+            message: 'Database connection working!',
+            userCount,
+            env: {
+                hasDatabaseUrl: !!process.env.DATABASE_URL,
+                urlPrefix: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 10) + '...' : 'N/A'
+            }
+        });
+    } catch (err) {
+        res.status(500).json({
+            status: 'error',
+            message: 'Database connection failed',
+            error: err.message,
+            stack: err.stack
+        });
+    }
+});
+
 app.use((req, res) => {
     res.status(404).json({ error: 'Route not found' });
 });
