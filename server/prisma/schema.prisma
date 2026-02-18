@@ -1,0 +1,69 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  name               String
+  email              String    @unique
+  password           String
+  role               String    @default("User")
+  shopName           String?
+  shopAddress        String?
+  shopNumber         String?
+  mobileNumber       String?
+  salesHandlerMobile String?
+  gstNumber          String?
+  status             String    @default("active")
+  avatar             String?
+  onboardedAt        DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  products Product[]
+  orders   Order[]   @relation("CustomerOrders")
+}
+
+model Product {
+  id                String   @id @default(cuid())
+  name              String
+  category          String
+  description       String
+  pricePerDay       Float
+  securityDeposit   Float
+  stockQuantity     Int
+  availableQuantity Int
+  sizes             String   // JSON array as string e.g. '["S","M","L"]'
+  images            String   // JSON array as string
+  subAdminId        String
+  vendor            User     @relation(fields: [subAdminId], references: [id], onDelete: Cascade)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model Order {
+  id              String   @id @default(cuid())
+  customerId      String
+  customer        User     @relation("CustomerOrders", fields: [customerId], references: [id], onDelete: Cascade)
+  vendorId        String
+  shopName        String
+  customerName    String
+  items           String   // JSON array of order items
+  totalAmount     Float
+  status          String   @default("Active")
+  rentalStartDate String
+  rentalEndDate   String
+  paymentMethod   String?
+  feedback        String?  // JSON object
+  issues          String?  // JSON array
+  orderDate       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
