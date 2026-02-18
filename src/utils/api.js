@@ -3,7 +3,15 @@
  * All requests go to the Express backend at VITE_API_URL (default: http://localhost:3001).
  */
 
-const BASE_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3001').replace(/\/$/, '');
+const getBaseUrl = () => {
+    let url = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    if (!url.startsWith('http')) {
+        url = `https://${url}`;
+    }
+    return url.replace(/\/$/, '');
+};
+
+const BASE_URL = getBaseUrl();
 console.log('✅ StyleSwap API URL:', BASE_URL); // Debugging line
 
 function getToken() {
