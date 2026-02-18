@@ -8,28 +8,8 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
-// Safe CORS setup
-const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3001',
-    ...(process.env.CLIENT_URL ? process.env.CLIENT_URL.split(',').map(url => url.trim().replace(/\/$/, '')) : [])
-];
-
-app.use(cors({
-    origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
-
-        if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            console.log('❌ CORS Blocked Origin:', origin);
-            console.log('✅ Allowed Origins:', allowedOrigins);
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true,
-}));
+// Allow all origins (simplest setup for deployment)
+app.use(cors());
 app.use(express.json());
 
 // ─── Routes ─────────────────────────────────────────────────────────────────
