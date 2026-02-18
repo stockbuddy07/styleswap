@@ -7,20 +7,25 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// ─── CORS ────────────────────────────────────────────────────────────────────
-// Allow localhost (dev) + all *.vercel.app subdomains (prod + preview deployments)
-const allowedOriginPattern = /^https:\/\/([a-z0-9-]+\.)?vercel\.app$/;
+// ─── CORS Configuration ───────────────────────────────────────────────────────
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    'http://localhost:5175',
+    'https://styleswap-tau.vercel.app',
+    'https://styleswap-production.up.railway.app'
+];
 
 const corsOptions = {
     origin: (origin, callback) => {
         // Allow requests with no origin (curl, Postman, server-to-server)
         if (!origin) return callback(null, true);
-        // Allow localhost dev
-        if (origin === 'http://localhost:5173' || origin === 'http://localhost:3000' || origin === 'http://localhost:5175') {
+
+        // Check against allowed list or matching vercel.app subdomain
+        if (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
             return callback(null, true);
         }
-        // Allow all vercel.app origins (production + preview deployments)
-        if (allowedOriginPattern.test(origin)) return callback(null, true);
+
         console.warn(`⚠️ CORS blocked: ${origin}`);
         return callback(null, false);
     },
@@ -38,7 +43,6 @@ app.use(express.json());
 // Debug logging
 console.log('🚀 Server starting...');
 console.log('🔌 DATABASE_URL:', process.env.DATABASE_URL ? '[SET]' : '[MISSING]');
-// console.log('🔑 CLIENT_URL:', process.env.CLIENT_URL || '[NOT SET]');
 
 // ─── Routes ─────────────────────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/auth'));
