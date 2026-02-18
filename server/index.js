@@ -8,21 +8,33 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
-// ─── Middleware ──────────────────────────────────────────────────────────────
-// Allow all origins with credentials (dynamic reflection)
-// This prevents 500 errors if CLIENT_URL is missing
+const allowedOrigins = [
+    'http://localhost:5173',
+    'http://localhost:3000',
+    process.env.CLIENT_URL_PROD, // https://styleswap-tau.vercel.app
+].filter(Boolean);
+
 app.use(cors({
-    origin: true,
+    origin: (origin, callback) => {
+        // Allow requests with no origin (curl, Postman, server-to-server)
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.includes(origin)) return callback(null, true);
+        callback(new Error(`CORS: origin "${origin}" not allowed`));
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
+// Handle OPTIONS preflight for all routes
+app.options('*', cors());
+
 app.use(express.json());
 
 // Debug logging
 console.log('🚀 Server starting...');
 console.log('🔌 DATABASE_URL:', process.env.DATABASE_URL ? '[SET]' : '[MISSING]');
-console.log('🔑 CLIENT_URL:', process.env.CLIENT_URL || '[NOT SET (Using dynamic CORS)]');
+// console.log('🔑 CLIENT_URL:', process.env.CLIENT_URL || '[NOT SET]');
 
 // ─── Routes ─────────────────────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/auth'));
