@@ -67,21 +67,37 @@ app.use((err, req, res, next) => {
 });
 
 // ─── Start ───────────────────────────────────────────────────────────────────
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`\n🚀 StyleSwap API running on port ${PORT}`);
-    console.log(`   URL: http://0.0.0.0:${PORT}`);
-    console.log(`📊 Prisma Studio: run "npm run db:studio" to view data\n`);
+const { PrismaClient } = require('@prisma/client');
+const prisma = new PrismaClient();
 
-    // DEBUG: Check DATABASE_URL format (masked for security)
-    const dbUrl = process.env.DATABASE_URL;
-    if (dbUrl) {
-        console.log(`🔍 DEBUG: DATABASE_URL is set.`);
-        console.log(`   Length: ${dbUrl.length}`);
-        console.log(`   Starts with: ${dbUrl.substring(0, 15)}...`);
-        if (dbUrl.startsWith('"') || dbUrl.startsWith("'")) {
-            console.error(`🚨 CRITICAL ERROR: DATABASE_URL starts with a quote! Please remove it in Railway Variables.`);
-        }
-    } else {
-        console.error(`🚨 CRITICAL ERROR: DATABASE_URL is MISSING!`);
+// ─── Start ───────────────────────────────────────────────────────────────────
+const startServer = async () => {
+    try {
+        await prisma.$connect();
+        console.log('✅ Connected to database successfully');
+    } catch (error) {
+        console.error('❌ Failed to connect to database:', error);
+        // We don't exit here to allow the server to start, but requests will likely fail
     }
-});
+
+    app.listen(PORT, '0.0.0.0', () => {
+        console.log(`\n🚀 StyleSwap API running on port ${PORT}`);
+        console.log(`   URL: http://0.0.0.0:${PORT}`);
+        console.log(`📊 Prisma Studio: run "npm run db:studio" to view data\n`);
+
+        // DEBUG: Check DATABASE_URL format (masked for security)
+        const dbUrl = process.env.DATABASE_URL;
+        if (dbUrl) {
+            console.log(`🔍 DEBUG: DATABASE_URL is set.`);
+            console.log(`   Length: ${dbUrl.length}`);
+            console.log(`   Starts with: ${dbUrl.substring(0, 15)}...`);
+            if (dbUrl.startsWith('"') || dbUrl.startsWith("'")) {
+                console.error(`🚨 CRITICAL ERROR: DATABASE_URL starts with a quote! Please remove it in Railway Variables.`);
+            }
+        } else {
+            console.log(`⚠️  WARNING: DATABASE_URL is MISSING! API endpoints requiring DB will fail.`);
+        }
+    });
+};
+
+startServer();
