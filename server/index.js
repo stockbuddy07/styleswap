@@ -12,41 +12,7 @@ const PORT = process.env.PORT || 3001;
 /* ───────────────────────────────────────────────
    CORS CONFIGURATION
 ─────────────────────────────────────────────── */
-
-const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'http://localhost:5175',
-    'https://styleswap-tau.vercel.app',
-    'https://styleswap-production.up.railway.app'
-];
-
-const corsOptions = {
-    origin: (origin, callback) => {
-        // Allow non-browser tools like Postman
-        if (!origin) return callback(null, true);
-
-        // Allow exact matches
-        if (allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-
-        // Allow ANY vercel preview deployment
-        if (/\.vercel\.app$/.test(origin)) {
-            return callback(null, true);
-        }
-
-        console.warn(`⚠️ CORS blocked: ${origin}`);
-        return callback(new Error('Not allowed by CORS'));
-    },
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true,
-};
-
-// Apply CORS BEFORE routes
-app.use(cors(corsOptions));
-app.options('*', cors(corsOptions));
+app.use(cors()); // Allow all origins per user request
 
 /* ───────────────────────────────────────────────
    MIDDLEWARE
@@ -124,22 +90,22 @@ app.use((err, req, res, next) => {
    START SERVER
 ─────────────────────────────────────────────── */
 
-const startServer = async () => {
-    try {
-        await prisma.$connect();
-        console.log('✅ Connected to database successfully');
-    } catch (error) {
-        console.error('❌ Failed to connect to database:', error);
-    }
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`\n🚀 StyleSwap API running on port ${PORT}`);
+    console.log(`🌍 Listening on 0.0.0.0:${PORT}\n`);
 
-    app.listen(PORT, '0.0.0.0', () => {
-        console.log(`\n🚀 StyleSwap API running on port ${PORT}`);
-        console.log(`🌍 Listening on 0.0.0.0:${PORT}\n`);
-
-        if (!process.env.DATABASE_URL) {
-            console.warn('⚠️ DATABASE_URL is missing');
+    // Background DB check
+    (async () => {
+        try {
+            console.log('⏳ Testing database connection...');
+            await prisma.$connect();
+            console.log('✅ Connected to database successfully');
+        } catch (error) {
+            console.error('❌ Failed to connect to database (Server running):', error);
         }
-    });
-};
+    })();
 
-startServer();
+    if (!process.env.DATABASE_URL) {
+        console.warn('⚠️ DATABASE_URL is missing');
+    }
+});
