@@ -8,9 +8,21 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ─── Middleware ──────────────────────────────────────────────────────────────
-// Allow all origins (simplest setup to fix CORS error)
-app.use(cors());
+// ─── Middleware ──────────────────────────────────────────────────────────────
+// Allow all origins with credentials (dynamic reflection)
+// This prevents 500 errors if CLIENT_URL is missing
+app.use(cors({
+    origin: true,
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 app.use(express.json());
+
+// Debug logging
+console.log('🚀 Server starting...');
+console.log('🔌 DATABASE_URL:', process.env.DATABASE_URL ? '[SET]' : '[MISSING]');
+console.log('🔑 CLIENT_URL:', process.env.CLIENT_URL || '[NOT SET (Using dynamic CORS)]');
 
 // ─── Routes ─────────────────────────────────────────────────────────────────
 app.use('/api/auth', require('./routes/auth'));
