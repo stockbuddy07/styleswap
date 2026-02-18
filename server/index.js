@@ -38,4 +38,17 @@ app.use((err, req, res, next) => {
 app.listen(PORT, () => {
     console.log(`\n🚀 StyleSwap API running on http://localhost:${PORT}`);
     console.log(`📊 Prisma Studio: run "npm run db:studio" to view data\n`);
+
+    // DEBUG: Check DATABASE_URL format (masked for security)
+    const dbUrl = process.env.DATABASE_URL;
+    if (dbUrl) {
+        console.log(`🔍 DEBUG: DATABASE_URL is set.`);
+        console.log(`   Length: ${dbUrl.length}`);
+        console.log(`   Starts with: ${dbUrl.substring(0, 15)}...`);
+        if (dbUrl.startsWith('"') || dbUrl.startsWith("'")) {
+            console.error(`🚨 CRITICAL ERROR: DATABASE_URL starts with a quote! Please remove it in Railway Variables.`);
+        }
+    } else {
+        console.error(`🚨 CRITICAL ERROR: DATABASE_URL is MISSING!`);
+    }
 });
