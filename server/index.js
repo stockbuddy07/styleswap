@@ -8,20 +8,20 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // ─── CORS ────────────────────────────────────────────────────────────────────
-const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:3000',
-    'https://styleswap-tau.vercel.app',
-    process.env.CLIENT_URL_PROD,
-].filter(Boolean);
+// Allow localhost (dev) + all *.vercel.app subdomains (prod + preview deployments)
+const allowedOriginPattern = /^https:\/\/([a-z0-9-]+\.)?vercel\.app$/;
 
 const corsOptions = {
     origin: (origin, callback) => {
         // Allow requests with no origin (curl, Postman, server-to-server)
         if (!origin) return callback(null, true);
-        if (allowedOrigins.includes(origin)) return callback(null, true);
-        console.warn(`CORS blocked origin: ${origin}`);
-        // Still call callback with false — don't throw, so error handler can respond
+        // Allow localhost dev
+        if (origin === 'http://localhost:5173' || origin === 'http://localhost:3000') {
+            return callback(null, true);
+        }
+        // Allow all vercel.app origins (production + preview deployments)
+        if (allowedOriginPattern.test(origin)) return callback(null, true);
+        console.warn(`⚠️ CORS blocked: ${origin}`);
         return callback(null, false);
     },
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
