@@ -261,7 +261,7 @@ function CheckoutModal({ isOpen, onClose, onConfirm, loading }) {
                 {/* Payment method */}
                 <div>
                     <p className="text-sm font-semibold text-midnight mb-2">Payment Method</p>
-                    <div className="grid grid-cols-3 gap-2">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {PAY_METHODS.map(m => (
                             <button key={m.id} onClick={() => setPayMethod(m.id)}
                                 className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-xs font-medium transition-all ${payMethod === m.id ? 'border-gold bg-yellow-50 text-midnight' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>

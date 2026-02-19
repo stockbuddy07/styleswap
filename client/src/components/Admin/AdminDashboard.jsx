@@ -191,7 +191,7 @@ export default function AdminDashboard() {
                     </div>
 
                     {/* Quick Stats Row */}
-                    <div className="grid grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                         {[
                             { label: 'Completed Rentals', value: allOrders.filter(o => o.status === 'Returned').length, icon: CheckCircle, color: 'text-green-600' },
                             { label: 'Active Rentals', value: stats.activeRentals.length, icon: TrendingUp, color: 'text-blue-600' },
