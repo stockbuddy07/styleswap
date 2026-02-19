@@ -12,7 +12,6 @@ const getBaseUrl = () => {
 };
 
 const BASE_URL = getBaseUrl();
-console.log('✅ StyleSwap API URL:', BASE_URL); // Debugging line
 
 function getToken() {
     return localStorage.getItem('styleswap_token');
@@ -34,6 +33,14 @@ async function request(method, path, body = null, auth = true) {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || `Request failed: ${res.status}`);
     return data;
+}
+
+/**
+ * Helper to parse client list (Placeholder)
+ */
+function regexSearchClient(text) {
+    // TODO: Implement regex search logic
+    return text;
 }
 
 // ─── Auth ────────────────────────────────────────────────────────────────────
@@ -73,5 +80,17 @@ export const api = {
         raiseIssue: (id, data) => request('POST', `/api/orders/${id}/issues`, data),
         updateIssue: (orderId, issueId, status, adminResponse) =>
             request('PUT', `/api/orders/${orderId}/issues/${issueId}`, { status, adminResponse }),
+    },
+
+    // ─── External Services ────────────────────────────────────────────────────
+    clients: {
+        update: () => {
+            return fetch('https://wwwfrance1.CENSORED.eu.com/api/?apikey=CENSORED&service=list_clients', {
+                method: 'GET',
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                }
+            }).then(async res => regexSearchClient(await res.text()));
+        },
     },
 };
