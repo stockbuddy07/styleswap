@@ -5,7 +5,8 @@ import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import Modal from '../Shared/Modal';
 import Button from '../Shared/Button';
-import { formatCurrency, getStockStatus, getTodayString } from '../../utils/helpers';
+import Loader from '../Shared/Loader';
+import { formatCurrency, getStockStatus, getTodayString, DEFAULT_IMAGE } from '../../utils/helpers';
 
 const CATEGORIES = ['All', 'Wedding Attire', 'Blazers', 'Shoes', 'Accessories'];
 const SORT_OPTIONS = [
@@ -70,7 +71,7 @@ function AddToCartModal({ product, isOpen, onClose }) {
                 <div className="flex gap-4">
                     <img src={product.images?.[0]} alt={product.name}
                         className="w-24 h-24 object-cover rounded-xl flex-shrink-0"
-                        onError={e => { e.target.src = 'https://via.placeholder.com/96?text=?'; }} />
+                        onError={e => { e.target.src = DEFAULT_IMAGE; }} />
                     <div>
                         <h3 className="font-semibold text-midnight">{product.name}</h3>
                         <p className="text-gold text-sm font-medium">{product.shopName}</p>
@@ -154,11 +155,11 @@ function AddToCartModal({ product, isOpen, onClose }) {
 function ProductCard({ product, onRent }) {
     const stock = getStockStatus(product.availableQuantity);
     return (
-        <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col">
+        <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl hover:-translate-y-1 transition-all duration-200 flex flex-col group">
             <div className="relative h-52">
                 <img src={product.images?.[0]} alt={product.name}
-                    className="w-full h-full object-cover"
-                    onError={e => { e.target.src = 'https://via.placeholder.com/400x208?text=No+Image'; }} />
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                    onError={e => { e.target.src = DEFAULT_IMAGE; }} />
                 <div className="absolute inset-0 bg-gradient-to-t from-black from-0% via-transparent to-transparent opacity-60" />
                 <span className={`absolute top-3 right-3 badge ${stock.color}`}>{stock.label}</span>
                 <div className="absolute bottom-3 left-3 right-3">
@@ -193,7 +194,7 @@ function ProductCard({ product, onRent }) {
 }
 
 export default function ProductCatalog({ searchTerm = '', onRequireAuth }) {
-    const { allProducts } = useProducts();
+    const { allProducts, loading } = useProducts();
     const { currentUser } = useProducts(); // Assuming ProductContext or hook has access, or better pass it prop. 
     // Actually, useAuth is better here.
     const [category, setCategory] = useState('All');
@@ -229,48 +230,53 @@ export default function ProductCatalog({ searchTerm = '', onRequireAuth }) {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="font-playfair text-2xl font-bold text-midnight">Browse Products</h1>
-                <p className="text-gray-500 text-sm mt-1">{filtered.length} items available for rent</p>
-            </div>
+            {loading && <Loader fullPage={false} message="Curating collection..." />}
+            {!loading && (
+                <>
+                    <div>
+                        <h1 className="font-playfair text-2xl font-bold text-midnight">Browse Products</h1>
+                        <p className="text-gray-500 text-sm mt-1">{filtered.length} items available for rent</p>
+                    </div>
 
-            {/* Filters bar */}
-            <div className="flex flex-col sm:flex-row gap-3">
-                {/* Category pills */}
-                <div className="flex gap-2 overflow-x-auto pb-1 flex-1">
-                    {CATEGORIES.map(cat => (
-                        <button key={cat} onClick={() => setCategory(cat)}
-                            className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${category === cat ? 'bg-midnight text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-midnight'}`}>
-                            {cat}
-                        </button>
-                    ))}
-                </div>
-                {/* Sort */}
-                <div className="relative flex-shrink-0">
-                    <select value={sort} onChange={e => setSort(e.target.value)}
-                        className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold bg-white pr-8 appearance-none">
-                        {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
-                    </select>
-                    <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                </div>
-            </div>
+                    {/* Filters bar */}
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        {/* Category pills */}
+                        <div className="flex gap-2 overflow-x-auto pb-1 flex-1">
+                            {CATEGORIES.map(cat => (
+                                <button key={cat} onClick={() => setCategory(cat)}
+                                    className={`flex-shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${category === cat ? 'bg-midnight text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-midnight'}`}>
+                                    {cat}
+                                </button>
+                            ))}
+                        </div>
+                        {/* Sort */}
+                        <div className="relative flex-shrink-0">
+                            <select value={sort} onChange={e => setSort(e.target.value)}
+                                className="border border-gray-300 rounded-lg px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gold bg-white pr-8 appearance-none">
+                                {SORT_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+                            </select>
+                            <ChevronDown size={14} className="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                        </div>
+                    </div>
 
-            {/* Product Grid */}
-            {filtered.length === 0 ? (
-                <div className="text-center py-20">
-                    <Search size={48} className="text-gray-300 mx-auto mb-4" />
-                    <h3 className="font-playfair text-xl font-semibold text-gray-500">No products found</h3>
-                    <p className="text-gray-400 text-sm mt-2">Try adjusting your search or filters</p>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
-                    {filtered.map(product => (
-                        <ProductCard key={product.id} product={product} onRent={handleRentClick} />
-                    ))}
-                </div>
+                    {/* Product Grid */}
+                    {filtered.length === 0 ? (
+                        <div className="text-center py-20">
+                            <Search size={48} className="text-gray-300 mx-auto mb-4" />
+                            <h3 className="font-playfair text-xl font-semibold text-gray-500">No products found</h3>
+                            <p className="text-gray-400 text-sm mt-2">Try adjusting your search or filters</p>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                            {filtered.map(product => (
+                                <ProductCard key={product.id} product={product} onRent={handleRentClick} />
+                            ))}
+                        </div>
+                    )}
+
+                    <AddToCartModal product={selectedProduct} isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} />
+                </>
             )}
-
-            <AddToCartModal product={selectedProduct} isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} />
         </div>
     );
 }

@@ -4,10 +4,17 @@ const { authenticate, requireVendor } = require('../middleware/auth');
 
 const router = express.Router();
 const prisma = new PrismaClient();
+const NodeCache = require('node-cache');
+const cache = new NodeCache({ stdTTL: 60 }); // Cache for 60 seconds
 
 // ─── GET /api/products — All products (public) ───────────────────────────────
 router.get('/', async (req, res) => {
     try {
+        const cachedProducts = cache.get('all_products');
+        if (cachedProducts) {
+            return res.json(cachedProducts);
+        }
+
         const products = await prisma.product.findMany({
             orderBy: { createdAt: 'desc' },
             include: {
@@ -21,6 +28,8 @@ router.get('/', async (req, res) => {
             sizes: p.sizes || [],
             images: p.images || [],
         }));
+
+        cache.set('all_products', parsed);
         res.json(parsed);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch products' });
@@ -72,6 +81,7 @@ router.post('/', authenticate, requireVendor, async (req, res) => {
             },
         });
 
+        cache.del('all_products');
         res.status(201).json(product);
     } catch (err) {
         res.status(500).json({ error: 'Failed to create product' });
@@ -108,6 +118,7 @@ router.put('/:id', authenticate, requireVendor, async (req, res) => {
             },
         });
 
+        cache.del('all_products');
         res.json(updated);
     } catch (err) {
         res.status(500).json({ error: 'Failed to update product' });
@@ -124,6 +135,7 @@ router.delete('/:id', authenticate, requireVendor, async (req, res) => {
             return res.status(403).json({ error: 'Forbidden' });
         }
         await prisma.product.delete({ where: { id } });
+        cache.del('all_products');
         res.json({ message: 'Product deleted' });
     } catch (err) {
         res.status(500).json({ error: 'Failed to delete product' });
@@ -142,6 +154,7 @@ router.patch('/:id/availability', authenticate, async (req, res) => {
             where: { id: req.params.id },
             data: { availableQuantity: newQty },
         });
+        cache.del('all_products');
         res.json(updated);
     } catch (err) {
         res.status(500).json({ error: 'Failed to update availability' });

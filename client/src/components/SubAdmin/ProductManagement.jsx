@@ -7,7 +7,8 @@ import { useAuth } from '../../context/AuthContext';
 import Button from '../Shared/Button';
 import Modal from '../Shared/Modal';
 import Input from '../Shared/Input';
-import { formatCurrency, getStockStatus } from '../../utils/helpers';
+import Loader from '../Shared/Loader';
+import { formatCurrency, getStockStatus, DEFAULT_IMAGE } from '../../utils/helpers';
 
 const CATEGORIES = ['Wedding Attire', 'Blazers', 'Shoes', 'Accessories'];
 const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '5', '6', '7', '8', '9', '10', '11', '12', 'One Size'];
@@ -169,7 +170,7 @@ const categoryColors = {
 };
 
 export default function ProductManagement() {
-    const { myProducts, createProduct, updateProduct, deleteProduct } = useProducts();
+    const { myProducts, createProduct, updateProduct, deleteProduct, loading } = useProducts();
     const { vendorOrders } = useOrders();
     const toast = useToast();
     const { vendorProfileComplete } = useAuth();
@@ -199,83 +200,88 @@ export default function ProductManagement() {
 
     return (
         <div className="space-y-6">
-            {/* Profile incomplete banner */}
-            {!vendorProfileComplete && (
-                <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-300 rounded-2xl">
-                    <AlertTriangle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                    <div className="flex-1">
-                        <p className="font-semibold text-amber-800">Complete your shop profile to list products</p>
-                        <p className="text-amber-700 text-sm mt-0.5">Your shop details are incomplete. Please finish your profile setup to start adding products.</p>
-                    </div>
-                    <button
-                        onClick={() => window.location.reload()}
-                        className="flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-900 whitespace-nowrap">
-                        Complete Profile <ArrowRight size={13} />
-                    </button>
-                </div>
-            )}
-
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="font-playfair text-2xl font-bold text-midnight">My Products</h1>
-                    <p className="text-gray-500 text-sm mt-1">{myProducts.length} products in your shop</p>
-                </div>
-                <Button
-                    onClick={() => vendorProfileComplete ? setCreateOpen(true) : null}
-                    disabled={!vendorProfileComplete}
-                    title={!vendorProfileComplete ? 'Complete your shop profile first' : ''}
-                >
-                    <Plus size={16} className="mr-2" /> Add Product
-                </Button>
-            </div>
-
-            {myProducts.length === 0 ? (
-                <div className="bg-white rounded-xl shadow-md p-16 text-center">
-                    <Package size={48} className="text-gray-300 mx-auto mb-4" />
-                    <h3 className="font-playfair text-xl font-semibold text-gray-500 mb-2">No products yet</h3>
-                    <p className="text-gray-400 text-sm mb-6">Start adding products to your shop</p>
-                    <Button onClick={() => setCreateOpen(true)}><Plus size={16} className="mr-2" /> Add First Product</Button>
-                </div>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                    {myProducts.map(product => {
-                        const stock = getStockStatus(product.availableQuantity);
-                        return (
-                            <div key={product.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
-                                <div className="relative h-48">
-                                    <img src={product.images?.[0]} alt={product.name}
-                                        className="w-full h-full object-cover"
-                                        onError={e => { e.target.src = 'https://via.placeholder.com/400x200?text=No+Image'; }} />
-                                    <span className={`absolute top-3 left-3 badge ${categoryColors[product.category] || 'bg-gray-100 text-gray-700'}`}>
-                                        {product.category}
-                                    </span>
-                                    <span className={`absolute top-3 right-3 badge ${stock.color}`}>{stock.label}</span>
-                                </div>
-                                <div className="p-4">
-                                    <h3 className="font-semibold text-midnight truncate">{product.name}</h3>
-                                    <div className="flex items-center justify-between mt-2">
-                                        <span className="text-gold font-bold text-lg">{formatCurrency(product.pricePerDay)}<span className="text-gray-400 text-xs font-normal">/day</span></span>
-                                        <span className="text-gray-500 text-xs">{product.availableQuantity}/{product.stockQuantity} avail.</span>
-                                    </div>
-                                    <div className="flex gap-2 mt-4">
-                                        <Button variant="outline" size="sm" fullWidth onClick={() => setEditProduct(product)}>
-                                            <Edit2 size={14} className="mr-1" /> Edit
-                                        </Button>
-                                        <Button variant="danger" size="sm" fullWidth onClick={() => setDeleteTarget(product)}>
-                                            <Trash2 size={14} className="mr-1" /> Delete
-                                        </Button>
-                                    </div>
-                                </div>
+            {loading && <Loader fullPage={false} message="Managing your inventory..." />}
+            {!loading && (
+                <>
+                    {/* Profile incomplete banner */}
+                    {!vendorProfileComplete && (
+                        <div className="flex items-start gap-3 p-4 bg-amber-50 border border-amber-300 rounded-2xl">
+                            <AlertTriangle size={20} className="text-amber-600 flex-shrink-0 mt-0.5" />
+                            <div className="flex-1">
+                                <p className="font-semibold text-amber-800">Complete your shop profile to list products</p>
+                                <p className="text-amber-700 text-sm mt-0.5">Your shop details are incomplete. Please finish your profile setup to start adding products.</p>
                             </div>
-                        );
-                    })}
-                </div>
-            )}
+                            <button
+                                onClick={() => window.location.reload()}
+                                className="flex items-center gap-1 text-xs font-semibold text-amber-700 hover:text-amber-900 whitespace-nowrap">
+                                Complete Profile <ArrowRight size={13} />
+                            </button>
+                        </div>
+                    )}
 
-            <ProductFormModal isOpen={createOpen} onClose={() => setCreateOpen(false)} onSave={handleCreate} />
-            <ProductFormModal isOpen={!!editProduct} onClose={() => setEditProduct(null)} editProduct={editProduct} onSave={handleEdit} />
-            <DeleteProductModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} product={deleteTarget}
-                onConfirm={handleDelete} activeRentalCount={deleteTarget ? getActiveRentalCount(deleteTarget.id) : 0} />
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                        <div>
+                            <h1 className="font-playfair text-2xl font-bold text-midnight">My Products</h1>
+                            <p className="text-gray-500 text-sm mt-1">{myProducts.length} products in your shop</p>
+                        </div>
+                        <Button
+                            onClick={() => vendorProfileComplete ? setCreateOpen(true) : null}
+                            disabled={!vendorProfileComplete}
+                            title={!vendorProfileComplete ? 'Complete your shop profile first' : ''}
+                        >
+                            <Plus size={16} className="mr-2" /> Add Product
+                        </Button>
+                    </div>
+
+                    {myProducts.length === 0 ? (
+                        <div className="bg-white rounded-xl shadow-md p-16 text-center">
+                            <Package size={48} className="text-gray-300 mx-auto mb-4" />
+                            <h3 className="font-playfair text-xl font-semibold text-gray-500 mb-2">No products yet</h3>
+                            <p className="text-gray-400 text-sm mb-6">Start adding products to your shop</p>
+                            <Button onClick={() => setCreateOpen(true)}><Plus size={16} className="mr-2" /> Add First Product</Button>
+                        </div>
+                    ) : (
+                        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
+                            {myProducts.map(product => {
+                                const stock = getStockStatus(product.availableQuantity);
+                                return (
+                                    <div key={product.id} className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+                                        <div className="relative h-48">
+                                            <img src={product.images?.[0]} alt={product.name}
+                                                className="w-full h-full object-cover"
+                                                onError={e => { e.target.src = DEFAULT_IMAGE; }} />
+                                            <span className={`absolute top-3 left-3 badge ${categoryColors[product.category] || 'bg-gray-100 text-gray-700'}`}>
+                                                {product.category}
+                                            </span>
+                                            <span className={`absolute top-3 right-3 badge ${stock.color}`}>{stock.label}</span>
+                                        </div>
+                                        <div className="p-4">
+                                            <h3 className="font-semibold text-midnight truncate">{product.name}</h3>
+                                            <div className="flex items-center justify-between mt-2">
+                                                <span className="text-gold font-bold text-lg">{formatCurrency(product.pricePerDay)}<span className="text-gray-400 text-xs font-normal">/day</span></span>
+                                                <span className="text-gray-500 text-xs">{product.availableQuantity}/{product.stockQuantity} avail.</span>
+                                            </div>
+                                            <div className="flex gap-2 mt-4">
+                                                <Button variant="outline" size="sm" fullWidth onClick={() => setEditProduct(product)}>
+                                                    <Edit2 size={14} className="mr-1" /> Edit
+                                                </Button>
+                                                <Button variant="danger" size="sm" fullWidth onClick={() => setDeleteTarget(product)}>
+                                                    <Trash2 size={14} className="mr-1" /> Delete
+                                                </Button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    <ProductFormModal isOpen={createOpen} onClose={() => setCreateOpen(false)} onSave={handleCreate} />
+                    <ProductFormModal isOpen={!!editProduct} onClose={() => setEditProduct(null)} editProduct={editProduct} onSave={handleEdit} />
+                    <DeleteProductModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} product={deleteTarget}
+                        onConfirm={handleDelete} activeRentalCount={deleteTarget ? getActiveRentalCount(deleteTarget.id) : 0} />
+                </>
+            )}
         </div>
     );
 }

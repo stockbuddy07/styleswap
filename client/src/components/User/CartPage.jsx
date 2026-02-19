@@ -11,7 +11,8 @@ import { useToast } from '../../context/ToastContext';
 import { useUsers } from '../../context/UserContext';
 import Button from '../Shared/Button';
 import Modal from '../Shared/Modal';
-import { formatCurrency, formatDate, getTodayString, calculateRentalDays } from '../../utils/helpers';
+import Loader from '../Shared/Loader';
+import { formatCurrency, formatDate, getTodayString, calculateRentalDays, DEFAULT_IMAGE } from '../../utils/helpers';
 
 // ─── Inline Date Editor ────────────────────────────────────────────────────────
 function DateEditor({ item, onSave, onCancel }) {
@@ -120,7 +121,7 @@ function CartItemCard({ item, allProducts }) {
                     <div className="relative flex-shrink-0">
                         <img src={item.productImage} alt={item.productName}
                             className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl"
-                            onError={e => { e.target.src = 'https://via.placeholder.com/112?text=?'; }} />
+                            onError={e => { e.target.src = DEFAULT_IMAGE; }} />
                     </div>
 
                     {/* Details */}
@@ -243,7 +244,7 @@ function CheckoutModal({ isOpen, onClose, onConfirm, loading }) {
                                     <div key={item.id} className="flex gap-3 p-3">
                                         <img src={item.productImage} alt={item.productName}
                                             className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
-                                            onError={e => { e.target.src = 'https://via.placeholder.com/48?text=?'; }} />
+                                            onError={e => { e.target.src = DEFAULT_IMAGE; }} />
                                         <div className="flex-1 min-w-0">
                                             <p className="font-medium text-midnight text-sm truncate">{item.productName}</p>
                                             <p className="text-gray-400 text-xs">Size: {item.size} · {item.quantity}× · {item.rentalDays}d</p>
@@ -533,6 +534,7 @@ export default function CartPage({ onNavigate }) {
                 onConfirm={handleCheckout}
                 loading={loading}
             />
+            {loading && <Loader fullPage={true} message="Processing your order..." />}
         </div>
     );
 }

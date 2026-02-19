@@ -7,9 +7,10 @@ import {
 } from 'lucide-react';
 import { useOrders } from '../../context/OrderContext';
 import { useUsers } from '../../context/UserContext';
-import { formatDate, formatCurrency } from '../../utils/helpers';
+import { formatDate, formatCurrency, DEFAULT_IMAGE } from '../../utils/helpers';
 import Button from '../Shared/Button';
 import Modal from '../Shared/Modal';
+import Loader from '../Shared/Loader';
 import { useToast } from '../../context/ToastContext';
 
 // ─── Star Rating ────────────────────────────────────────────────────────────────
@@ -561,8 +562,8 @@ function OrderCard({ order }) {
                             {order.items?.map((item, i) => (
                                 <div key={i} className="flex items-center gap-3 p-3 border border-gray-100 rounded-xl">
                                     <img src={item.productImage} alt={item.productName}
-                                        className="w-14 h-14 object-cover rounded-lg flex-shrink-0"
-                                        onError={e => { e.target.src = 'https://via.placeholder.com/56?text=?'; }} />
+                                        className="w-16 h-16 object-cover rounded-xl border border-gray-100 flex-shrink-0"
+                                        onError={e => { e.target.src = DEFAULT_IMAGE; }} />
                                     <div className="flex-1 min-w-0">
                                         <p className="font-semibold text-midnight text-sm">{item.productName}</p>
                                         <p className="text-gray-500 text-xs">Size: {item.size} · Qty: {item.quantity} · {item.rentalDays} days</p>
@@ -688,7 +689,7 @@ function OrderCard({ order }) {
 
 // ─── Main MyRentals ─────────────────────────────────────────────────────────────
 export default function MyRentals({ onNavigate }) {
-    const { userOrders } = useOrders();
+    const { userOrders, loading } = useOrders();
     const [filter, setFilter] = useState('All');
 
     const FILTERS = ['All', 'Active', 'Pending Return', 'Overdue', 'Returned'];
@@ -729,72 +730,77 @@ export default function MyRentals({ onNavigate }) {
 
     return (
         <div className="space-y-6">
-            <div>
-                <h1 className="font-playfair text-2xl font-bold text-midnight">My Rentals</h1>
-                <p className="text-gray-500 text-sm mt-1">{sorted.length} total rental(s)</p>
-            </div>
-
-            {/* Alert banners */}
-            {overdue.length > 0 && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3">
-                    <AlertTriangle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+            {loading && <Loader fullPage={false} message="Loading your rentals..." />}
+            {!loading && (
+                <>
                     <div>
-                        <p className="font-semibold text-red-700">⚠️ {overdue.length} Overdue Rental{overdue.length > 1 ? 's' : ''}</p>
-                        <p className="text-red-600 text-sm mt-0.5">Please return items immediately to avoid additional charges and penalties.</p>
+                        <h1 className="font-playfair text-2xl font-bold text-midnight">My Rentals</h1>
+                        <p className="text-gray-500 text-sm mt-1">{sorted.length} total rental(s)</p>
                     </div>
-                </div>
-            )}
-            {pendingReturn.length > 0 && overdue.length === 0 && (
-                <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
-                    <Clock size={20} className="text-amber-500 flex-shrink-0 mt-0.5" />
-                    <div>
-                        <p className="font-semibold text-amber-700">{pendingReturn.length} item{pendingReturn.length > 1 ? 's' : ''} due for return soon</p>
-                        <p className="text-amber-600 text-sm mt-0.5">Please schedule your return pickup to avoid overdue charges.</p>
+
+                    {/* Alert banners */}
+                    {overdue.length > 0 && (
+                        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl flex items-start gap-3">
+                            <AlertTriangle size={20} className="text-red-500 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p className="font-semibold text-red-700">⚠️ {overdue.length} Overdue Rental{overdue.length > 1 ? 's' : ''}</p>
+                                <p className="text-red-600 text-sm mt-0.5">Please return items immediately to avoid additional charges and penalties.</p>
+                            </div>
+                        </div>
+                    )}
+                    {pendingReturn.length > 0 && overdue.length === 0 && (
+                        <div className="p-4 bg-amber-50 border border-amber-200 rounded-2xl flex items-start gap-3">
+                            <Clock size={20} className="text-amber-500 flex-shrink-0 mt-0.5" />
+                            <div>
+                                <p className="font-semibold text-amber-700">{pendingReturn.length} item{pendingReturn.length > 1 ? 's' : ''} due for return soon</p>
+                                <p className="text-amber-600 text-sm mt-0.5">Please schedule your return pickup to avoid overdue charges.</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        {[
+                            { label: 'Total Orders', value: sorted.length, color: 'text-midnight' },
+                            { label: 'Active', value: counts['Active'] || 0, color: 'text-green-600' },
+                            { label: 'Overdue', value: counts['Overdue'] || 0, color: 'text-red-600' },
+                            { label: 'Returned', value: counts['Returned'] || 0, color: 'text-gray-500' },
+                        ].map(s => (
+                            <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
+                                <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
+                                <p className="text-gray-500 text-xs mt-1">{s.label}</p>
+                            </div>
+                        ))}
                     </div>
-                </div>
-            )}
 
-            {/* Stats */}
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {[
-                    { label: 'Total Orders', value: sorted.length, color: 'text-midnight' },
-                    { label: 'Active', value: counts['Active'] || 0, color: 'text-green-600' },
-                    { label: 'Overdue', value: counts['Overdue'] || 0, color: 'text-red-600' },
-                    { label: 'Returned', value: counts['Returned'] || 0, color: 'text-gray-500' },
-                ].map(s => (
-                    <div key={s.label} className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 text-center">
-                        <p className={`text-2xl font-bold ${s.color}`}>{s.value}</p>
-                        <p className="text-gray-500 text-xs mt-1">{s.label}</p>
+                    {/* Filter tabs */}
+                    <div className="flex gap-2 overflow-x-auto pb-1">
+                        {FILTERS.map(f => (
+                            <button key={f} onClick={() => setFilter(f)}
+                                className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === f ? 'bg-midnight text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-midnight'}`}>
+                                {f}
+                                {counts[f] > 0 && (
+                                    <span className={`text-xs px-1.5 py-0.5 rounded-full ${filter === f ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
+                                        {counts[f]}
+                                    </span>
+                                )}
+                            </button>
+                        ))}
                     </div>
-                ))}
-            </div>
 
-            {/* Filter tabs */}
-            <div className="flex gap-2 overflow-x-auto pb-1">
-                {FILTERS.map(f => (
-                    <button key={f} onClick={() => setFilter(f)}
-                        className={`flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all ${filter === f ? 'bg-midnight text-white' : 'bg-white text-gray-600 border border-gray-200 hover:border-midnight'}`}>
-                        {f}
-                        {counts[f] > 0 && (
-                            <span className={`text-xs px-1.5 py-0.5 rounded-full ${filter === f ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'}`}>
-                                {counts[f]}
-                            </span>
-                        )}
-                    </button>
-                ))}
-            </div>
-
-            {/* Orders */}
-            {filtered.length === 0 ? (
-                <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
-                    <p className="text-gray-400">No {filter.toLowerCase()} rentals found</p>
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    {filtered.map(order => (
-                        <OrderCard key={order.orderId} order={order} />
-                    ))}
-                </div>
+                    {/* Orders */}
+                    {filtered.length === 0 ? (
+                        <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
+                            <p className="text-gray-400">No {filter.toLowerCase()} rentals found</p>
+                        </div>
+                    ) : (
+                        <div className="space-y-4">
+                            {filtered.map(order => (
+                                <OrderCard key={order.orderId} order={order} />
+                            ))}
+                        </div>
+                    )}
+                </>
             )}
         </div>
     );

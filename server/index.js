@@ -5,6 +5,8 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const { PrismaClient } = require('@prisma/client');
+const compression = require('compression');
+const helmet = require('helmet');
 
 // ─────────────────────────────────────────────
 // INIT
@@ -20,6 +22,8 @@ app.use(cors({
     origin: true,          // Reflect request origin automatically
     credentials: true
 }));
+app.use(compression());
+app.use(helmet());
 
 app.use(express.json());
 
