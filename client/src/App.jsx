@@ -67,17 +67,6 @@ function AppContent() {
     // Handle Auth Requirement (from Child components)
     const handleRequireAuth = () => {
         setAuthPage('login');
-        // We show the auth screen by setting a temporary state or modal?
-        // Current implementation uses `if (!currentUser) return <Login ... />`
-        // We need to change that.
-        // Let's us a specific "auth" Page or overlay.
-        // For simplicity, let's just use a state to show the Modal OVER the app if needed,
-        // OR just switch the view if we want to keep it simple.
-
-        // Actually, looking at lines 60-64, it completely replaces the app.
-        // Let's keep that behavior IF the user explicitly asks for login.
-        // But how do we trigger it?
-        // We can add a 'login' and 'register' page to renderPage?
     };
 
     if (loading) return <Loader message="Loading StyleSwap..." />;
