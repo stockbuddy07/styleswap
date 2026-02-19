@@ -30,6 +30,8 @@ import ProductCatalog from './components/User/ProductCatalog';
 import CartPage from './components/User/CartPage';
 import MyRentals from './components/User/MyRentals';
 
+import Footer from './components/Shared/Footer';
+
 function AppContent() {
     const { currentUser, loading, isAdmin, isSubAdmin, isUser, vendorProfileComplete } = useAuth();
     const { cartCount } = useCart();
@@ -155,30 +157,35 @@ function AppContent() {
     };
 
     return (
-        <div className="min-h-screen bg-offWhite">
+        <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
             <Header
                 onMenuToggle={() => setSidebarOpen(v => !v)}
                 cartCount={cartCount}
                 onCartClick={isUser ? () => navigate('cart') : undefined}
                 searchTerm={searchTerm}
-                onSearchChange={isUser ? setSearchTerm : undefined}
-                showSearch={isUser}
+                onSearchChange={setSearchTerm}
+                showSearch={true}
                 currentPage={currentPage}
                 onNavigate={navigate}
             />
-            <div className="flex">
-                <Sidebar
-                    currentPage={currentPage}
-                    onNavigate={navigate}
-                    isOpen={sidebarOpen}
-                    onClose={() => setSidebarOpen(false)}
-                />
-                <main className="flex-1 lg:ml-64 min-h-[calc(100vh-4rem)]">
-                    <div className="max-w-screen-xl mx-auto p-4 sm:p-6 lg:p-8">
-                        {renderPage()}
-                    </div>
+
+            <div className="flex flex-1 max-w-screen-2xl mx-auto w-full relative">
+                {/* Sidebar only for logged-in users */}
+                {currentUser && (
+                    <Sidebar
+                        currentPage={currentPage}
+                        onNavigate={navigate}
+                        isOpen={sidebarOpen}
+                        onClose={() => setSidebarOpen(false)}
+                    />
+                )}
+
+                <main className="flex-1 w-full min-w-0">
+                    {renderPage()}
                 </main>
             </div>
+
+            <Footer />
         </div>
     );
 }

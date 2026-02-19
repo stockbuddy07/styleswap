@@ -1,6 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ShoppingCart, Search, X, Menu, LogOut, User, ChevronDown } from 'lucide-react';
+import { ShoppingCart, Search, X, Menu, LogOut, User, ChevronDown, MapPin, Heart, Bell } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+
+const CATEGORIES = ['All', 'Wedding Attire', 'Blazers', 'Shoes', 'Accessories'];
 
 export default function Header({
     onMenuToggle,
@@ -14,6 +16,7 @@ export default function Header({
 }) {
     const { currentUser, logout, isUser } = useAuth();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
+    const [searchCategory, setSearchCategory] = useState('All');
     const userMenuRef = useRef(null);
 
     useEffect(() => {
@@ -33,151 +36,227 @@ export default function Header({
     };
 
     return (
-        <header className="sticky top-0 z-40 bg-midnight shadow-lg">
-            <div className="max-w-screen-2xl mx-auto px-4 h-16 flex items-center gap-4">
-                {/* Hamburger (mobile) */}
-                <button
-                    onClick={onMenuToggle}
-                    className="lg:hidden text-white hover:text-gold transition-colors p-1"
-                    aria-label="Toggle menu"
-                >
-                    <Menu size={24} />
-                </button>
+        <div className="sticky top-0 z-40 flex flex-col">
+            {/* Top Bar - Main Header */}
+            <header className="bg-midnight shadow-lg relative z-20">
+                <div className="max-w-screen-2xl mx-auto px-4 h-16 flex items-center gap-4">
+                    {/* Mobile Menu */}
+                    <button
+                        onClick={onMenuToggle}
+                        className="lg:hidden text-white hover:text-gold transition-colors p-1"
+                        aria-label="Toggle menu"
+                    >
+                        <Menu size={24} />
+                    </button>
 
-                {/* Logo */}
-                <div
-                    className="flex items-center gap-2 cursor-pointer flex-shrink-0"
-                    onClick={() => onNavigate && onNavigate('home')}
-                >
-                    <div className="w-8 h-8 bg-gold rounded-lg flex items-center justify-center">
-                        <span className="text-midnight font-playfair font-bold text-sm">S</span>
+                    {/* Logo */}
+                    <div
+                        className="flex items-center gap-2 cursor-pointer flex-shrink-0 group"
+                        onClick={() => onNavigate && onNavigate('home')}
+                    >
+                        <div className="w-9 h-9 bg-gold rounded-lg flex items-center justify-center shadow-glow transition-transform group-hover:scale-105">
+                            <span className="text-midnight font-playfair font-bold text-lg">S</span>
+                        </div>
+                        <span className="font-playfair font-bold text-white text-xl hidden sm:block tracking-wide">
+                            Style<span className="text-gold">Swap</span>
+                        </span>
                     </div>
-                    <span className="font-playfair font-bold text-white text-lg hidden sm:block">
-                        Style<span className="text-gold">Swap</span>
-                    </span>
-                </div>
 
-                {/* Search Bar (User only) */}
-                {showSearch && (
-                    <div className="flex-1 max-w-xl mx-auto hidden md:block">
-                        <div className="relative">
-                            <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                    {/* Location / Delivery (Amazon Style) */}
+                    <div className="hidden lg:flex flex-col leading-tight text-white px-2 hover:outline hover:outline-1 hover:outline-white cursor-pointer rounded-sm">
+                        <span className="text-xs text-gray-300 pl-4">Deliver to</span>
+                        <div className="flex items-center gap-1 font-bold text-sm">
+                            <MapPin size={14} className="text-white" />
+                            <span>{currentUser?.name ? 'Home' : 'select location'}</span>
+                        </div>
+                    </div>
+
+                    {/* Mega Search Bar (User only) */}
+                    {showSearch && (
+                        <div className="flex-1 max-w-2xl mx-auto hidden md:flex h-10 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-gold shadow-sm">
+                            {/* Category Dropdown */}
+                            <div className="bg-gray-100 border-r border-gray-300 relative group">
+                                <select
+                                    className="appearance-none bg-transparent h-full pl-3 pr-8 text-xs font-medium text-gray-600 focus:outline-none cursor-pointer hover:bg-gray-200"
+                                    value={searchCategory}
+                                    onChange={(e) => setSearchCategory(e.target.value)}
+                                >
+                                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                                <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                            </div>
+
+                            {/* Input */}
                             <input
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-                                placeholder="Search for wedding attire, shoes, accessories..."
-                                className="w-full bg-white bg-opacity-10 border border-white border-opacity-20 rounded-lg pl-10 pr-10 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold focus:bg-opacity-20 transition-all text-sm"
+                                placeholder="Search for luxury fashion..."
+                                className="flex-1 px-4 text-midnight text-sm placeholder-gray-500 focus:outline-none"
                             />
+
+                            {/* Clear Button */}
                             {searchTerm && (
                                 <button
                                     onClick={() => onSearchChange && onSearchChange('')}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                                    aria-label="Clear search"
+                                    className="bg-white px-2 text-gray-400 hover:text-red-500 transition-colors"
                                 >
-                                    <X size={16} />
+                                    <X size={18} />
                                 </button>
                             )}
-                        </div>
-                    </div>
-                )}
 
-                <div className="ml-auto flex items-center gap-3">
-                    {/* Cart (User only) */}
-                    {isUser && onCartClick && (
-                        <button
-                            onClick={onCartClick}
-                            className="relative text-white hover:text-gold transition-colors p-2"
-                            aria-label={`Cart (${cartCount} items)`}
-                        >
-                            <ShoppingCart size={22} />
-                            {cartCount > 0 && (
-                                <span className="absolute -top-1 -right-1 bg-gold text-midnight text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                                    {cartCount > 99 ? '99+' : cartCount}
-                                </span>
-                            )}
-                        </button>
+                            {/* Search Button */}
+                            <button className="bg-gold px-5 hover:bg-yellow-500 transition-colors flex items-center justify-center">
+                                <Search size={22} className="text-midnight" />
+                            </button>
+                        </div>
                     )}
 
-                    {/* User Menu or Guest Buttons */}
-                    {currentUser ? (
-                        <div className="relative" ref={userMenuRef}>
-                            <button
-                                onClick={() => setUserMenuOpen(v => !v)}
-                                className="flex items-center gap-2 text-white hover:text-gold transition-colors py-1 px-2 rounded-lg hover:bg-white hover:bg-opacity-10"
-                                aria-label="User menu"
-                                aria-expanded={userMenuOpen}
-                            >
-                                <div className="w-8 h-8 bg-gold rounded-full flex items-center justify-center text-midnight font-bold text-sm">
-                                    {currentUser?.name?.charAt(0)?.toUpperCase() || 'U'}
-                                </div>
-                                <span className="hidden sm:block text-sm font-medium max-w-[120px] truncate">
-                                    {currentUser?.name}
-                                </span>
-                                <ChevronDown size={16} className={`transition-transform ${userMenuOpen ? 'rotate-180' : ''}`} />
-                            </button>
+                    {/* Right Features */}
+                    <div className="ml-auto flex items-center gap-1 sm:gap-4">
+                        {/* Guest actions */}
+                        {!currentUser && (
+                            <div className="flex items-center gap-2">
+                                <button
+                                    onClick={() => onNavigate && onNavigate('login')}
+                                    className="text-white hover:text-gold font-medium text-sm transition-colors py-2 px-1"
+                                >
+                                    Sign In
+                                </button>
+                                <button
+                                    onClick={() => onNavigate && onNavigate('register')}
+                                    className="bg-gold text-midnight px-4 py-2 rounded-lg font-bold text-sm hover:bg-white hover:shadow-glow transition-all"
+                                >
+                                    Join
+                                </button>
+                            </div>
+                        )}
 
-                            {userMenuOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50">
-                                    <div className="px-4 py-3 border-b border-gray-100">
-                                        <p className="font-semibold text-midnight text-sm truncate">{currentUser?.name}</p>
-                                        <p className="text-gray-500 text-xs truncate">{currentUser?.email}</p>
-                                        <span className={`badge mt-1 text-xs ${roleColors[currentUser?.role]}`}>
-                                            {currentUser?.role}
-                                        </span>
-                                    </div>
+                        {/* User Actions */}
+                        {currentUser && (
+                            <>
+                                {/* Account Menu */}
+                                <div className="relative" ref={userMenuRef}>
                                     <button
-                                        onClick={() => { setUserMenuOpen(false); logout(); }}
-                                        className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                        onClick={() => setUserMenuOpen(v => !v)}
+                                        className="hidden sm:flex flex-col items-start leading-tight text-white py-1 px-2 hover:outline hover:outline-1 hover:outline-white rounded-sm"
                                     >
-                                        <LogOut size={16} />
-                                        Sign Out
+                                        <span className="text-xs text-gray-300">Hello, {currentUser.name.split(' ')[0]}</span>
+                                        <span className="font-bold text-sm flex items-center gap-0.5">
+                                            Account & Lists <ChevronDown size={12} />
+                                        </span>
                                     </button>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="flex items-center gap-3">
-                            <button
-                                onClick={() => onNavigate && onNavigate('login')}
-                                className="text-white hover:text-gold font-medium text-sm transition-colors"
-                            >
-                                Sign In
-                            </button>
-                            <button
-                                onClick={() => onNavigate && onNavigate('register')}
-                                className="bg-gold text-midnight px-4 py-2 rounded-lg font-bold text-sm hover:bg-white transition-colors shadow-lg"
-                            >
-                                Join Now
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </div>
 
-            {/* Mobile search */}
-            {showSearch && (
-                <div className="md:hidden px-4 pb-3">
-                    <div className="relative">
-                        <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-                            placeholder="Search products..."
-                            className="w-full bg-white bg-opacity-10 border border-white border-opacity-20 rounded-lg pl-10 pr-10 py-2.5 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-gold text-sm"
-                        />
-                        {searchTerm && (
+                                    {/* Mobile User Icon */}
+                                    <button
+                                        onClick={() => setUserMenuOpen(v => !v)}
+                                        className="sm:hidden text-white"
+                                    >
+                                        <User size={24} />
+                                    </button>
+
+                                    {/* Dropdown Menu */}
+                                    {userMenuOpen && (
+                                        <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-fade-in-up">
+                                            <div className="px-4 py-3 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
+                                                <p className="font-semibold text-midnight truncate">{currentUser.name}</p>
+                                                <p className="text-gray-500 text-xs truncate">{currentUser.email}</p>
+                                                <span className={`badge mt-1 text-xs ${roleColors[currentUser.role]}`}>
+                                                    {currentUser.role}
+                                                </span>
+                                            </div>
+
+                                            <div className="py-2">
+                                                <div className="px-4 py-1 text-xs font-bold text-gray-400 uppercase tracking-wider">Your Account</div>
+                                                <button onClick={() => onNavigate('profile')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gold flex items-center gap-2">
+                                                    Your Profile
+                                                </button>
+                                                <button onClick={() => onNavigate('orders')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gold flex items-center gap-2">
+                                                    Your Orders
+                                                </button>
+                                                <button onClick={() => onNavigate('wishlist')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gold flex items-center gap-2">
+                                                    Your Wishlist
+                                                </button>
+                                            </div>
+
+                                            <div className="border-t border-gray-100 pt-2">
+                                                <button
+                                                    onClick={() => { setUserMenuOpen(false); logout(); }}
+                                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                                >
+                                                    <LogOut size={16} />
+                                                    Sign Out
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Orders / Returns (Amazon Style) */}
+                                <button className="hidden sm:flex flex-col items-start leading-tight text-white py-1 px-2 hover:outline hover:outline-1 hover:outline-white rounded-sm">
+                                    <span className="text-xs text-gray-300">Returns</span>
+                                    <span className="font-bold text-sm">& Orders</span>
+                                </button>
+                            </>
+                        )}
+
+                        {/* Cart */}
+                        {isUser && onCartClick && (
                             <button
-                                onClick={() => onSearchChange && onSearchChange('')}
-                                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white"
+                                onClick={onCartClick}
+                                className="relative flex items-end gap-1 text-white hover:text-gold transition-colors p-2"
+                                aria-label={`Cart (${cartCount} items)`}
                             >
-                                <X size={16} />
+                                <div className="relative">
+                                    <ShoppingCart size={28} />
+                                    <span className="absolute -top-1 -right-1 bg-gold text-midnight text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">
+                                        {cartCount > 99 ? '99+' : cartCount}
+                                    </span>
+                                </div>
+                                <span className="font-bold text-sm mb-1 hidden sm:block">Cart</span>
                             </button>
                         )}
                     </div>
                 </div>
-            )}
-        </header>
+
+                {/* Mobile Search - Expanded */}
+                {showSearch && (
+                    <div className="md:hidden px-4 pb-3">
+                        <div className="relative flex h-10 rounded-lg overflow-hidden shadow-sm">
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
+                                placeholder="Search products..."
+                                className="flex-1 px-4 text-midnight text-sm placeholder-gray-500 focus:outline-none"
+                            />
+                            <button className="bg-gold px-4 flex items-center justify-center">
+                                <Search size={20} className="text-midnight" />
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </header>
+
+            {/* Quick Categories Rail (Amazon/Flipkart Style) */}
+            <div className="bg-midnight/95 text-white shadow-md overflow-x-auto scrollbar-hide border-t border-white/10 z-10">
+                <div className="max-w-screen-2xl mx-auto px-4 h-10 flex items-center gap-1 text-sm font-medium whitespace-nowrap">
+                    <button className="flex items-center gap-1 hover:text-gold transition-colors px-2 h-full">
+                        <Menu size={16} /> All
+                    </button>
+                    {['Wedding Season', 'Party Wear', 'Designer Sarees', 'Luxury Bags', 'Watches', 'Men\'s Suits', 'Footwear', 'Jewelry'].map(cat => (
+                        <button key={cat} className="px-3 h-full hover:text-gold hover:bg-white/5 transition-colors">
+                            {cat}
+                        </button>
+                    ))}
+                    <button className="px-3 h-full text-gold hover:text-white hover:bg-white/5 transition-colors font-bold ml-auto">
+                        Great Deals
+                    </button>
+                    <button className="px-3 h-full hover:text-gold hover:bg-white/5 transition-colors">
+                        Customer Service
+                    </button>
+                </div>
+            </div>
+        </div>
     );
 }

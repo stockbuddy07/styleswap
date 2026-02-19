@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     LayoutDashboard, Users, Package, BarChart2, ShoppingBag,
-    ClipboardList, Warehouse, TrendingUp, Store, X
+    ClipboardList, Warehouse, TrendingUp, Store, X, Settings, HelpCircle
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -30,7 +30,6 @@ export default function Sidebar({ currentPage, onNavigate, isOpen, onClose }) {
     const { currentUser, isAdmin, isSubAdmin } = useAuth();
 
     const navItems = isAdmin ? adminNav : isSubAdmin ? subAdminNav : userNav;
-
     const shopName = currentUser?.shopName;
 
     return (
@@ -38,67 +37,81 @@ export default function Sidebar({ currentPage, onNavigate, isOpen, onClose }) {
             {/* Mobile overlay */}
             {isOpen && (
                 <div
-                    className="fixed inset-0 bg-black bg-opacity-50 z-30 lg:hidden"
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 lg:hidden"
                     onClick={onClose}
                 />
             )}
 
-            {/* Sidebar */}
+            {/* Sidebar Container */}
             <aside
-                className={`fixed left-0 top-16 h-[calc(100vh-4rem)] w-64 bg-midnight z-30 flex flex-col transition-transform duration-300 lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'
-                    }`}
+                className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-100 transform transition-transform duration-300 ease-in-out lg:transform-none flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
             >
-                {/* Mobile close */}
-                <button
-                    onClick={onClose}
-                    className="lg:hidden absolute top-4 right-4 text-gray-400 hover:text-white"
-                    aria-label="Close sidebar"
-                >
-                    <X size={20} />
-                </button>
+                {/* Mobile Header */}
+                <div className="lg:hidden h-16 flex items-center justify-between px-4 border-b border-gray-100">
+                    <span className="font-playfair font-bold text-xl text-midnight">Menu</span>
+                    <button
+                        onClick={onClose}
+                        className="p-2 text-gray-500 hover:text-red-500 transition-colors"
+                        aria-label="Close sidebar"
+                    >
+                        <X size={20} />
+                    </button>
+                </div>
 
-                {/* Shop name (Sub-Admin) */}
+                {/* Shop Profile (Sub-Admin) */}
                 {shopName && (
-                    <div className="px-4 py-4 border-b border-white border-opacity-10">
-                        <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 bg-gold rounded-lg flex items-center justify-center flex-shrink-0">
-                                <Store size={16} className="text-midnight" />
+                    <div className="p-4 mx-3 mt-3 bg-gradient-to-br from-midnight to-blue-900 rounded-xl text-white shadow-soft">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                                <Store size={20} className="text-gold" />
                             </div>
-                            <div>
-                                <p className="text-white text-sm font-semibold truncate">{shopName}</p>
-                                <p className="text-gray-400 text-xs">Vendor Dashboard</p>
+                            <div className="overflow-hidden">
+                                <p className="font-bold text-sm truncate">{shopName}</p>
+                                <p className="text-blue-200 text-xs flex items-center gap-1">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
+                                    Online
+                                </p>
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* Nav links */}
-                <nav className="flex-1 overflow-y-auto py-4 px-3">
-                    <ul className="space-y-1">
-                        {navItems.map(({ id, label, icon: Icon }) => {
-                            const isActive = currentPage === id;
-                            return (
-                                <li key={id}>
-                                    <button
-                                        onClick={() => { onNavigate(id); onClose(); }}
-                                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${isActive
-                                            ? 'bg-gold text-midnight'
-                                            : 'text-gray-300 hover:bg-white hover:bg-opacity-10 hover:text-white'
-                                            }`}
-                                        aria-current={isActive ? 'page' : undefined}
-                                    >
-                                        <Icon size={18} />
-                                        {label}
-                                    </button>
-                                </li>
-                            );
-                        })}
-                    </ul>
+                {/* Navigation */}
+                <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+                    {navItems.map(({ id, label, icon: Icon }) => {
+                        const isActive = currentPage === id;
+                        return (
+                            <button
+                                key={id}
+                                onClick={() => { onNavigate(id); onClose(); }}
+                                className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${isActive
+                                        ? 'bg-gold/10 text-midnight ring-1 ring-gold/20'
+                                        : 'text-gray-500 hover:bg-gray-50 hover:text-midnight'
+                                    }`}
+                            >
+                                <Icon
+                                    size={20}
+                                    className={`transition-colors ${isActive ? 'text-gold' : 'text-gray-400 group-hover:text-gold'}`}
+                                />
+                                {label}
+                                {isActive && (
+                                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-gold shadow-glow" />
+                                )}
+                            </button>
+                        );
+                    })}
                 </nav>
 
-                {/* Footer */}
-                <div className="px-4 py-3 border-t border-white border-opacity-10">
-                    <p className="text-gray-500 text-xs text-center">StyleSwap © 2026</p>
+                {/* Bottom Actions */}
+                <div className="p-3 border-t border-gray-100 space-y-1">
+                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors">
+                        <Settings size={18} />
+                        Settings
+                    </button>
+                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors">
+                        <HelpCircle size={18} />
+                        Help Center
+                    </button>
                 </div>
             </aside>
         </>

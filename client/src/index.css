@@ -6,162 +6,116 @@
   * {
     box-sizing: border-box;
   }
-  
+
   body {
-    @apply bg-offWhite text-darkGray font-sans;
+    @apply bg-gray-50 text-darkGray font-sans antialiased;
     margin: 0;
     padding: 0;
   }
 
-  h1, h2, h3, h4, h5, h6 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-playfair;
   }
 }
 
 @layer components {
+  .btn {
+    @apply inline-flex items-center justify-center px-6 py-3 rounded-xl font-medium transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed active:scale-95;
+    min-height: 48px;
+  }
+
   .btn-primary {
-    @apply bg-gold text-white font-semibold px-6 py-3 rounded-lg hover:bg-yellow-600 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-    min-height: 48px;
+    @apply btn bg-gradient-to-r from-gold to-yellow-500 text-white shadow-lg shadow-gold/20 hover:shadow-gold/40 hover:-translate-y-0.5;
   }
-  
+
   .btn-secondary {
-    @apply bg-midnight text-white font-semibold px-6 py-3 rounded-lg hover:bg-blue-900 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-    min-height: 48px;
+    @apply btn bg-midnight text-white shadow-lg shadow-midnight/20 hover:shadow-midnight/40 hover:-translate-y-0.5;
   }
-  
+
   .btn-outline {
-    @apply border-2 border-midnight text-midnight font-semibold px-6 py-3 rounded-lg hover:bg-midnight hover:text-white transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-    min-height: 48px;
+    @apply btn border-2 border-midnight text-midnight hover:bg-midnight hover:text-white;
   }
-  
+
   .btn-danger {
-    @apply bg-red-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-red-700 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed;
-    min-height: 48px;
+    @apply btn bg-red-500 text-white shadow-lg shadow-red-500/20 hover:bg-red-600 hover:shadow-red-500/40;
   }
 
   .input-field {
-    @apply w-full border border-gray-300 rounded-lg px-4 py-3 text-darkGray focus:outline-none focus:ring-2 focus:ring-gold focus:border-transparent transition-all duration-200;
+    @apply w-full border border-gray-200 rounded-xl px-4 py-3 text-darkGray bg-white shadow-sm focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold transition-all duration-200;
     min-height: 48px;
   }
 
-  .input-error {
-    @apply border-red-500 focus:ring-red-400;
-  }
-
   .card {
-    @apply bg-white rounded-xl shadow-md p-6;
+    @apply bg-white rounded-2xl shadow-soft p-6 border border-gray-100;
   }
 
   .badge {
-    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold tracking-wide;
+  }
+
+  .glass {
+    @apply bg-white/80 backdrop-blur-md border border-white/20;
+  }
+
+  .glass-dark {
+    @apply bg-midnight/90 backdrop-blur-md border border-white/10;
   }
 }
 
 @layer utilities {
+  .shadow-soft {
+    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.05);
+  }
+
+  .shadow-glow {
+    box-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+  }
+
+  .text-shadow {
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
   .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
   }
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
   }
 }
 
-/* Toast animations */
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-@keyframes slideOutRight {
-  from {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  to {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-
-.toast-enter {
-  animation: slideInRight 0.3s ease-out forwards;
-}
-
-.toast-exit {
-  animation: slideOutRight 0.3s ease-in forwards;
-}
-
-/* Modal animations */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
-@keyframes slideUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.modal-backdrop {
-  animation: fadeIn 0.2s ease-out forwards;
-}
-
-.modal-content {
-  animation: slideUp 0.3s ease-out forwards;
-}
-
-/* Skeleton loading */
-@keyframes shimmer {
-  0% { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
-}
-
-.skeleton {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
-  background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-
-::-webkit-scrollbar-track {
-  background: #f1f1f1;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #d4af37;
-  border-radius: 3px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #b8960a;
-}
-
-/* Custom Animations */
+/* Animations */
 @keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); }
-  20%, 40%, 60%, 80% { transform: translateX(4px); }
+
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+
+  10%,
+  30%,
+  50%,
+  70%,
+  90% {
+    transform: translateX(-4px);
+  }
+
+  20%,
+  40%,
+  60%,
+  80% {
+    transform: translateX(4px);
+  }
 }
 
 .animate-shake {
-  animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+  animation: shake 0.5s cubic-bezier(.36, .07, .19, .97) both;
 }
 
 @keyframes fadeInUp {
@@ -169,6 +123,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -176,5 +131,38 @@
 }
 
 .animate-fade-in-up {
-  animation: fadeInUp 0.5s ease-out forwards;
+  animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Modal Transitions */
+@keyframes modalEnter {
+  from {
+    opacity: 0;
+    transform: scale(0.95) translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.modal-content {
+  animation: modalEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
