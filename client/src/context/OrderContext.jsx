@@ -11,24 +11,40 @@ export function OrderProvider({ children }) {
     const [vendorOrders, setVendorOrders] = useState([]);
     const [loading, setLoading] = useState(false);
 
+    // Helper to safely parse JSON fields that might come as strings from DB
+    const parseOrder = (o) => {
+        if (!o) return o;
+        try {
+            return {
+                ...o,
+                items: typeof o.items === 'string' ? JSON.parse(o.items) : (o.items || []),
+                feedback: typeof o.feedback === 'string' ? JSON.parse(o.feedback) : (o.feedback || null),
+                issues: typeof o.issues === 'string' ? JSON.parse(o.issues) : (o.issues || []),
+            };
+        } catch (e) {
+            console.error('Failed to parse order JSON:', e, o);
+            return { ...o, items: [], issues: [] };
+        }
+    };
+
     const fetchOrders = async () => {
         if (!currentUser) return;
         setLoading(true);
         try {
             if (isAdmin) {
                 const data = await api.orders.all();
-                setAllOrders(data);
+                setAllOrders(Array.isArray(data) ? data.map(parseOrder) : []);
             } else if (isSubAdmin) {
                 const data = await api.orders.vendor();
-                setVendorOrders(data);
+                setVendorOrders(Array.isArray(data) ? data.map(parseOrder) : []);
                 // Also fetch all for admin analytics
                 try {
                     const all = await api.orders.all();
-                    setAllOrders(all);
+                    setAllOrders(Array.isArray(all) ? all.map(parseOrder) : []);
                 } catch { /* not admin, ignore */ }
             } else {
                 const data = await api.orders.mine();
-                setUserOrders(data);
+                setUserOrders(Array.isArray(data) ? data.map(parseOrder) : []);
             }
         } catch (err) {
             console.error('Failed to fetch orders:', err);
@@ -43,34 +59,39 @@ export function OrderProvider({ children }) {
 
     const placeOrder = async (orderData) => {
         const order = await api.orders.place(orderData);
-        setUserOrders(prev => [order, ...prev]);
-        return order;
+        const parsed = parseOrder(order);
+        setUserOrders(prev => [parsed, ...prev]);
+        return parsed;
     };
 
     const updateOrderStatus = async (orderId, status) => {
         const updated = await api.orders.updateStatus(orderId, status);
-        setAllOrders(prev => prev.map(o => o.id === orderId ? updated : o));
-        setVendorOrders(prev => prev.map(o => o.id === orderId ? updated : o));
-        setUserOrders(prev => prev.map(o => o.id === orderId ? updated : o));
-        return updated;
+        const parsed = parseOrder(updated);
+        setAllOrders(prev => prev.map(o => o.id === orderId ? parsed : o));
+        setVendorOrders(prev => prev.map(o => o.id === orderId ? parsed : o));
+        setUserOrders(prev => prev.map(o => o.id === orderId ? parsed : o));
+        return parsed;
     };
 
     const submitFeedback = async (orderId, feedbackData) => {
         const updated = await api.orders.submitFeedback(orderId, feedbackData);
-        setUserOrders(prev => prev.map(o => o.id === orderId ? updated : o));
-        return updated;
+        const parsed = parseOrder(updated);
+        setUserOrders(prev => prev.map(o => o.id === orderId ? parsed : o));
+        return parsed;
     };
 
     const raiseIssue = async (orderId, issueData) => {
         const updated = await api.orders.raiseIssue(orderId, issueData);
-        setUserOrders(prev => prev.map(o => o.id === orderId ? updated : o));
-        return updated;
+        const parsed = parseOrder(updated);
+        setUserOrders(prev => prev.map(o => o.id === orderId ? parsed : o));
+        return parsed;
     };
 
     const updateIssueStatus = async (orderId, issueId, status, adminResponse = null) => {
         const updated = await api.orders.updateIssue(orderId, issueId, status, adminResponse);
-        setAllOrders(prev => prev.map(o => o.id === orderId ? updated : o));
-        return updated;
+        const parsed = parseOrder(updated);
+        setAllOrders(prev => prev.map(o => o.id === orderId ? parsed : o));
+        return parsed;
     };
 
     return (

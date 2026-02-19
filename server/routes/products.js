@@ -19,20 +19,96 @@ router.get('/', async (req, res) => {
             orderBy: { createdAt: 'desc' },
             include: {
                 vendor: {
-                    select: { id: true, name: true, shopName: true, email: true },
+                    select: { id: true, name: true, shopName: true, shopDescription: true, avatar: true },
                 },
+                reviews: {
+                    include: { user: { select: { name: true, avatar: true } } }
+                }
             },
         });
-        const parsed = products.map(p => ({
-            ...p,
-            sizes: p.sizes || [],
-            images: p.images || [],
-        }));
+
+        const parsed = products.map(p => {
+            const ratings = p.reviews.length > 0
+                ? Number((p.reviews.reduce((acc, r) => acc + r.rating, 0) / p.reviews.length).toFixed(1))
+                : 0;
+
+            return {
+                ...p,
+                sizes: p.sizes || [],
+                images: p.images || [],
+                ratings,
+                reviewCount: p.reviews.length
+            };
+        });
 
         cache.set('all_products', parsed);
         res.json(parsed);
     } catch (err) {
+        console.error(err);
         res.status(500).json({ error: 'Failed to fetch products' });
+    }
+});
+
+// ─── GET /api/products/:id — Single product (public) ─────────────────────────
+router.get('/:id', async (req, res) => {
+    try {
+        const product = await prisma.product.findUnique({
+            where: { id: req.params.id },
+            include: {
+                vendor: {
+                    select: { id: true, name: true, shopName: true, shopDescription: true, avatar: true },
+                },
+                reviews: {
+                    include: { user: { select: { name: true, avatar: true } } },
+                    orderBy: { createdAt: 'desc' }
+                }
+            },
+        });
+
+        if (!product) return res.status(404).json({ error: 'Product not found' });
+
+        const ratings = product.reviews.length > 0
+            ? Number((product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length).toFixed(1))
+            : 0;
+
+        res.json({
+            ...product,
+            sizes: product.sizes || [],
+            images: product.images || [],
+            ratings,
+            reviewCount: product.reviews.length
+        });
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch product details' });
+    }
+});
+
+// ─── POST /api/products/:id/reviews — Post a review (authenticated) ──────────
+router.post('/:id/reviews', authenticate, async (req, res) => {
+    try {
+        const { rating, comment } = req.body;
+        const productId = req.params.id;
+
+        if (!rating || !comment) {
+            return res.status(400).json({ error: 'Rating and comment are required' });
+        }
+
+        const review = await prisma.review.create({
+            data: {
+                rating: Number(rating),
+                comment,
+                productId,
+                userId: req.user.id
+            },
+            include: {
+                user: { select: { name: true, avatar: true } }
+            }
+        });
+
+        cache.del('all_products');
+        res.status(201).json(review);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to post review' });
     }
 });
 

@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { ShoppingCart, Search, X, Menu, LogOut, User, ChevronDown, MapPin, Heart, Bell } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
-const CATEGORIES = ['All', 'Wedding Attire', 'Blazers', 'Shoes', 'Accessories'];
+const FALLBACK_CATEGORIES = ['All', 'Wedding Attire', 'Blazers', 'Shoes', 'Accessories'];
 
 export default function Header({
     onMenuToggle,
@@ -11,13 +11,26 @@ export default function Header({
     searchTerm = '',
     onSearchChange,
     showSearch = false,
+    categories = [],
+    selectedCategory = 'All',
+    onCategorySelect,
     currentPage,
     onNavigate,
 }) {
     const { currentUser, logout, isUser } = useAuth();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
-    const [searchCategory, setSearchCategory] = useState('All');
     const userMenuRef = useRef(null);
+
+    const activeCategories = (categories && categories.length > 0) ? categories : FALLBACK_CATEGORIES;
+
+    // Mock Location functionality
+    const handleLocationClick = () => {
+        if (!currentUser) {
+            if (onNavigate) onNavigate('login');
+        } else {
+            alert('Location selection feature coming soon!');
+        }
+    };
 
     useEffect(() => {
         function handleClickOutside(e) {
@@ -35,21 +48,26 @@ export default function Header({
         User: 'bg-green-100 text-green-800',
     };
 
+    // Scroll container ref for Category Rail
+    const scrollContainerRef = useRef(null);
+
     return (
         <div className="sticky top-0 z-40 flex flex-col">
             {/* Top Bar - Main Header */}
             <header className="bg-midnight shadow-lg relative z-20">
                 <div className="max-w-screen-2xl mx-auto px-4 h-16 flex items-center gap-4">
-                    {/* Mobile Menu */}
-                    <button
-                        onClick={onMenuToggle}
-                        className="lg:hidden text-white hover:text-gold transition-colors p-1"
-                        aria-label="Toggle menu"
-                    >
-                        <Menu size={24} />
-                    </button>
+                    {/* Mobile Menu (Only for management roles) */}
+                    {(currentUser?.role === 'Admin' || currentUser?.role === 'Sub-Admin') && (
+                        <button
+                            onClick={onMenuToggle}
+                            className="lg:hidden text-white hover:text-gold transition-colors p-1"
+                            aria-label="Toggle menu"
+                        >
+                            <Menu size={24} />
+                        </button>
+                    )}
 
-                    {/* Logo */}
+                    {/* Logo - click handler */}
                     <div
                         className="flex items-center gap-2 cursor-pointer flex-shrink-0 group"
                         onClick={() => onNavigate && onNavigate('home')}
@@ -63,7 +81,10 @@ export default function Header({
                     </div>
 
                     {/* Location / Delivery (Amazon Style) */}
-                    <div className="hidden lg:flex flex-col leading-tight text-white px-2 hover:outline hover:outline-1 hover:outline-white cursor-pointer rounded-sm">
+                    <div
+                        onClick={handleLocationClick}
+                        className="hidden lg:flex flex-col leading-tight text-white px-2 hover:outline hover:outline-1 hover:outline-white cursor-pointer rounded-sm"
+                    >
                         <span className="text-xs text-gray-300 pl-4">Deliver to</span>
                         <div className="flex items-center gap-1 font-bold text-sm">
                             <MapPin size={14} className="text-white" />
@@ -75,13 +96,13 @@ export default function Header({
                     {showSearch && (
                         <div className="flex-1 max-w-2xl mx-auto hidden md:flex h-10 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-gold shadow-sm">
                             {/* Category Dropdown */}
-                            <div className="bg-gray-100 border-r border-gray-300 relative group">
+                            <div className="bg-gray-100 border-r border-gray-300 relative group max-w-[150px]">
                                 <select
-                                    className="appearance-none bg-transparent h-full pl-3 pr-8 text-xs font-medium text-gray-600 focus:outline-none cursor-pointer hover:bg-gray-200"
-                                    value={searchCategory}
-                                    onChange={(e) => setSearchCategory(e.target.value)}
+                                    className="appearance-none bg-transparent h-full pl-3 pr-8 text-xs font-medium text-gray-600 focus:outline-none cursor-pointer hover:bg-gray-200 w-full truncate"
+                                    value={activeCategories.includes(selectedCategory) ? selectedCategory : 'All'}
+                                    onChange={(e) => onCategorySelect && onCategorySelect(e.target.value)}
                                 >
-                                    {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
+                                    {activeCategories.map(c => <option key={c} value={c}>{c}</option>)}
                                 </select>
                                 <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                             </div>
@@ -91,7 +112,7 @@ export default function Header({
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-                                placeholder="Search for luxury fashion..."
+                                placeholder="Search by name, description..."
                                 className="flex-1 px-4 text-midnight text-sm placeholder-gray-500 focus:outline-none"
                             />
 
@@ -192,11 +213,6 @@ export default function Header({
                                     )}
                                 </div>
 
-                                {/* Orders / Returns (Amazon Style) */}
-                                <button className="hidden sm:flex flex-col items-start leading-tight text-white py-1 px-2 hover:outline hover:outline-1 hover:outline-white rounded-sm">
-                                    <span className="text-xs text-gray-300">Returns</span>
-                                    <span className="font-bold text-sm">& Orders</span>
-                                </button>
                             </>
                         )}
 
@@ -227,7 +243,7 @@ export default function Header({
                                 type="text"
                                 value={searchTerm}
                                 onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-                                placeholder="Search products..."
+                                placeholder="Search by name, description..."
                                 className="flex-1 px-4 text-midnight text-sm placeholder-gray-500 focus:outline-none"
                             />
                             <button className="bg-gold px-4 flex items-center justify-center">
@@ -239,20 +255,28 @@ export default function Header({
             </header>
 
             {/* Quick Categories Rail (Amazon/Flipkart Style) */}
-            <div className="bg-midnight/95 text-white shadow-md overflow-x-auto scrollbar-hide border-t border-white/10 z-10">
+            <div className="bg-midnight/95 text-white shadow-md overflow-x-auto scrollbar-hide border-t border-white/10 z-10" ref={scrollContainerRef}>
                 <div className="max-w-screen-2xl mx-auto px-4 h-10 flex items-center gap-1 text-sm font-medium whitespace-nowrap">
-                    <button className="flex items-center gap-1 hover:text-gold transition-colors px-2 h-full">
-                        <Menu size={16} /> All
-                    </button>
-                    {['Wedding Season', 'Party Wear', 'Designer Sarees', 'Luxury Bags', 'Watches', 'Men\'s Suits', 'Footwear', 'Jewelry'].map(cat => (
-                        <button key={cat} className="px-3 h-full hover:text-gold hover:bg-white/5 transition-colors">
-                            {cat}
+                    {activeCategories.map(cat => (
+                        <button
+                            key={cat}
+                            onClick={() => onCategorySelect && onCategorySelect(cat)}
+                            className={`px-3 h-full hover:text-gold hover:bg-white/5 transition-colors ${selectedCategory === cat ? 'text-gold border-b-2 border-gold' : ''}`}
+                        >
+                            {cat === 'All' ? <><Menu size={16} className="inline mr-1" /> All</> : cat}
                         </button>
                     ))}
-                    <button className="px-3 h-full text-gold hover:text-white hover:bg-white/5 transition-colors font-bold ml-auto">
+
+                    <button
+                        onClick={() => onCategorySelect && onCategorySelect('Great Deals')}
+                        className={`px-3 h-full text-gold hover:text-white hover:bg-white/5 transition-colors font-bold ml-auto ${selectedCategory === 'Great Deals' ? 'border-b-2 border-gold' : ''}`}
+                    >
                         Great Deals
                     </button>
-                    <button className="px-3 h-full hover:text-gold hover:bg-white/5 transition-colors">
+                    <button
+                        onClick={() => onCategorySelect && onCategorySelect('Customer Service')}
+                        className="px-3 h-full hover:text-gold hover:bg-white/5 transition-colors"
+                    >
                         Customer Service
                     </button>
                 </div>

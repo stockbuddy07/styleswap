@@ -14,7 +14,7 @@ const CATEGORIES = ['Wedding Attire', 'Blazers', 'Shoes', 'Accessories'];
 const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '5', '6', '7', '8', '9', '10', '11', '12', 'One Size'];
 
 function ProductFormModal({ isOpen, onClose, editProduct, onSave }) {
-    const empty = { name: '', category: 'Wedding Attire', pricePerDay: '', securityDeposit: '', description: '', stockQuantity: '', sizes: [], images: [''] };
+    const empty = { name: '', category: '', pricePerDay: '', retailPrice: '', securityDeposit: '', description: '', stockQuantity: '', sizes: [], images: [''] };
     const [form, setForm] = useState(editProduct || empty);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
@@ -27,7 +27,10 @@ function ProductFormModal({ isOpen, onClose, editProduct, onSave }) {
     const validate = () => {
         const errs = {};
         if (!form.name.trim()) errs.name = 'Required';
+        if (!form.category.trim()) errs.category = 'Required';
         if (!form.pricePerDay || Number(form.pricePerDay) <= 0) errs.pricePerDay = 'Must be > 0';
+        // Retail price is optional but recommended for "Great Deals"
+        if (form.retailPrice && Number(form.retailPrice) <= 0) errs.retailPrice = 'Must be > 0';
         if (form.securityDeposit === '' || Number(form.securityDeposit) < 0) errs.securityDeposit = 'Must be ≥ 0';
         if (!form.description.trim()) errs.description = 'Required';
         if (!form.stockQuantity || Number(form.stockQuantity) < 1) errs.stockQuantity = 'Must be ≥ 1';
@@ -45,6 +48,7 @@ function ProductFormModal({ isOpen, onClose, editProduct, onSave }) {
             await onSave({
                 ...form,
                 pricePerDay: Number(form.pricePerDay),
+                retailPrice: form.retailPrice ? Number(form.retailPrice) : null,
                 securityDeposit: Number(form.securityDeposit),
                 stockQuantity: Number(form.stockQuantity),
                 images: form.images.filter(img => img.trim()),
@@ -73,16 +77,28 @@ function ProductFormModal({ isOpen, onClose, editProduct, onSave }) {
                     <Input label="Product Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} error={errors.name} required />
                     <div className="flex flex-col gap-1">
                         <label className="text-sm font-medium text-darkGray">Category <span className="text-red-500">*</span></label>
-                        <select className="input-field" value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}>
-                            {CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
-                        </select>
+                        <input
+                            list="category-suggestions"
+                            className="input-field"
+                            value={form.category}
+                            onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                            placeholder="Select or type new..."
+                        />
+                        <datalist id="category-suggestions">
+                            {CATEGORIES.map(c => <option key={c} value={c} />)}
+                        </datalist>
+                        {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                     </div>
                 </div>
 
                 <Input label="Description" type="textarea" value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} error={errors.description} required rows={3} />
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input label="Price Per Day ($)" type="number" min="1" value={form.pricePerDay} onChange={e => setForm(f => ({ ...f, pricePerDay: e.target.value }))} error={errors.pricePerDay} required />
+                    <Input label="Retail Price ($) (Optional)" type="number" min="1" value={form.retailPrice} onChange={e => setForm(f => ({ ...f, retailPrice: e.target.value }))} error={errors.retailPrice} placeholder="For discount calculation" />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <Input label="Security Deposit ($)" type="number" min="0" value={form.securityDeposit} onChange={e => setForm(f => ({ ...f, securityDeposit: e.target.value }))} error={errors.securityDeposit} required />
                     <Input label="Stock Quantity" type="number" min="1" value={form.stockQuantity} onChange={e => setForm(f => ({ ...f, stockQuantity: e.target.value }))} error={errors.stockQuantity} required />
                 </div>

@@ -20,6 +20,7 @@ model User {
   shopName           String?
   shopAddress        String?
   shopNumber         String?
+  shopDescription    String?   // Added for vendor details
   mobileNumber       String?
   salesHandlerMobile String?
   gstNumber          String?
@@ -31,6 +32,7 @@ model User {
 
   products Product[]
   orders   Order[]   @relation("CustomerOrders")
+  reviews  Review[]
 }
 
 model Product {
@@ -39,6 +41,7 @@ model Product {
   category          String
   description       String
   pricePerDay       Float
+  retailPrice       Float?   // Added for discount calculation
   securityDeposit   Float
   stockQuantity     Int
   availableQuantity Int
@@ -48,10 +51,25 @@ model Product {
   vendor            User     @relation(fields: [subAdminId], references: [id], onDelete: Cascade)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
+  reviews           Review[]
 
   @@index([subAdminId])
   @@index([category])
   @@index([pricePerDay])
+}
+
+model Review {
+  id        String   @id @default(cuid())
+  rating    Int      @default(5)
+  comment   String
+  productId String
+  userId    String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([productId])
+  @@index([userId])
 }
 
 model Order {

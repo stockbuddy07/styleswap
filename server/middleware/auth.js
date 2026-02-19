@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'styleswap-dev-secret';
+console.log('🔑 [Auth] JWT_SECRET loaded. Length:', JWT_SECRET.length, 'Source:', process.env.JWT_SECRET ? 'ENV' : 'FALLBACK');
 
 /**
  * Verify JWT token from Authorization header.
@@ -9,6 +10,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'styleswap-dev-secret';
 function authenticate(req, res, next) {
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        console.warn('⚠️ [Auth] No token provided for:', req.url);
         return res.status(401).json({ error: 'No token provided' });
     }
     const token = authHeader.split(' ')[1];
@@ -17,6 +19,7 @@ function authenticate(req, res, next) {
         req.user = decoded;
         next();
     } catch (err) {
+        console.error('❌ [Auth] Invalid or expired token:', err.message, 'for:', req.url);
         return res.status(401).json({ error: 'Invalid or expired token' });
     }
 }

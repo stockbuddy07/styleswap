@@ -4,7 +4,22 @@
  */
 
 const getBaseUrl = () => {
-    let url = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    // Priority 1: Environment Variable
+    let url = import.meta.env.VITE_API_URL;
+
+    // Priority 2: Inferred from window location (Production fallback)
+    if (!url && typeof window !== 'undefined') {
+        const isProd = window.location.hostname !== 'localhost';
+        if (isProd) {
+            // Assume the backend is on the same domain but /api subpath or sub-domain
+            // For now, defaulting to placeholder or user requirement
+            url = `https://${window.location.hostname}`;
+        }
+    }
+
+    // Default to localhost for development
+    url = url || 'http://localhost:3001';
+
     if (!url.startsWith('http')) {
         url = `https://${url}`;
     }
@@ -62,11 +77,13 @@ export const api = {
     // ─── Products ─────────────────────────────────────────────────────────────
     products: {
         list: () => request('GET', '/api/products', null, false),
+        getById: (id) => request('GET', `/api/products/${id}`, null, false),
         mine: () => request('GET', '/api/products/mine'),
         create: (data) => request('POST', '/api/products', data),
         update: (id, data) => request('PUT', `/api/products/${id}`, data),
         delete: (id) => request('DELETE', `/api/products/${id}`),
         updateAvailability: (id, delta) => request('PATCH', `/api/products/${id}/availability`, { delta }),
+        addReview: (productId, data) => request('POST', `/api/products/${productId}/reviews`, data),
     },
 
     // ─── Orders ───────────────────────────────────────────────────────────────

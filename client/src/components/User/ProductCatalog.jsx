@@ -23,41 +23,52 @@ const SORT_OPTIONS = [
 
 
 
-export default function ProductCatalog({ searchTerm = '', onRequireAuth }) {
+export default function ProductCatalog({ searchTerm = '', selectedCategory = 'All', onCategorySelect, onRequireAuth, onProductClick }) {
     const { allProducts, loading } = useProducts();
-    const [category, setCategory] = useState('All');
     const [sort, setSort] = useState('name_asc');
-    const [selectedProduct, setSelectedProduct] = useState(null);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-    // Helper to handle rent click
+    // Helper to handle rent click (now uses onProductClick)
     const handleRentClick = (product) => {
-        if (!localStorage.getItem('styleswap_token')) {
-            if (onRequireAuth) onRequireAuth();
-            return;
+        if (onProductClick) {
+            onProductClick(product);
         }
-        setSelectedProduct(product);
     };
 
-    const isHomeView = !searchTerm && category === 'All';
+    const isHomeView = !searchTerm && (selectedCategory === 'All' || selectedCategory === 'Great Deals');
 
     const filtered = useMemo(() => {
         let list = allProducts.filter(p => {
             const q = searchTerm.toLowerCase();
-            const matchSearch = !q || p.name.toLowerCase().includes(q) || p.category.toLowerCase().includes(q) || p.shopName.toLowerCase().includes(q) || p.description?.toLowerCase().includes(q);
-            const matchCat = category === 'All' || (p.category && p.category.toLowerCase().includes(category.toLowerCase())) || (category === 'Wedding Season' && p.category.includes('Wedding'));
-            // Allow loose matching for category rail demo
+            const matchSearch = !q ||
+                p.name.toLowerCase().includes(q) ||
+                (p.category && p.category.toLowerCase().includes(q)) ||
+                (p.shopName && p.shopName.toLowerCase().includes(q)) ||
+                (p.description && p.description.toLowerCase().includes(q)); // Search in description
+
+            // "Great Deals" is a sort mode, not a filter, so we treat it as 'All' for filtering
+            const matchCat = selectedCategory === 'All' || selectedCategory === 'Great Deals' ||
+                (p.category && p.category.toLowerCase().includes(selectedCategory.toLowerCase()));
+
             return matchSearch && matchCat;
         });
 
-        switch (sort) {
+        // Sorting Logic
+        const activeSort = selectedCategory === 'Great Deals' ? 'discount_desc' : sort;
+
+        switch (activeSort) {
             case 'price_asc': list = [...list].sort((a, b) => a.pricePerDay - b.pricePerDay); break;
             case 'price_desc': list = [...list].sort((a, b) => b.pricePerDay - a.pricePerDay); break;
             case 'rating_desc': list = [...list].sort((a, b) => (b.ratings || 0) - (a.ratings || 0)); break;
+            case 'discount_desc': list = [...list].sort((a, b) => {
+                const discountA = a.retailPrice ? ((a.retailPrice - a.pricePerDay) / a.retailPrice) : 0;
+                const discountB = b.retailPrice ? ((b.retailPrice - b.pricePerDay) / b.retailPrice) : 0;
+                return discountB - discountA;
+            }); break;
             default: list = [...list].sort((a, b) => a.name.localeCompare(b.name));
         }
         return list;
-    }, [allProducts, searchTerm, category, sort]);
+    }, [allProducts, searchTerm, selectedCategory, sort]);
 
     return (
         <div className="space-y-8 animate-fade-in-up">
@@ -67,30 +78,40 @@ export default function ProductCatalog({ searchTerm = '', onRequireAuth }) {
                     {/* Hero Section (Only on Home View) */}
                     {isHomeView && (
                         <div className="space-y-8">
-                            <HeroCarousel />
-                            <CategoryRail onSelect={setCategory} />
+                            {selectedCategory !== 'Great Deals' && <HeroCarousel onAction={onCategorySelect} />}
+                            <CategoryRail onSelect={onCategorySelect} selectedCategory={selectedCategory} />
 
-                            {/* Deal of the Day Banner */}
-                            <div className="bg-gradient-to-r from-midnight to-blue-900 rounded-2xl p-6 sm:p-10 text-white relative overflow-hidden shadow-soft group cursor-pointer">
-                                <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
-                                <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
-                                    <div>
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">Deal of the Day</span>
-                                            <span className="flex items-center gap-1 text-gold text-sm font-medium"><Zap size={14} fill="currentColor" /> Ends in 02:45:12</span>
+                            {/* Show specific banner for Great Deals */}
+                            {selectedCategory === 'Great Deals' && (
+                                <div className="bg-gradient-to-r from-red-600 to-pink-600 rounded-2xl p-8 text-white relative overflow-hidden shadow-lg mb-8">
+                                    <h1 className="text-4xl font-playfair font-bold mb-2">Great Deals & Discounts</h1>
+                                    <p className="text-pink-100">Top luxury picks at the lowest rental prices.</p>
+                                </div>
+                            )}
+
+                            {/* Deal of the Day Banner (Only on default ALL view) */}
+                            {selectedCategory === 'All' && (
+                                <div className="bg-gradient-to-r from-midnight to-blue-900 rounded-2xl p-6 sm:p-10 text-white relative overflow-hidden shadow-soft group cursor-pointer">
+                                    {/* ... existing banner content ... */}
+                                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+                                    <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                                        <div>
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded">Deal of the Day</span>
+                                                <span className="flex items-center gap-1 text-gold text-sm font-medium"><Zap size={14} fill="currentColor" /> Ends in 02:45:12</span>
+                                            </div>
+                                            <h2 className="text-3xl font-playfair font-bold mb-2">Luxury Bridal Lehengas</h2>
+                                            <p className="text-blue-100 max-w-md">Flat 30% OFF on rental charges for all Sabyasachi & Manish Malhotra collections. Limited time offer.</p>
                                         </div>
-                                        <h2 className="text-3xl font-playfair font-bold mb-2">Luxury Bridal Lehengas</h2>
-                                        <p className="text-blue-100 max-w-md">Flat 30% OFF on rental charges for all Sabyasachi & Manish Malhotra collections. Limited time offer.</p>
+                                        <button onClick={() => onCategorySelect && onCategorySelect('Wedding Attire')} className="bg-white text-midnight font-bold px-8 py-3 rounded-xl hover:bg-gold transition-colors shadow-lg">
+                                            View Collection
+                                        </button>
                                     </div>
-                                    <button onClick={() => setCategory('Wedding Attire')} className="bg-white text-midnight font-bold px-8 py-3 rounded-xl hover:bg-gold transition-colors shadow-lg">
-                                        View Collection
-                                    </button>
+                                    <div className="absolute bottom-[-20px] right-[10%] opacity-20 transform rotate-12 group-hover:rotate-0 transition-transform duration-700">
+                                        <Store size={120} />
+                                    </div>
                                 </div>
-                                {/* Decorative elements */}
-                                <div className="absolute bottom-[-20px] right-[10%] opacity-20 transform rotate-12 group-hover:rotate-0 transition-transform duration-700">
-                                    <Store size={120} />
-                                </div>
-                            </div>
+                            )}
 
                             <div className="flex items-center justify-between">
                                 <h2 className="text-2xl font-playfair font-bold text-midnight">Trending Now</h2>
@@ -101,16 +122,12 @@ export default function ProductCatalog({ searchTerm = '', onRequireAuth }) {
                         </div>
                     )}
 
-                    {/* Search/Filter Results Header */}
                     {!isHomeView && (
                         <div className="flex flex-col gap-4">
-                            <button onClick={() => setCategory('All')} className="self-start text-sm text-gray-500 hover:text-midnight flex items-center gap-1">
-                                ← Back to Home
-                            </button>
                             <div className="flex flex-wrap items-center justify-between gap-4">
                                 <div>
                                     <h1 className="font-playfair text-3xl font-bold text-midnight">
-                                        {category === 'All' ? (searchTerm ? `Search: "${searchTerm}"` : 'All Products') : category}
+                                        {selectedCategory === 'All' ? (searchTerm ? `Search: "${searchTerm}"` : 'All Products') : selectedCategory}
                                     </h1>
                                     <p className="text-gray-500 text-sm mt-1">{filtered.length} items found</p>
                                 </div>
@@ -129,22 +146,20 @@ export default function ProductCatalog({ searchTerm = '', onRequireAuth }) {
 
                     {/* Product Grid */}
                     {filtered.length === 0 ? (
-                        <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
+                        <div className="text-center py-20 bg-white rounded-[2rem] border border-dashed border-gray-200">
                             <Search size={48} className="text-gray-300 mx-auto mb-4" />
-                            <h3 className="font-playfair text-xl font-semibold text-gray-500">No products found</h3>
+                            <h3 className="font-playfair text-2xl font-semibold text-gray-500">No products found</h3>
                             <p className="text-gray-400 text-sm mt-2">Try adjusting your search or filters</p>
-                            <button onClick={() => { setCategory('All'); }} className="mt-4 text-gold font-medium hover:underline">Clear Filters</button>
+                            <button onClick={() => { onCategorySelect && onCategorySelect('All'); }} className="mt-6 bg-midnight text-white px-8 py-3 rounded-xl font-bold hover:bg-gold hover:text-midnight transition-all shadow-lg">Clear Filters</button>
                         </div>
                     ) : (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 pb-12">
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 2xl:grid-cols-6 gap-x-5 gap-y-8 lg:gap-x-6 lg:gap-y-10 pb-12 px-1 sm:px-2">
                             {/* Render Filtered Products */}
                             {filtered.map(product => (
                                 <ProductCard key={product.id} product={product} onRent={handleRentClick} />
                             ))}
                         </div>
                     )}
-
-                    <ProductDetailsModal product={selectedProduct} isOpen={!!selectedProduct} onClose={() => setSelectedProduct(null)} />
                 </>
             )}
         </div>

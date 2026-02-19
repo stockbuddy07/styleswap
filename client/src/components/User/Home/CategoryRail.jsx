@@ -13,26 +13,37 @@ const CATEGORIES = [
 
 export default function CategoryRail({ onSelect }) {
     return (
-        <div className="py-6">
-            <h3 className="font-playfair text-xl font-bold text-midnight mb-4">Rent by Occasion</h3>
-            <div className="flex gap-6 overflow-x-auto pb-4 scrollbar-hide">
+        <div className="py-10">
+            <div className="flex items-center justify-between mb-8">
+                <h3 className="font-playfair text-3xl font-bold text-midnight tracking-tight">Rent by Occasion</h3>
+                <div className="h-px flex-1 bg-gradient-to-r from-gray-100 to-transparent ml-8 hidden md:block" />
+            </div>
+
+            <div className="flex gap-8 overflow-x-auto pb-6 scrollbar-hide snap-x">
                 {CATEGORIES.map((cat, i) => (
                     <button
                         key={i}
                         onClick={() => onSelect && onSelect(cat.name)}
-                        className="flex flex-col items-center gap-2 group flex-shrink-0 min-w-[80px]"
+                        className="flex flex-col items-center gap-4 group flex-shrink-0 min-w-[100px] snap-start"
                     >
-                        <div className="w-20 h-20 rounded-full p-1 border-2 border-transparent group-hover:border-gold transition-all">
-                            <div className="w-full h-full rounded-full overflow-hidden relative">
-                                <img
-                                    src={cat.image}
-                                    alt={cat.name}
-                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                                />
-                                <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+                        <div className="relative">
+                            {/* Glowing Ring Effect */}
+                            <div className="absolute -inset-2 bg-gold/0 rounded-full group-hover:bg-gold/20 blur-xl transition-all duration-500 scale-50 group-hover:scale-100" />
+
+                            <div className="w-24 h-24 rounded-full p-1.5 border-2 border-gray-50 group-hover:border-gold transition-all duration-500 relative bg-white shadow-sm group-hover:shadow-glow">
+                                <div className="w-full h-full rounded-full overflow-hidden relative">
+                                    <img
+                                        src={cat.image}
+                                        alt={cat.name}
+                                        className="w-full h-full object-cover group-hover:scale-125 transition-transform duration-700 ease-out"
+                                    />
+                                    <div className="absolute inset-0 bg-midnight/10 group-hover:bg-transparent transition-colors duration-500" />
+                                </div>
                             </div>
                         </div>
-                        <span className="text-sm font-medium text-gray-700 group-hover:text-gold transition-colors">{cat.name}</span>
+                        <span className="text-xs font-black text-gray-500 uppercase tracking-[0.2em] group-hover:text-midnight transition-colors duration-300">
+                            {cat.name}
+                        </span>
                     </button>
                 ))}
             </div>

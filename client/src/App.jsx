@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { X } from 'lucide-react';
 import { ToastProvider } from './context/ToastContext';
 import { UserProvider } from './context/UserContext';
-import { ProductProvider } from './context/ProductContext';
+import { ProductProvider, useProducts } from './context/ProductContext';
 import { CartProvider, useCart } from './context/CartContext';
 import { OrderProvider } from './context/OrderContext';
 
@@ -27,18 +28,87 @@ import VendorOnboarding from './components/SubAdmin/VendorOnboarding';
 
 // User
 import ProductCatalog from './components/User/ProductCatalog';
+import CategoryRail from './components/User/Home/CategoryRail';
+import ProductDetailsPage from './components/User/ProductDetailsPage';
+import ProfileDashboard from './components/User/ProfileDashboard';
+import OrdersDashboard from './components/User/OrdersDashboard';
+import WishlistDashboard from './components/User/WishlistDashboard';
 import CartPage from './components/User/CartPage';
-import MyRentals from './components/User/MyRentals';
 
 import Footer from './components/Shared/Footer';
+import ContactUs from './components/User/ContactUs';
+
+class ErrorBoundary extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = { hasError: false, error: null, errorInfo: null };
+    }
+    static getDerivedStateFromError(error) { return { hasError: true, error }; }
+    componentDidCatch(error, errorInfo) {
+        console.error("App Crash:", error, errorInfo);
+        this.setState({ error, errorInfo });
+    }
+    render() {
+        if (this.state.hasError) {
+            return (
+                <div className="min-h-screen flex items-center justify-center bg-gray-50 p-6">
+                    <div className="text-center max-w-2xl bg-white p-10 rounded-3xl shadow-xl border border-gray-100">
+                        <div className="w-20 h-20 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <X size={40} />
+                        </div>
+                        <h1 className="text-2xl font-playfair font-bold text-midnight mb-4">Something went wrong</h1>
+                        <p className="text-gray-500 mb-6">StyleSwap encountered an unexpected error. This usually happens if the connection is lost or local data is corrupted.</p>
+
+                        {this.state.error && (
+                            <div className="mb-8 text-left bg-red-50 p-6 rounded-2xl border border-red-100 overflow-auto max-h-60">
+                                <p className="font-bold text-red-700 mb-2">Error Detail:</p>
+                                <code className="text-xs text-red-600 block whitespace-pre-wrap">
+                                    {this.state.error.toString()}
+                                    {"\n\n"}
+                                    {this.state.errorInfo?.componentStack}
+                                </code>
+                            </div>
+                        )}
+
+                        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                            <button onClick={() => window.location.reload()} className="bg-midnight text-white px-8 py-3 rounded-xl font-bold hover:bg-gold hover:text-midnight transition-all shadow-lg">
+                                Refresh StyleSwap
+                            </button>
+                            <button
+                                onClick={() => {
+                                    localStorage.clear();
+                                    window.location.reload();
+                                }}
+                                className="bg-white text-gray-500 border border-gray-200 px-8 py-3 rounded-xl font-bold hover:bg-gray-50 transition-all"
+                            >
+                                Clear Local Data & Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+        return this.props.children;
+    }
+}
 
 function AppContent() {
     const { currentUser, loading, isAdmin, isSubAdmin, isUser, vendorProfileComplete } = useAuth();
+    const { allProducts } = useProducts();
     const { cartCount } = useCart();
     const [authPage, setAuthPage] = useState('login');
     const [currentPage, setCurrentPage] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('All');
+    const [selectedProductId, setSelectedProductId] = useState(null);
+
+    // Derive unique categories from products, ensuring 'All' is first
+    const uniqueCategories = React.useMemo(() => {
+        if (!allProducts || !Array.isArray(allProducts)) return ['All'];
+        const cats = new Set(allProducts.filter(Boolean).map(p => p.category).filter(Boolean));
+        return ['All', ...Array.from(cats).sort()];
+    }, [allProducts]);
 
     const getDefaultPage = (user) => {
         if (!user) return null;
@@ -56,53 +126,110 @@ function AppContent() {
     }, [currentUser, currentPage, loading]);
 
     React.useEffect(() => {
-        if (currentUser && !currentPage) {
+        if (currentUser && (!currentPage || currentPage === 'login' || currentPage === 'register')) {
             setCurrentPage(getDefaultPage(currentUser));
-        }
-        if (!currentUser) {
-            setCurrentPage(null);
         }
     }, [currentUser]);
 
-    if (loading) return <Loader message="Loading StyleSwap..." />;
-
     // Handle Auth Requirement (from Child components)
     const handleRequireAuth = () => {
-        setAuthPage('login');
+        setCurrentPage('login');
+    };
+
+    // -- Browser History Management --
+    React.useEffect(() => {
+        const handlePopState = (event) => {
+            const state = event.state;
+            if (state) {
+                if (state.page) setCurrentPage(state.page);
+                setSelectedProductId(state.productId !== undefined ? state.productId : null);
+                setSelectedCategory(state.category || 'All');
+                setSearchTerm(state.searchTerm || '');
+            } else {
+                // Fallback to initial state if no state in history
+                setCurrentPage('catalog');
+                setSelectedCategory('All');
+                setSelectedProductId(null);
+            }
+        };
+
+        window.addEventListener('popstate', handlePopState);
+
+        // Push initial state if not already present
+        if (!window.history.state) {
+            window.history.replaceState({ page: 'catalog', category: 'All', productId: null, searchTerm: '' }, '');
+        }
+
+        return () => window.removeEventListener('popstate', handlePopState);
+    }, []);
+
+    // Helper to push state when navigating
+    const pushNavigation = (page, category = selectedCategory, productId = selectedProductId, search = searchTerm) => {
+        window.history.pushState({ page, category, productId, searchTerm: search }, '');
+    };
+
+    // Handle Product Click
+    const handleProductClick = (product) => {
+        if (!currentUser) {
+            setCurrentPage('login');
+            // No pushState for login redirect normally, or we could if we want to return
+            return;
+        }
+        setSelectedProductId(product.id);
+        setCurrentPage('product-details');
+        pushNavigation('product-details', selectedCategory, product.id, searchTerm);
+        window.scrollTo({ top: 0, behavior: 'instant' });
     };
 
     if (loading) return <Loader message="Loading StyleSwap..." />;
 
-    // Explicit Auth Pages (if user clicked "Sign In" / "Join Now" from Header)
+    // Explicit Auth Pages
     if (!currentUser && (currentPage === 'login' || currentPage === 'register')) {
         return currentPage === 'login'
             ? <Login onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} />
             : <Register onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} />;
     }
 
-    // Vendor with incomplete profile → show full-screen onboarding
+    // Vendor with incomplete profile
     if (isSubAdmin && !vendorProfileComplete) {
         return <VendorOnboarding />;
     }
 
     const navigate = (page) => {
+        const nextSearch = page !== 'catalog' ? '' : searchTerm;
         setCurrentPage(page);
         setSidebarOpen(false);
         if (page !== 'catalog') setSearchTerm('');
+        pushNavigation(page, selectedCategory, selectedProductId, nextSearch);
+    };
+
+    const handleCategorySelect = (category) => {
+        if (category === 'Customer Service') {
+            navigate('contact');
+            return;
+        }
+        setSelectedCategory(category);
+        if (currentPage !== 'catalog') {
+            setCurrentPage('catalog');
+        }
+        pushNavigation('catalog', category, null, '');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
     const renderPage = () => {
-        // Admin pages
-        if (isAdmin) {
-            switch (currentPage) {
-                case 'dashboard': return <AdminDashboard />;
-                case 'analytics': return <Analytics />;
-                case 'users': return <UserManagement />;
-                case 'products': return <ProductOverview />;
-                default: return <AdminDashboard />;
-            }
-        }
-        // Sub-Admin pages
+        // Shared Catalog rendering logic (Guests Only)
+        const renderCatalog = (props = {}) => (
+            <div className="space-y-6">
+                <ProductCatalog
+                    searchTerm={searchTerm}
+                    selectedCategory={selectedCategory}
+                    onProductClick={handleProductClick}
+                    {...props}
+                />
+            </div>
+        );
+
+        if (isAdmin) return <AdminDashboard />;
         if (isSubAdmin) {
             switch (currentPage) {
                 case 'dashboard': return <SalesAnalytics />;
@@ -113,46 +240,24 @@ function AppContent() {
                 default: return <SalesAnalytics />;
             }
         }
-        // User pages
+
         if (isUser) {
             switch (currentPage) {
-                case 'catalog': return <ProductCatalog searchTerm={searchTerm} />;
+                case 'catalog': return renderCatalog({ onCategorySelect: handleCategorySelect });
+                case 'product-details': return <ProductDetailsPage productId={selectedProductId} onBack={() => setCurrentPage('catalog')} />;
                 case 'cart': return <CartPage onNavigate={navigate} />;
-                case 'rentals': return <MyRentals onNavigate={navigate} />;
-                default: return <ProductCatalog searchTerm={searchTerm} />;
+                case 'rentals': case 'orders': return <OrdersDashboard onNavigate={navigate} />;
+                case 'profile': return <ProfileDashboard />;
+                case 'wishlist': return <WishlistDashboard onNavigate={navigate} onProductClick={handleProductClick} />;
+                default: return renderCatalog({ onCategorySelect: handleCategorySelect });
             }
         }
 
-        // Guest pages (Default)
+        // Guest pages
         switch (currentPage) {
-            case 'catalog': return <ProductCatalog searchTerm={searchTerm} onRequireAuth={() => setCurrentPage('login')} />;
-
-            // Render Modals OVER the Catalog
-            case 'login': return (
-                <>
-                    <ProductCatalog searchTerm={searchTerm} />
-                    <Login
-                        onNavigate={(p) => setCurrentPage(p === 'register' ? 'register' : 'catalog')}
-                        onClose={() => setCurrentPage('catalog')}
-                    />
-                </>
-            );
-            case 'register': return (
-                <>
-                    <ProductCatalog searchTerm={searchTerm} />
-                    <Register
-                        onNavigate={(p) => setCurrentPage(p === 'login' ? 'login' : 'catalog')}
-                        onClose={() => setCurrentPage('catalog')}
-                    />
-                </>
-            );
-
-            // If guest tries to access protected pages, redirect to login
-            case 'cart':
-            case 'rentals':
-                setTimeout(() => setCurrentPage('login'), 0);
-                return <Loader message="Redirecting to Login..." />;
-            default: return <ProductCatalog searchTerm={searchTerm} onRequireAuth={() => setCurrentPage('login')} />;
+            case 'catalog': return renderCatalog({ onCategorySelect: handleCategorySelect, onRequireAuth: handleRequireAuth });
+            case 'contact': return <ContactUs />;
+            default: return renderCatalog({ onCategorySelect: handleCategorySelect, onRequireAuth: handleRequireAuth });
         }
     };
 
@@ -161,17 +266,19 @@ function AppContent() {
             <Header
                 onMenuToggle={() => setSidebarOpen(v => !v)}
                 cartCount={cartCount}
-                onCartClick={isUser ? () => navigate('cart') : undefined}
                 searchTerm={searchTerm}
                 onSearchChange={setSearchTerm}
                 showSearch={true}
+                categories={uniqueCategories}
+                selectedCategory={selectedCategory}
+                onCategorySelect={handleCategorySelect}
                 currentPage={currentPage}
                 onNavigate={navigate}
             />
 
             <div className="flex flex-1 max-w-screen-2xl mx-auto w-full relative">
-                {/* Sidebar only for logged-in users */}
-                {currentUser && (
+                {/* Sidebar only for Management roles (Admin/Vendor) */}
+                {(isAdmin || isSubAdmin) && (
                     <Sidebar
                         currentPage={currentPage}
                         onNavigate={navigate}
@@ -192,18 +299,20 @@ function AppContent() {
 
 export default function App() {
     return (
-        <AuthProvider>
-            <ToastProvider>
-                <UserProvider>
-                    <ProductProvider>
-                        <CartProvider>
-                            <OrderProvider>
-                                <AppContent />
-                            </OrderProvider>
-                        </CartProvider>
-                    </ProductProvider>
-                </UserProvider>
-            </ToastProvider>
-        </AuthProvider>
+        <ErrorBoundary>
+            <AuthProvider>
+                <ToastProvider>
+                    <UserProvider>
+                        <ProductProvider>
+                            <CartProvider>
+                                <OrderProvider>
+                                    <AppContent />
+                                </OrderProvider>
+                            </CartProvider>
+                        </ProductProvider>
+                    </UserProvider>
+                </ToastProvider>
+            </AuthProvider>
+        </ErrorBoundary>
     );
 }

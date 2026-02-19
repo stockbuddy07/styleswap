@@ -12,7 +12,13 @@ export function CartProvider({ children }) {
         if (currentUser) {
             const key = `styleswap_cart_${currentUser.id}`;
             const stored = localStorage.getItem(key);
-            setCartItems(stored ? JSON.parse(stored) : []);
+            try {
+                setCartItems(stored ? JSON.parse(stored) : []);
+            } catch (e) {
+                console.error('Failed to parse cart JSON:', e);
+                setCartItems([]);
+                localStorage.removeItem(key);
+            }
         } else {
             setCartItems([]);
         }
