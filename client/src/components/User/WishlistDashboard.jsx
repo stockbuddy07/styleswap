@@ -3,21 +3,38 @@ import { Heart, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useProducts } from '../../context/ProductContext';
 import ProductCard from './ProductCard';
 import Button from '../Shared/Button';
+import { useCart } from '../../context/CartContext';
+import { useToast } from '../../context/ToastContext';
 
 export default function WishlistDashboard({ onNavigate, onProductClick }) {
     // We'll mock wishlist data for now by taking a slice of products
     // In a real app, this would come from a WishlistContext or API
     const { allProducts } = useProducts();
+    const { addToCart } = useCart();
+    const { addToast } = useToast();
     const wishlistItems = allProducts.slice(0, 2); // Mock: first two items
 
+    const handleQuickAdd = (product) => {
+        const today = new Date();
+        const startDate = today.toISOString().split('T')[0];
+        const fourDaysLater = new Date(today);
+        fourDaysLater.setDate(today.getDate() + 4);
+        const endDate = fourDaysLater.toISOString().split('T')[0];
+
+        const defaultSize = (product.sizes && product.sizes.length > 0) ? product.sizes[0] : 'Free Size';
+
+        addToCart(product, startDate, endDate, defaultSize, 1);
+        addToast('Matrix Optimized: Asset added to your Bag.', 'success');
+    };
+
     return (
-        <div className="max-w-7xl mx-auto py-8 px-4 animate-fade-in">
-            <div className="mb-10 text-center">
-                <div className="inline-flex items-center justify-center w-16 h-16 bg-red-50 text-red-500 rounded-full mb-4">
+        <div className="max-w-7xl mx-auto py-16 px-6 animate-luxury-entry">
+            <div className="mb-16 text-center space-y-4">
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-midnight/5 backdrop-blur-xl text-gold rounded-full mb-2 border border-midnight/5 shadow-2xl">
                     <Heart size={32} fill="currentColor" />
                 </div>
-                <h1 className="font-playfair text-4xl font-bold text-midnight">Your Wishlist</h1>
-                <p className="text-gray-500 mt-2 max-w-lg mx-auto">Items you've saved for your upcoming special occasions.</p>
+                <h1 className="font-playfair text-5xl font-black text-midnight tracking-tighter">Curated Desires</h1>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Elite Selection for Upcoming Occasions</p>
             </div>
 
             {wishlistItems.length === 0 ? (
@@ -37,6 +54,7 @@ export default function WishlistDashboard({ onNavigate, onProductClick }) {
                             <ProductCard
                                 product={product}
                                 onRent={() => onProductClick && onProductClick(product)}
+                                onAddToCart={handleQuickAdd}
                             />
                             {/* Wishlist specific remove button */}
                             <button
@@ -51,22 +69,22 @@ export default function WishlistDashboard({ onNavigate, onProductClick }) {
             )}
 
             {wishlistItems.length > 0 && (
-                <div className="mt-16 bg-midnight rounded-[2.5rem] p-10 text-white relative overflow-hidden">
-                    <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-                        <div>
-                            <h2 className="font-playfair text-3xl font-bold mb-2">Ready to shine?</h2>
-                            <p className="text-blue-100/70">Complete your rental and step out in style.</p>
+                <div className="mt-20 bg-midnight rounded-[3rem] p-12 text-white relative overflow-hidden group shadow-glow">
+                    <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
+                        <div className="text-center lg:text-left">
+                            <h2 className="font-playfair text-4xl font-black mb-3 tracking-tight">Step into the Radiance</h2>
+                            <p className="text-[11px] font-black text-gold uppercase tracking-[0.3em]">Transition from Desire to Acquisition</p>
                         </div>
-                        <Button
+                        <button
                             onClick={() => onNavigate('cart')}
-                            className="bg-gold text-midnight border-none hover:bg-white hover:text-midnight px-10 py-4 text-lg"
+                            className="bg-gold text-midnight px-12 py-5 rounded-2xl text-[11px] font-black uppercase tracking-[0.2em] hover:bg-white hover:shadow-glow transition-all duration-500 flex items-center gap-3 group/btn"
                         >
-                            View Cart <ShoppingBag size={20} className="ml-2" />
-                        </Button>
+                            Review Manifest <ShoppingBag size={18} className="group-hover/btn:scale-110 transition-transform" />
+                        </button>
                     </div>
                     {/* Decorative elements */}
-                    <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-                    <div className="absolute bottom-0 left-0 w-32 h-32 bg-gold/10 rounded-full blur-2xl translate-y-1/2 -translate-x-1/2" />
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-gold/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />
+                    <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/5 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/2" />
                 </div>
             )}
         </div>

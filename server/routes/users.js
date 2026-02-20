@@ -1,5 +1,6 @@
 const express = require('express');
 const { PrismaClient } = require('@prisma/client');
+const bcrypt = require('bcryptjs');
 const { authenticate, requireAdmin } = require('../middleware/auth');
 
 const router = express.Router();
@@ -33,21 +34,31 @@ router.put('/:id', authenticate, async (req, res) => {
         }
 
         const {
-            name, shopName, shopAddress, shopNumber,
-            mobileNumber, salesHandlerMobile, gstNumber,
+            name, email, password, shopName, shopAddress, shopNumber,
+            mobileNumber, salesHandlerMobile, gstNumber, shopDescription,
             status, avatar, onboardedAt,
         } = req.body;
+
+        // Hash password if provided
+        let hashedPassword = undefined;
+        if (password && password.trim() !== '') {
+            const salt = await bcrypt.genSalt(10);
+            hashedPassword = await bcrypt.hash(password, salt);
+        }
 
         const updated = await prisma.user.update({
             where: { id },
             data: {
                 ...(name !== undefined && { name }),
+                ...(email !== undefined && { email }), // Allow email update
+                ...(hashedPassword !== undefined && { password: hashedPassword }),
                 ...(shopName !== undefined && { shopName }),
                 ...(shopAddress !== undefined && { shopAddress }),
                 ...(shopNumber !== undefined && { shopNumber }),
                 ...(mobileNumber !== undefined && { mobileNumber }),
                 ...(salesHandlerMobile !== undefined && { salesHandlerMobile }),
                 ...(gstNumber !== undefined && { gstNumber }),
+                ...(shopDescription !== undefined && { shopDescription }),
                 ...(status !== undefined && req.user.role === 'Admin' && { status }),
                 ...(avatar !== undefined && { avatar }),
                 ...(onboardedAt !== undefined && { onboardedAt: new Date(onboardedAt) }),
@@ -62,7 +73,9 @@ router.put('/:id', authenticate, async (req, res) => {
 
         res.json(updated);
     } catch (err) {
+        if (err.code === 'P2002') return res.status(400).json({ error: 'Email already exists' });
         if (err.code === 'P2025') return res.status(404).json({ error: 'User not found' });
+        console.error('Update User Error:', err);
         res.status(500).json({ error: 'Failed to update user' });
     }
 });

@@ -94,3 +94,15 @@ model Order {
   @@index([vendorId])
   @@index([status])
 }
+
+model Subscriber {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  subscribedAt DateTime @default(now())
+}
+
+model SystemSetting {
+  id    String @id @default(cuid())
+  key   String @unique
+  value String
+}

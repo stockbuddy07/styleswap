@@ -18,6 +18,8 @@ import Analytics from './components/Admin/Analytics';
 import AdminDashboard from './components/Admin/AdminDashboard';
 import UserManagement from './components/Admin/UserManagement';
 import ProductOverview from './components/Admin/ProductOverview';
+import SubscriberList from './components/Admin/SubscriberList';
+import AdminSettings from './components/Admin/AdminSettings';
 
 // SubAdmin
 import ProductManagement from './components/SubAdmin/ProductManagement';
@@ -229,7 +231,18 @@ function AppContent() {
             </div>
         );
 
-        if (isAdmin) return <AdminDashboard />;
+        if (isAdmin) {
+            switch (currentPage) {
+                case 'dashboard': return <AdminDashboard />;
+                case 'users': return <UserManagement />;
+                case 'products': return <ProductOverview />;
+                case 'analytics': return <Analytics />;
+                case 'subscribers': return <SubscriberList />;
+                case 'profile':
+                case 'settings': return <AdminSettings />;
+                default: return <AdminDashboard />;
+            }
+        }
         if (isSubAdmin) {
             switch (currentPage) {
                 case 'dashboard': return <SalesAnalytics />;
@@ -237,6 +250,8 @@ function AppContent() {
                 case 'inventory': return <InventoryDashboard />;
                 case 'rentals': return <ActiveRentals />;
                 case 'analytics': return <SalesAnalytics />;
+                case 'profile':
+                case 'settings': return <AdminSettings />;
                 default: return <SalesAnalytics />;
             }
         }
@@ -262,7 +277,7 @@ function AppContent() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans">
+        <div className="min-h-screen bg-gray-50 text-darkGray flex flex-col font-sans">
             <Header
                 onMenuToggle={() => setSidebarOpen(v => !v)}
                 cartCount={cartCount}
@@ -292,7 +307,7 @@ function AppContent() {
                 </main>
             </div>
 
-            <Footer />
+            <Footer onNavigate={navigate} onCategorySelect={handleCategorySelect} />
         </div>
     );
 }

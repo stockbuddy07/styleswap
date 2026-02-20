@@ -10,7 +10,7 @@ import Button from '../Shared/Button';
 import { DEFAULT_IMAGE } from '../../utils/helpers';
 
 export default function ProfileDashboard() {
-    const { currentUser, updateProfile, logout } = useAuth();
+    const { currentUser, updateCurrentUser, logout } = useAuth();
     const toast = useToast();
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('details');
@@ -25,12 +25,30 @@ export default function ProfileDashboard() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+
+        if (form.password && form.password !== form.confirmPassword) {
+            toast.error("Passwords do not match");
+            setLoading(false);
+            return;
+        }
+
         try {
-            await new Promise(r => setTimeout(r, 1000)); // Mock API delay
-            // await updateProfile(form); // Actual call
+            const updateData = {
+                name: form.name,
+                email: form.email,
+                phone: form.phone,
+                address: form.address,
+                ...(form.password ? { password: form.password } : {})
+            };
+
+            await updateCurrentUser(updateData);
             toast.success('Profile updated successfully');
+
+            // Clear password fields on success
+            setForm(prev => ({ ...prev, password: '', confirmPassword: '' }));
         } catch (err) {
-            toast.error('Failed to update profile');
+            console.error(err);
+            toast.error(err.message || 'Failed to update profile');
         } finally {
             setLoading(false);
         }
@@ -127,9 +145,6 @@ export default function ProfileDashboard() {
                                             <h2 className="font-playfair text-2xl font-bold text-midnight">Personal Details</h2>
                                             <p className="text-gray-400 text-sm mt-1">Update your personal information</p>
                                         </div>
-                                        <button className="text-sm font-bold text-gold underline underline-offset-4 decoration-gold/30 hover:text-midnight transition-colors">
-                                            Edit Information
-                                        </button>
                                     </div>
 
                                     <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-8">
@@ -154,10 +169,10 @@ export default function ProfileDashboard() {
                                                 <input
                                                     type="email"
                                                     value={form.email}
-                                                    className="w-full bg-gray-50 border border-transparent rounded-xl px-4 pl-12 py-4 text-sm font-bold text-gray-500 cursor-not-allowed opacity-70"
-                                                    disabled
+                                                    onChange={e => setForm({ ...form, email: e.target.value })}
+                                                    className="w-full bg-gray-50 border border-transparent rounded-xl px-4 pl-12 py-4 text-sm font-bold text-midnight focus:bg-white focus:border-gray-200 focus:ring-4 focus:ring-gray-100 transition-all outline-none"
+                                                    placeholder="Enter your email"
                                                 />
-                                                <span className="absolute right-4 top-1/2 -translate-y-1/2 px-2 py-0.5 bg-gray-200 text-gray-500 text-[10px] font-bold rounded uppercase">Verified</span>
                                             </div>
                                         </div>
 
@@ -189,7 +204,33 @@ export default function ProfileDashboard() {
                                             </div>
                                         </div>
 
-                                        <div className="md:col-span-2 pt-8 flex justify-end">
+                                        <div className="md:col-span-2 border-t border-gray-100 pt-6 mt-2">
+                                            <h3 className="font-playfair text-lg font-bold text-midnight mb-4">Change Password</h3>
+                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                                <div className="flex flex-col gap-2 group">
+                                                    <label className="text-xs font-black uppercase text-gray-400 tracking-wider group-focus-within:text-midnight transition-colors">New Password</label>
+                                                    <input
+                                                        type="password"
+                                                        value={form.password || ''}
+                                                        onChange={e => setForm({ ...form, password: e.target.value })}
+                                                        className="w-full bg-gray-50 border border-transparent rounded-xl px-4 py-4 text-sm font-bold text-midnight focus:bg-white focus:border-gray-200 focus:ring-4 focus:ring-gray-100 transition-all outline-none"
+                                                        placeholder="Leave blank to keep current"
+                                                    />
+                                                </div>
+                                                <div className="flex flex-col gap-2 group">
+                                                    <label className="text-xs font-black uppercase text-gray-400 tracking-wider group-focus-within:text-midnight transition-colors">Confirm New Password</label>
+                                                    <input
+                                                        type="password"
+                                                        value={form.confirmPassword || ''}
+                                                        onChange={e => setForm({ ...form, confirmPassword: e.target.value })}
+                                                        className="w-full bg-gray-50 border border-transparent rounded-xl px-4 py-4 text-sm font-bold text-midnight focus:bg-white focus:border-gray-200 focus:ring-4 focus:ring-gray-100 transition-all outline-none"
+                                                        placeholder="Re-enter new password"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="md:col-span-2 pt-4 flex justify-end">
                                             <button
                                                 type="submit"
                                                 disabled={loading}

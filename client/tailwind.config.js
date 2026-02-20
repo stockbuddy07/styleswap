@@ -8,6 +8,8 @@ export default {
         extend: {
             colors: {
                 midnight: '#1a1f3a',
+                'midnight-deep': '#020617',
+                'midnight-accent': '#1e293b',
                 gold: '#d4af37',
                 offWhite: '#faf9f6',
                 darkGray: '#2d2d2d',
@@ -16,7 +18,11 @@ export default {
             },
             fontFamily: {
                 playfair: ['"Playfair Display"', 'serif'],
-                sans: ['Inter', 'sans-serif'],
+                serif: ['"Cormorant Garamond"', 'serif'],
+                luxury: ['"Cormorant Garamond"', 'serif'],
+                modern: ['Outfit', 'sans-serif'],
+                outfit: ['Outfit', 'sans-serif'],
+                sans: ['Outfit', 'Inter', 'sans-serif'],
             },
         },
     },

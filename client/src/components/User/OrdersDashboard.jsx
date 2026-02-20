@@ -31,21 +31,21 @@ export default function OrdersDashboard({ onNavigate }) {
     if (loading) return <Loader fullPage={false} message="Fetching your orders..." />;
 
     return (
-        <div className="max-w-6xl mx-auto py-8 px-4 animate-fade-in">
-            <div className="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-6">
-                <div>
-                    <h1 className="font-playfair text-3xl font-bold text-midnight">Your Orders</h1>
-                    <p className="text-gray-500 mt-1">Track and manage your rental history.</p>
+        <div className="max-w-6xl mx-auto py-12 px-6 animate-luxury-entry">
+            <div className="mb-12 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
+                <div className="space-y-2">
+                    <h1 className="font-playfair text-5xl font-black text-midnight tracking-tighter">Order Manifests</h1>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Historical and Active Acquisition Log</p>
                 </div>
 
-                <div className="flex bg-gray-100 p-1 rounded-xl w-fit overflow-x-auto">
+                <div className="flex bg-midnight/5 backdrop-blur-xl p-1.5 rounded-2xl w-fit border border-midnight/5 shadow-inner">
                     {['All', 'Active', 'Returned', 'Overdue'].map(f => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${filter === f
-                                    ? 'bg-white text-midnight shadow-sm'
-                                    : 'text-gray-500 hover:text-midnight'
+                            className={`px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-500 ${filter === f
+                                ? 'bg-midnight text-white shadow-2xl scale-105'
+                                : 'text-gray-400 hover:text-midnight hover:bg-white/50'
                                 }`}
                         >
                             {f}
@@ -66,56 +66,68 @@ export default function OrdersDashboard({ onNavigate }) {
             ) : (
                 <div className="grid grid-cols-1 gap-6">
                     {filteredOrders.map((order) => (
-                        <div key={order.orderId} className="bg-white rounded-[2rem] border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden group">
-                            <div className="px-6 py-4 bg-gray-50/50 border-b border-gray-100 flex flex-wrap items-center justify-between gap-4">
-                                <div className="flex items-center gap-4">
-                                    <span className="font-mono text-xs font-bold text-gray-400 bg-white px-3 py-1 rounded-full border border-gray-100">
-                                        #{order.orderId?.slice(-8).toUpperCase()}
-                                    </span>
-                                    <div className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${statusStyles[order.status] || 'bg-gray-100 text-gray-700'}`}>
-                                        {statusIcons[order.status]}
-                                        {order.status}
+                        <div key={order.orderId} className="bg-white/40 backdrop-blur-2xl rounded-[2.5rem] border border-white/40 shadow-xl hover:shadow-2xl hover:border-gold/30 transition-all duration-700 overflow-hidden group/order">
+                            <div className="px-8 py-5 bg-midnight/5 border-b border-white/40 flex flex-wrap items-center justify-between gap-6">
+                                <div className="flex items-center gap-6">
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Manifest ID</span>
+                                        <span className="font-mono text-[10px] font-black text-midnight bg-white px-3 py-1 rounded-lg border border-gray-100 shadow-sm">
+                                            #{order.orderId?.slice(-8).toUpperCase()}
+                                        </span>
+                                    </div>
+                                    <div className="flex flex-col">
+                                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Log Status</span>
+                                        <div className={`flex items-center gap-2 px-4 py-1.5 rounded-lg text-[9px] font-black uppercase tracking-widest border shadow-sm ${statusStyles[order.status] || 'bg-gray-100 text-gray-700'}`}>
+                                            {statusIcons[order.status]}
+                                            {order.status}
+                                        </div>
                                     </div>
                                 </div>
-                                <div className="text-sm text-gray-500 flex items-center gap-2">
-                                    Placed on <span className="font-semibold text-midnight">{formatDate(order.orderDate)}</span>
+                                <div className="text-[10px] font-black text-gray-400 uppercase tracking-widest flex items-center gap-3">
+                                    Validated on <span className="text-midnight font-black">{formatDate(order.orderDate).toUpperCase()}</span>
                                 </div>
                             </div>
 
-                            <div className="p-6 flex flex-col md:flex-row gap-8 items-center">
+                            <div className="p-8 flex flex-col lg:flex-row gap-10 items-center">
                                 {/* Items Stack */}
-                                <div className="flex -space-x-4">
+                                <div className="flex -space-x-6">
                                     {order.items?.map((item, idx) => (
-                                        <div key={idx} className="w-20 h-20 rounded-2xl border-2 border-white overflow-hidden shadow-sm relative group-hover:-translate-y-1 transition-transform" style={{ zIndex: 10 - idx }}>
+                                        <div key={idx} className="w-24 h-24 rounded-3xl border-4 border-white overflow-hidden shadow-2xl relative group-hover/order:-translate-y-2 transition-transform duration-700" style={{ zIndex: 10 - idx }}>
                                             <img src={item.productImage} alt={item.productName} className="w-full h-full object-cover" />
+                                            <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover/order:opacity-100 transition-opacity duration-700" />
                                         </div>
                                     ))}
                                 </div>
 
                                 {/* Order Info */}
-                                <div className="flex-1 text-center md:text-left">
-                                    <h4 className="font-bold text-midnight truncate max-w-md">
+                                <div className="flex-1 text-center lg:text-left space-y-4">
+                                    <h4 className="font-playfair text-xl font-black text-midnight truncate max-w-lg tracking-tight">
                                         {order.items?.map(i => i.productName).join(', ') || 'Rental Pack'}
                                     </h4>
-                                    <p className="text-sm text-gray-500 mt-1">
-                                        {order.items?.length} Item{order.items?.length > 1 ? 's' : ''} · From <span className="font-medium text-midnight">{order.shopName}</span>
-                                    </p>
-                                    <div className="mt-4 flex flex-wrap justify-center md:justify-start gap-x-6 gap-y-2 text-xs text-gray-400">
+
+                                    <div className="flex flex-wrap justify-center lg:justify-start gap-10">
                                         <div className="flex flex-col">
-                                            <span className="uppercase tracking-widest text-[10px] mb-1">Duration</span>
-                                            <span className="text-midnight font-bold">{formatDate(order.rentalStartDate)} - {formatDate(order.rentalEndDate)}</span>
+                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] mb-2">Temporal Scope</span>
+                                            <div className="flex items-center gap-3 bg-midnight/5 px-4 py-2 rounded-xl border border-midnight/5">
+                                                <Clock size={12} className="text-gold" />
+                                                <span className="text-midnight font-black text-[10px] uppercase tracking-widest">{formatDate(order.rentalStartDate).toUpperCase()} → {formatDate(order.rentalEndDate).toUpperCase()}</span>
+                                            </div>
                                         </div>
-                                        <div className="flex flex-col border-l border-gray-100 pl-6">
-                                            <span className="uppercase tracking-widest text-[10px] mb-1">Total Amount</span>
-                                            <span className="text-midnight font-bold text-base">{formatCurrency(order.totalAmount)}</span>
+                                        <div className="flex flex-col">
+                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] mb-2">Financial Commitment</span>
+                                            <span className="text-midnight font-black text-2xl tracking-tighter">{formatCurrency(order.totalAmount)}</span>
                                         </div>
                                     </div>
                                 </div>
 
                                 {/* Actions */}
-                                <div className="flex flex-col gap-2 w-full md:w-auto">
-                                    <Button variant="outline" className="text-xs py-2 h-10">View Details</Button>
-                                    <Button className="text-xs py-2 h-10">Re-Rent Item</Button>
+                                <div className="flex flex-col gap-3 w-full lg:w-48">
+                                    <button className="w-full bg-midnight text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-gold hover:text-midnight transition-all duration-500 shadow-xl hover:shadow-glow hover:-translate-y-1 active:translate-y-0">
+                                        Access Details
+                                    </button>
+                                    <button className="w-full bg-white text-midnight border border-gray-100 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest hover:border-gold hover:text-gold transition-all duration-500">
+                                        Renew Cycle
+                                    </button>
                                 </div>
                             </div>
                         </div>

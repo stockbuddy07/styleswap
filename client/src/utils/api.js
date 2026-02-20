@@ -99,6 +99,20 @@ export const api = {
             request('PUT', `/api/orders/${orderId}/issues/${issueId}`, { status, adminResponse }),
     },
 
+    // ─── Marketing ────────────────────────────────────────────────────────────
+    marketing: {
+        subscribers: () => request('GET', '/api/marketing/subscribers'),
+        subscribe: (email) => request('POST', '/api/marketing/subscribe', { email }, false),
+        sendNewsletter: (data) => request('POST', '/api/marketing/send-newsletter', data),
+        deleteSubscriber: (email) => request('DELETE', `/api/marketing/subscribers/${email}`),
+    },
+
+    // ─── System Settings ──────────────────────────────────────────────────────
+    settings: {
+        get: () => request('GET', '/api/settings'),
+        update: (data) => request('PUT', '/api/settings', data),
+    },
+
     // ─── External Services ────────────────────────────────────────────────────
     clients: {
         update: () => {

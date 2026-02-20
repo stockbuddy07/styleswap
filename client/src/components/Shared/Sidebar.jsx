@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     LayoutDashboard, Users, Package, BarChart2, ShoppingBag,
-    ClipboardList, Warehouse, TrendingUp, Store, X, Settings, HelpCircle
+    ClipboardList, Warehouse, TrendingUp, Store, X, ChevronRight, CheckCircle, Settings
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -10,6 +10,8 @@ const adminNav = [
     { id: 'users', label: 'User Management', icon: Users },
     { id: 'products', label: 'All Products', icon: Package },
     { id: 'analytics', label: 'Analytics & Reports', icon: BarChart2 },
+    { id: 'subscribers', label: 'Subscribers', icon: ClipboardList },
+    { id: 'profile', label: 'Settings', icon: Settings },
 ];
 
 const subAdminNav = [
@@ -18,6 +20,7 @@ const subAdminNav = [
     { id: 'inventory', label: 'Inventory', icon: Warehouse },
     { id: 'rentals', label: 'Active Rentals', icon: ClipboardList },
     { id: 'analytics', label: 'Sales Analytics', icon: TrendingUp },
+    { id: 'profile', label: 'Settings', icon: Settings },
 ];
 
 const userNav = [
@@ -44,75 +47,90 @@ export default function Sidebar({ currentPage, onNavigate, isOpen, onClose }) {
 
             {/* Sidebar Container */}
             <aside
-                className={`fixed lg:static inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-100 transform transition-transform duration-300 ease-in-out lg:transform-none flex flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}
+                className={`
+                    fixed lg:sticky top-0 lg:top-16 inset-y-0 left-0 z-40 
+                    w-72 bg-midnight-deep text-white 
+                    border-r border-white/5 shadow-2xl 
+                    transform transition-transform duration-300 ease-in-out 
+                    lg:transform-none flex flex-col
+                    ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+                    h-screen lg:h-[calc(100vh-4rem)]
+                    backdrop-blur-3xl
+                `}
             >
                 {/* Mobile Header */}
-                <div className="lg:hidden h-16 flex items-center justify-between px-4 border-b border-gray-100">
-                    <span className="font-playfair font-bold text-xl text-midnight">Menu</span>
+                <div className="lg:hidden h-16 flex items-center justify-between px-6 border-b border-white/10 bg-midnight/50 backdrop-blur-md">
+                    <span className="font-playfair font-bold text-xl text-white tracking-widest uppercase">Elite Menu</span>
                     <button
                         onClick={onClose}
-                        className="p-2 text-gray-500 hover:text-red-500 transition-colors"
-                        aria-label="Close sidebar"
+                        className="p-2 text-gray-400 hover:text-white transition-colors"
                     >
-                        <X size={20} />
+                        <X size={24} />
                     </button>
                 </div>
 
                 {/* Shop Profile (Sub-Admin) */}
                 {shopName && (
-                    <div className="p-4 mx-3 mt-3 bg-gradient-to-br from-midnight to-blue-900 rounded-xl text-white shadow-soft">
-                        <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm">
-                                <Store size={20} className="text-gold" />
-                            </div>
-                            <div className="overflow-hidden">
-                                <p className="font-bold text-sm truncate">{shopName}</p>
-                                <p className="text-blue-200 text-xs flex items-center gap-1">
-                                    <span className="w-1.5 h-1.5 rounded-full bg-green-400"></span>
-                                    Online
-                                </p>
+                    <div className="mx-4 mt-8 mb-4 animate-luxury-entry">
+                        <div className="p-5 bg-midnight-accent backdrop-blur-2xl rounded-3xl border border-white/10 shadow-glow relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-24 h-24 bg-gold/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl group-hover:bg-gold/20 transition-all duration-700"></div>
+
+                            <div className="flex items-center gap-4 relative z-10">
+                                <div className="w-14 h-14 bg-gradient-to-br from-gold via-yellow-600 to-gold-dark rounded-2xl flex items-center justify-center text-midnight shadow-2xl transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                                    <Store size={26} strokeWidth={2.5} />
+                                </div>
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-bold text-base truncate text-white tracking-tight group-hover:text-gold transition-colors" title={shopName}>{shopName}</p>
+                                    <div className="flex items-center gap-1.5 mt-1">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shadow-[0_0_8px_rgba(74,222,128,0.8)]" />
+                                        <p className="text-gray-400 text-[10px] uppercase font-black tracking-widest truncate">Verified Partner</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 )}
 
                 {/* Navigation */}
-                <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
-                    {navItems.map(({ id, label, icon: Icon }) => {
+                <nav className="flex-1 overflow-y-auto py-8 px-5 space-y-3 custom-scrollbar">
+                    {/* Section Label */}
+                    <div className="px-4 mb-4 text-[10px] font-black text-gray-500 uppercase tracking-[0.3em] animate-luxury-entry stagger-1">
+                        Workspace
+                    </div>
+
+                    {navItems.map(({ id, label, icon: Icon }, index) => {
                         const isActive = currentPage === id;
                         return (
                             <button
                                 key={id}
                                 onClick={() => { onNavigate(id); onClose(); }}
-                                className={`w-full flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium transition-all duration-200 group ${isActive
-                                        ? 'bg-gold/10 text-midnight ring-1 ring-gold/20'
-                                        : 'text-gray-500 hover:bg-gray-50 hover:text-midnight'
+                                className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-bold transition-all duration-500 group relative overflow-hidden animate-luxury-entry stagger-${index + 1} ${isActive
+                                    ? 'bg-white/10 text-white shadow-2xl border border-white/10'
+                                    : 'text-gray-500 hover:bg-white/5 hover:text-white border border-transparent'
                                     }`}
                             >
+                                {/* Active Indicator Glow */}
+                                {isActive && (
+                                    <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gold shadow-[0_0_20px_rgba(212,175,55,1)]" />
+                                )}
+
                                 <Icon
                                     size={20}
-                                    className={`transition-colors ${isActive ? 'text-gold' : 'text-gray-400 group-hover:text-gold'}`}
+                                    strokeWidth={isActive ? 2.5 : 2}
+                                    className={`transition-all duration-500 z-10 ${isActive ? 'text-gold scale-110' : 'text-gray-600 group-hover:text-gold group-hover:scale-110'}`}
                                 />
-                                {label}
+                                <span className={`z-10 tracking-wider transition-all duration-500 ${isActive ? 'translate-x-0' : 'group-hover:translate-x-1'}`}>{label}</span>
+
                                 {isActive && (
-                                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-gold shadow-glow" />
+                                    <div className="ml-auto w-1.5 h-1.5 rounded-full bg-gold animate-pulse shadow-[0_0_10px_rgba(212,175,55,0.8)]" />
                                 )}
                             </button>
                         );
                     })}
                 </nav>
 
-                {/* Bottom Actions */}
-                <div className="p-3 border-t border-gray-100 space-y-1">
-                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors">
-                        <Settings size={18} />
-                        Settings
-                    </button>
-                    <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-500 hover:bg-gray-50 transition-colors">
-                        <HelpCircle size={18} />
-                        Help Center
-                    </button>
-                </div>
+                {/* Footer Gradient overlay */}
+                <div className="h-20 bg-gradient-to-t from-midnight-deep to-transparent pointer-events-none absolute bottom-0 inset-x-0 z-20" />
             </aside>
         </>
     );

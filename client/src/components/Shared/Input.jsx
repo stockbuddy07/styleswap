@@ -11,6 +11,7 @@ const Input = forwardRef(function Input({
     iconRight: IconRight,
     onIconRightClick,
     className = '',
+    inputClassName = '',
     required = false,
     disabled = false,
     min,
@@ -19,22 +20,22 @@ const Input = forwardRef(function Input({
     rows,
     ...props
 }, ref) {
-    const inputClass = `w-full border rounded-lg px-4 py-3 text-darkGray bg-white focus:outline-none focus:ring-2 transition-all duration-200 min-h-[48px] ${error
-            ? 'border-red-400 focus:ring-red-300'
-            : 'border-gray-300 focus:ring-gold focus:border-transparent'
-        } ${Icon ? 'pl-11' : ''} ${IconRight ? 'pr-11' : ''} ${disabled ? 'bg-gray-50 cursor-not-allowed opacity-60' : ''}`;
+    const inputClass = `w-full border rounded-xl px-5 py-3.5 focus:outline-none focus:ring-4 transition-all duration-300 min-h-[52px] ${error
+        ? 'border-red-400 focus:ring-red-400/10'
+        : 'border-gray-200 focus:ring-gold/10 focus:border-gold shadow-sm'
+        } ${Icon ? 'pl-12' : ''} ${IconRight ? 'pr-12' : ''} ${disabled ? 'bg-gray-50/50 cursor-not-allowed opacity-60' : ''} ${inputClassName || 'bg-white/70 backdrop-blur-sm text-midnight'}`;
 
     return (
-        <div className={`flex flex-col gap-1 ${className}`}>
+        <div className={`flex flex-col gap-1.5 ${className}`}>
             {label && (
-                <label className="text-sm font-medium text-darkGray">
+                <label className={`text-[10px] uppercase font-black tracking-widest ${inputClassName?.includes('text-white') ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
                     {label}
                     {required && <span className="text-red-500 ml-1">*</span>}
                 </label>
             )}
             <div className="relative">
                 {Icon && (
-                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+                    <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${inputClassName?.includes('text-white') ? 'text-gray-400' : 'text-gray-400'}`}>
                         <Icon size={18} />
                     </div>
                 )}

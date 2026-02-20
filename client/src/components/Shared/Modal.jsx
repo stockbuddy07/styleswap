@@ -9,7 +9,7 @@ const sizes = {
     full: 'max-w-6xl',
 };
 
-export default function Modal({ isOpen, onClose, title, children, size = 'md', hideHeader = false }) {
+export default function Modal({ isOpen, onClose, title, children, size = 'md', hideHeader = false, className = 'bg-white', headerClassName = '' }) {
     const overlayRef = useRef(null);
 
     useEffect(() => {
@@ -35,28 +35,28 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', h
             onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
         >
             <div
-                className={`modal-content bg-white rounded-2xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] flex flex-col`}
+                className={`modal-content rounded-2xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] flex flex-col ${className}`}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={title ? 'modal-title' : undefined}
             >
                 {!hideHeader && (
-                    <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                    <div className={`flex items-center justify-between px-6 py-4 border-b border-gray-100 ${headerClassName}`}>
                         {title && (
-                            <h2 id="modal-title" className="text-xl font-playfair font-semibold text-midnight">
+                            <h2 id="modal-title" className="text-xl font-playfair font-semibold">
                                 {title}
                             </h2>
                         )}
                         <button
                             onClick={onClose}
-                            className="ml-auto p-2 rounded-lg hover:bg-gray-100 transition-colors text-gray-500 hover:text-gray-700"
+                            className="ml-auto p-2 rounded-lg hover:bg-white/10 transition-colors text-inherit opacity-70 hover:opacity-100"
                             aria-label="Close modal"
                         >
                             <X size={20} />
                         </button>
                     </div>
                 )}
-                <div className="overflow-y-auto flex-1 px-6 py-4">
+                <div className="overflow-y-auto flex-1 px-6 py-4 custom-scrollbar">
                     {children}
                 </div>
             </div>

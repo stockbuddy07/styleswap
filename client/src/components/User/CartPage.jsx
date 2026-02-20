@@ -114,7 +114,7 @@ function CartItemCard({ item, allProducts }) {
     };
 
     return (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow overflow-hidden">
+        <div className="bg-white/50 backdrop-blur-xl rounded-[2rem] border border-gray-100 shadow-2xl hover:border-gold/30 transition-all duration-700 overflow-hidden group">
             <div className="p-4">
                 <div className="flex gap-4">
                     {/* Image */}
@@ -127,11 +127,11 @@ function CartItemCard({ item, allProducts }) {
                     {/* Details */}
                     <div className="flex-1 min-w-0">
                         <div className="flex justify-between gap-2">
-                            <div className="min-w-0">
-                                <h3 className="font-semibold text-midnight text-sm sm:text-base leading-tight truncate">{item.productName}</h3>
-                                <div className="flex items-center gap-1.5 mt-0.5">
-                                    <Store size={11} className="text-gold flex-shrink-0" />
-                                    <span className="text-gold text-xs font-medium truncate">{item.vendorShopName}</span>
+                            <div className="min-w-0 flex-1">
+                                <h3 className="font-playfair text-lg font-black text-midnight leading-tight truncate group-hover:text-gold transition-colors duration-500">{item.productName}</h3>
+                                <div className="flex items-center gap-2 mt-1">
+                                    <Store size={10} className="text-gold" />
+                                    <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest truncate">{item.vendorShopName}</span>
                                 </div>
                             </div>
                             <button onClick={() => removeFromCart(item.id)}
@@ -166,14 +166,14 @@ function CartItemCard({ item, allProducts }) {
                                 <button onClick={() => handleQtyChange(-1)}
                                     disabled={item.quantity <= 1}
                                     className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-40 transition-colors font-bold text-lg leading-none">−</button>
-                                <span className="w-8 text-center font-semibold text-midnight text-sm">{item.quantity}</span>
+                                <span className="w-8 text-center font-semibold text-midnight text-sm transition-colors">{item.quantity}</span>
                                 <button onClick={() => handleQtyChange(1)}
                                     disabled={item.quantity >= maxQty}
                                     className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-40 transition-colors font-bold text-lg leading-none">+</button>
                                 {maxQty <= 3 && <span className="text-xs text-amber-600 font-medium">Only {maxQty} left</span>}
                             </div>
                             <div className="text-right">
-                                <p className="font-bold text-midnight text-base">{formatCurrency(item.subtotal + item.depositTotal)}</p>
+                                <p className="font-bold text-midnight text-base transition-colors">{formatCurrency(item.subtotal + item.depositTotal)}</p>
                                 <p className="text-xs text-gray-400">{formatCurrency(item.pricePerDay)}/day</p>
                             </div>
                         </div>
@@ -204,7 +204,7 @@ function CartItemCard({ item, allProducts }) {
                             <span>Security deposit × {item.quantity}</span>
                             <span className="font-medium">{formatCurrency(item.depositTotal)}</span>
                         </div>
-                        <div className="flex justify-between font-semibold text-midnight border-t border-gray-200 pt-1.5">
+                        <div className="flex justify-between font-semibold text-midnight border-t border-gray-200 pt-1.5 transition-colors">
                             <span>Item Total</span>
                             <span>{formatCurrency(item.subtotal + item.depositTotal)}</span>
                         </div>
@@ -235,9 +235,9 @@ function CheckoutModal({ isOpen, onClose, onConfirm, loading }) {
                 <div className="space-y-3">
                     {Object.entries(vendorGroups).map(([vendorId, { shopName, items }]) => (
                         <div key={vendorId} className="border border-gray-100 rounded-xl overflow-hidden">
-                            <div className="px-4 py-2.5 bg-gray-50 flex items-center gap-2">
+                            <div className="px-4 py-2.5 bg-gray-50 flex items-center gap-2 transition-colors">
                                 <Store size={13} className="text-gold" />
-                                <span className="font-semibold text-midnight text-sm">{shopName}</span>
+                                <span className="font-semibold text-midnight text-sm transition-colors">{shopName}</span>
                             </div>
                             <div className="divide-y divide-gray-50">
                                 {items.map(item => (
@@ -246,11 +246,11 @@ function CheckoutModal({ isOpen, onClose, onConfirm, loading }) {
                                             className="w-12 h-12 object-cover rounded-lg flex-shrink-0"
                                             onError={e => { e.target.src = DEFAULT_IMAGE; }} />
                                         <div className="flex-1 min-w-0">
-                                            <p className="font-medium text-midnight text-sm truncate">{item.productName}</p>
+                                            <p className="font-medium text-midnight text-sm truncate transition-colors">{item.productName}</p>
                                             <p className="text-gray-400 text-xs">Size: {item.size} · {item.quantity}× · {item.rentalDays}d</p>
                                             <p className="text-xs text-gray-500">{formatDate(item.rentalStartDate)} → {formatDate(item.rentalEndDate)}</p>
                                         </div>
-                                        <span className="font-semibold text-midnight text-sm">{formatCurrency(item.subtotal + item.depositTotal)}</span>
+                                        <span className="font-semibold text-midnight text-sm transition-colors">{formatCurrency(item.subtotal + item.depositTotal)}</span>
                                     </div>
                                 ))}
                             </div>
@@ -260,7 +260,7 @@ function CheckoutModal({ isOpen, onClose, onConfirm, loading }) {
 
                 {/* Payment method */}
                 <div>
-                    <p className="text-sm font-semibold text-midnight mb-2">Payment Method</p>
+                    <p className="text-sm font-semibold text-midnight mb-2 transition-colors">Payment Method</p>
                     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                         {PAY_METHODS.map(m => (
                             <button key={m.id} onClick={() => setPayMethod(m.id)}
@@ -332,11 +332,11 @@ export default function CartPage({ onNavigate }) {
     const vendorCount = Object.keys(vendorGroups).length;
 
     const handleApplyCoupon = () => {
-        if (coupon.trim().toUpperCase() === 'STYLE10') {
+        if (coupon.trim().toUpperCase() === 'ELITE10') {
             setCouponApplied(true);
-            toast.success('Coupon STYLE10 applied — 10% off rental fees!');
+            toast.success('ELITE10 Authorization Granted — 10% Yield applied');
         } else {
-            toast.error('Invalid coupon code');
+            toast.error('Invalid Protocol Code');
         }
     };
 
@@ -393,14 +393,14 @@ export default function CartPage({ onNavigate }) {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="font-playfair text-2xl font-bold text-midnight">My Cart</h1>
-                    <p className="text-gray-500 text-sm mt-0.5">
-                        {cartCount} item(s) from {vendorCount} vendor(s)
+                    <h1 className="font-playfair text-4xl font-black text-midnight tracking-tighter">Acquisition Manifest</h1>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1">
+                        {cartCount} Asset(s) across {vendorCount} Curators
                     </p>
                 </div>
                 <button onClick={clearCart}
-                    className="text-sm text-red-400 hover:text-red-600 hover:underline transition-colors flex items-center gap-1">
-                    <Trash2 size={13} /> Clear All
+                    className="text-[10px] font-black text-red-400 hover:text-red-600 uppercase tracking-widest transition-colors flex items-center gap-2">
+                    <Trash2 size={12} /> Dissolve Manifest
                 </button>
             </div>
 
@@ -434,7 +434,7 @@ export default function CartPage({ onNavigate }) {
                     ))}
 
                     {/* Coupon */}
-                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+                    <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4 transition-colors">
                         <div className="flex items-center gap-2 mb-3">
                             <Tag size={15} className="text-gold" />
                             <span className="font-semibold text-midnight text-sm">Apply Coupon</span>
@@ -495,8 +495,8 @@ export default function CartPage({ onNavigate }) {
                                 <span>Rental Fees</span><span>{formatCurrency(totalRentalFees)}</span>
                             </div>
                             {couponApplied && (
-                                <div className="flex justify-between text-sm text-green-600 font-medium">
-                                    <span>Discount (STYLE10)</span><span>−{formatCurrency(discount)}</span>
+                                <div className="flex justify-between text-sm text-gold font-black uppercase tracking-widest">
+                                    <span>ELITE10 Yield</span><span>−{formatCurrency(discount)}</span>
                                 </div>
                             )}
                             <div className="flex justify-between text-sm text-gray-600">
@@ -505,7 +505,7 @@ export default function CartPage({ onNavigate }) {
                             <div className="flex justify-between text-sm text-green-600 font-medium">
                                 <span>Delivery</span><span>FREE</span>
                             </div>
-                            <div className="flex justify-between font-bold text-midnight border-t border-gray-100 pt-3 text-lg">
+                            <div className="flex justify-between font-bold text-midnight border-t border-gray-100 pt-3 text-lg transition-colors">
                                 <span>Total</span><span>{formatCurrency(finalTotal)}</span>
                             </div>
                             <p className="text-xs text-gray-400">Deposits refundable on return</p>

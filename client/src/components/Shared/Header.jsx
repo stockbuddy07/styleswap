@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { ShoppingCart, Search, X, Menu, LogOut, User, ChevronDown, MapPin, Heart, Bell } from 'lucide-react';
+import { ShoppingCart, Search, X, Menu, LogOut, User, ChevronDown, MapPin, Heart, Bell, Zap, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
 const FALLBACK_CATEGORIES = ['All', 'Wedding Attire', 'Blazers', 'Shoes', 'Accessories'];
@@ -17,7 +17,7 @@ export default function Header({
     currentPage,
     onNavigate,
 }) {
-    const { currentUser, logout, isUser } = useAuth();
+    const { currentUser, logout, isUser, isAdmin, isSubAdmin } = useAuth();
     const [userMenuOpen, setUserMenuOpen] = useState(false);
     const userMenuRef = useRef(null);
 
@@ -52,18 +52,18 @@ export default function Header({
     const scrollContainerRef = useRef(null);
 
     return (
-        <div className="sticky top-0 z-40 flex flex-col">
+        <div className="sticky top-0 z-[100] flex flex-col">
             {/* Top Bar - Main Header */}
-            <header className="bg-midnight shadow-lg relative z-20">
-                <div className="max-w-screen-2xl mx-auto px-4 h-16 flex items-center gap-4">
+            <header className="bg-white/80 backdrop-blur-2xl border-b border-gray-100 relative z-50">
+                <div className="max-w-screen-2xl mx-auto px-6 h-16 flex items-center gap-6">
                     {/* Mobile Menu (Only for management roles) */}
                     {(currentUser?.role === 'Admin' || currentUser?.role === 'Sub-Admin') && (
                         <button
                             onClick={onMenuToggle}
-                            className="lg:hidden text-white hover:text-gold transition-colors p-1"
+                            className="lg:hidden text-midnight hover:text-gold transition-colors p-1"
                             aria-label="Toggle menu"
                         >
-                            <Menu size={24} />
+                            <Menu size={20} />
                         </button>
                     )}
 
@@ -72,63 +72,70 @@ export default function Header({
                         className="flex items-center gap-2 cursor-pointer flex-shrink-0 group"
                         onClick={() => onNavigate && onNavigate('home')}
                     >
-                        <div className="w-9 h-9 bg-gold rounded-lg flex items-center justify-center shadow-glow transition-transform group-hover:scale-105">
-                            <span className="text-midnight font-playfair font-bold text-lg">S</span>
+                        <div className="w-8 h-8 bg-gold rounded-lg flex items-center justify-center shadow-luxury transition-transform group-hover:scale-105">
+                            <span className="text-midnight font-playfair font-bold text-base">S</span>
                         </div>
-                        <span className="font-playfair font-bold text-white text-xl hidden sm:block tracking-wide">
+                        <span className="font-playfair font-bold text-midnight text-lg hidden sm:block tracking-wide">
                             Style<span className="text-gold">Swap</span>
                         </span>
                     </div>
 
-                    {/* Location / Delivery (Amazon Style) */}
-                    <div
-                        onClick={handleLocationClick}
-                        className="hidden lg:flex flex-col leading-tight text-white px-2 hover:outline hover:outline-1 hover:outline-white cursor-pointer rounded-sm"
-                    >
-                        <span className="text-xs text-gray-300 pl-4">Deliver to</span>
-                        <div className="flex items-center gap-1 font-bold text-sm">
-                            <MapPin size={14} className="text-white" />
-                            <span>{currentUser?.name ? 'Home' : 'select location'}</span>
+                    {/* Admin/Vendor Badge */}
+                    {(isAdmin || isSubAdmin) && (
+                        <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full border border-gray-100 ml-2 shadow-sm">
+                            <div className={`w-1.5 h-1.5 rounded-full ${isAdmin ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.4)]' : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]'} animate-pulse`} />
+                            <span className="text-midnight text-[10px] font-black tracking-wider uppercase whitespace-nowrap">
+                                {isAdmin ? 'Admin' : 'Vendor'}
+                            </span>
                         </div>
-                    </div>
+                    )}
+
+                    {/* Location / Delivery (Amazon Style) - Users Only */}
+                    {!isAdmin && !isSubAdmin && (
+                        <div
+                            onClick={handleLocationClick}
+                            className="hidden lg:flex flex-col leading-tight text-midnight px-2 hover:bg-gray-50 cursor-pointer rounded-xl transition-colors py-1"
+                        >
+                            <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Deliver to</span>
+                            <div className="flex items-center gap-1 font-bold text-xs">
+                                <MapPin size={12} className="text-gold" />
+                                <span>{currentUser?.name ? 'Home' : 'select location'}</span>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Mega Search Bar (User only) */}
-                    {showSearch && (
-                        <div className="flex-1 max-w-2xl mx-auto hidden md:flex h-10 rounded-lg overflow-hidden focus-within:ring-2 focus-within:ring-gold shadow-sm">
-                            {/* Category Dropdown */}
-                            <div className="bg-gray-100 border-r border-gray-300 relative group max-w-[150px]">
-                                <select
-                                    className="appearance-none bg-transparent h-full pl-3 pr-8 text-xs font-medium text-gray-600 focus:outline-none cursor-pointer hover:bg-gray-200 w-full truncate"
-                                    value={activeCategories.includes(selectedCategory) ? selectedCategory : 'All'}
-                                    onChange={(e) => onCategorySelect && onCategorySelect(e.target.value)}
-                                >
-                                    {activeCategories.map(c => <option key={c} value={c}>{c}</option>)}
-                                </select>
-                                <ChevronDown size={12} className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    {showSearch && !isAdmin && !isSubAdmin && (
+                        <div className="flex-1 max-w-2xl mx-auto hidden md:flex h-11 rounded-full overflow-hidden focus-within:ring-4 focus-within:ring-gold/10 shadow-sm transition-all duration-500 bg-gray-50 border border-gray-100 group/search">
+                            {/* Input Container with Typewriter Placeholder */}
+                            <div className="flex-1 bg-transparent relative flex items-center">
+                                <Search size={16} className="absolute left-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
+                                    className="w-full h-full pl-12 pr-5 text-midnight text-xs font-semibold focus:outline-none z-10 bg-transparent placeholder-transparent"
+                                />
+                                {!searchTerm && (
+                                    <div className="absolute left-12 pointer-events-none group-focus-within/search:opacity-20 transition-opacity">
+                                        <TypewriterPlaceholder />
+                                    </div>
+                                )}
                             </div>
-
-                            {/* Input */}
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-                                placeholder="Search by name, description..."
-                                className="flex-1 px-4 text-midnight text-sm placeholder-gray-500 focus:outline-none"
-                            />
 
                             {/* Clear Button */}
                             {searchTerm && (
                                 <button
                                     onClick={() => onSearchChange && onSearchChange('')}
-                                    className="bg-white px-2 text-gray-400 hover:text-red-500 transition-colors"
+                                    className="bg-transparent px-3 text-gray-400 hover:text-red-500 transition-colors"
                                 >
-                                    <X size={18} />
+                                    <X size={14} />
                                 </button>
                             )}
 
                             {/* Search Button */}
-                            <button className="bg-gold px-5 hover:bg-yellow-500 transition-colors flex items-center justify-center">
-                                <Search size={22} className="text-midnight" />
+                            <button className="bg-gold px-5 hover:bg-midnight hover:text-white transition-all duration-500 flex items-center justify-center group/btn">
+                                <Search size={16} className="text-midnight group-hover/btn:text-white group-hover/btn:scale-110 transition-transform" />
                             </button>
                         </div>
                     )}
@@ -140,13 +147,13 @@ export default function Header({
                             <div className="flex items-center gap-2">
                                 <button
                                     onClick={() => onNavigate && onNavigate('login')}
-                                    className="text-white hover:text-gold font-medium text-sm transition-colors py-2 px-1"
+                                    className="text-midnight hover:text-gold font-bold text-[10px] uppercase tracking-widest transition-colors py-2 px-3"
                                 >
                                     Sign In
                                 </button>
                                 <button
                                     onClick={() => onNavigate && onNavigate('register')}
-                                    className="bg-gold text-midnight px-4 py-2 rounded-lg font-bold text-sm hover:bg-white hover:shadow-glow transition-all"
+                                    className="bg-midnight text-white px-5 py-2.5 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-gold hover:text-midnight transition-all shadow-sm"
                                 >
                                     Join
                                 </button>
@@ -160,53 +167,69 @@ export default function Header({
                                 <div className="relative" ref={userMenuRef}>
                                     <button
                                         onClick={() => setUserMenuOpen(v => !v)}
-                                        className="hidden sm:flex flex-col items-start leading-tight text-white py-1 px-2 hover:outline hover:outline-1 hover:outline-white rounded-sm"
+                                        className="hidden sm:flex flex-col items-start leading-tight text-midnight py-1 px-3 hover:bg-gray-50 rounded-xl transition-colors"
                                     >
-                                        <span className="text-xs text-gray-300">Hello, {currentUser.name.split(' ')[0]}</span>
-                                        <span className="font-bold text-sm flex items-center gap-0.5">
-                                            Account & Lists <ChevronDown size={12} />
+                                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Hello, {currentUser.name.split(' ')[0]}</span>
+                                        <span className="font-bold text-xs flex items-center gap-0.5">
+                                            Account & Lists <ChevronDown size={10} className="text-gray-400" />
                                         </span>
                                     </button>
 
                                     {/* Mobile User Icon */}
                                     <button
                                         onClick={() => setUserMenuOpen(v => !v)}
-                                        className="sm:hidden text-white"
+                                        className="sm:hidden text-midnight p-2"
                                     >
-                                        <User size={24} />
+                                        <User size={20} />
                                     </button>
 
                                     {/* Dropdown Menu */}
                                     {userMenuOpen && (
-                                        <div className="absolute right-0 top-full mt-2 w-64 bg-white rounded-xl shadow-xl border border-gray-100 py-2 z-50 animate-fade-in-up">
-                                            <div className="px-4 py-3 bg-gradient-to-r from-gray-50 to-white border-b border-gray-100">
-                                                <p className="font-semibold text-midnight truncate">{currentUser.name}</p>
-                                                <p className="text-gray-500 text-xs truncate">{currentUser.email}</p>
-                                                <span className={`badge mt-1 text-xs ${roleColors[currentUser.role]}`}>
-                                                    {currentUser.role}
-                                                </span>
+                                        <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-3xl shadow-luxury border border-gray-100 py-3 z-50 animate-luxury-entry">
+                                            <div className="px-6 py-5 bg-gray-50 border-b border-gray-100 rounded-t-3xl">
+                                                <p className="font-playfair text-xl font-black text-midnight truncate tracking-tight">{currentUser.name}</p>
+                                                <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1 truncate">{currentUser.email}</p>
+                                                <div className="mt-4 flex items-center gap-2">
+                                                    <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${isAdmin ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-gold/10 text-gold border-gold/20'}`}>
+                                                        {currentUser.role}
+                                                    </span>
+                                                    <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                                                </div>
                                             </div>
 
-                                            <div className="py-2">
-                                                <div className="px-4 py-1 text-xs font-bold text-gray-400 uppercase tracking-wider">Your Account</div>
-                                                <button onClick={() => onNavigate('profile')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gold flex items-center gap-2">
-                                                    Your Profile
+                                            <div className="py-3 px-2 space-y-1">
+                                                <div className="px-5 py-2 text-[9px] font-black text-gray-400 uppercase tracking-[0.3em]">Identity & Controls</div>
+                                                <button onClick={() => { onNavigate('profile'); setUserMenuOpen(false); }} className="w-full text-left px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 hover:text-midnight flex items-center gap-3 transition-all group">
+                                                    <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-gold group-hover:text-midnight transition-all">
+                                                        <User size={14} />
+                                                    </div>
+                                                    {(isAdmin || isSubAdmin) ? 'System Settings' : 'Identity Profile'}
                                                 </button>
-                                                <button onClick={() => onNavigate('orders')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gold flex items-center gap-2">
-                                                    Your Orders
-                                                </button>
-                                                <button onClick={() => onNavigate('wishlist')} className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-gold flex items-center gap-2">
-                                                    Your Wishlist
-                                                </button>
+                                                {!(isAdmin || isSubAdmin) && (
+                                                    <>
+                                                        <button onClick={() => { onNavigate('orders'); setUserMenuOpen(false); }} className="w-full text-left px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 hover:text-midnight flex items-center gap-3 transition-all group">
+                                                            <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-gold group-hover:text-midnight transition-all">
+                                                                <Bell size={14} />
+                                                            </div>
+                                                            Order Manifests
+                                                        </button>
+                                                        <button onClick={() => { onNavigate('wishlist'); setUserMenuOpen(false); }} className="w-full text-left px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 hover:text-midnight flex items-center gap-3 transition-all group">
+                                                            <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-gold group-hover:text-midnight transition-all">
+                                                                <Heart size={14} />
+                                                            </div>
+                                                            Curated Desires
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
 
-                                            <div className="border-t border-gray-100 pt-2">
+                                            <div className="border-t border-gray-100 pt-2 px-2">
                                                 <button
                                                     onClick={() => { setUserMenuOpen(false); logout(); }}
-                                                    className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                                                    className="w-full flex items-center gap-3 px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
                                                 >
-                                                    <LogOut size={16} />
-                                                    Sign Out
+                                                    <LogOut size={16} strokeWidth={3} />
+                                                    Logout
                                                 </button>
                                             </div>
                                         </div>
@@ -220,67 +243,139 @@ export default function Header({
                         {isUser && onCartClick && (
                             <button
                                 onClick={onCartClick}
-                                className="relative flex items-end gap-1 text-white hover:text-gold transition-colors p-2"
+                                className="relative flex items-end gap-1 text-midnight hover:text-gold transition-colors p-2"
                                 aria-label={`Cart (${cartCount} items)`}
                             >
                                 <div className="relative">
-                                    <ShoppingCart size={28} />
-                                    <span className="absolute -top-1 -right-1 bg-gold text-midnight text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-md">
+                                    <ShoppingCart size={24} />
+                                    <span className="absolute -top-1.5 -right-1.5 bg-midnight text-white text-[9px] font-black rounded-full w-4 h-4 flex items-center justify-center shadow-lg border border-white">
                                         {cartCount > 99 ? '99+' : cartCount}
                                     </span>
                                 </div>
-                                <span className="font-bold text-sm mb-1 hidden sm:block">Cart</span>
+                                <span className="font-bold text-xs mb-0.5 hidden sm:block">Cart</span>
                             </button>
                         )}
+
                     </div>
                 </div>
 
                 {/* Mobile Search - Expanded */}
-                {showSearch && (
-                    <div className="md:hidden px-4 pb-3">
-                        <div className="relative flex h-10 rounded-lg overflow-hidden shadow-sm">
-                            <input
-                                type="text"
-                                value={searchTerm}
-                                onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
-                                placeholder="Search by name, description..."
-                                className="flex-1 px-4 text-midnight text-sm placeholder-gray-500 focus:outline-none"
-                            />
+                {showSearch && !isAdmin && !isSubAdmin && (
+                    <div className="md:hidden px-6 pb-4">
+                        <div className="relative flex h-10 rounded-full overflow-hidden shadow-sm bg-gray-50 border border-gray-100">
+                            <div className="flex-1 relative flex items-center px-4">
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => onSearchChange && onSearchChange(e.target.value)}
+                                    className="w-full h-full text-midnight text-xs font-semibold focus:outline-none z-10 bg-transparent"
+                                />
+                                {!searchTerm && (
+                                    <div className="absolute left-4 pointer-events-none">
+                                        <TypewriterPlaceholder />
+                                    </div>
+                                )}
+                            </div>
                             <button className="bg-gold px-4 flex items-center justify-center">
-                                <Search size={20} className="text-midnight" />
+                                <Search size={16} className="text-midnight" />
                             </button>
                         </div>
                     </div>
                 )}
             </header>
 
-            {/* Quick Categories Rail (Amazon/Flipkart Style) */}
-            <div className="bg-midnight/95 text-white shadow-md overflow-x-auto scrollbar-hide border-t border-white/10 z-10" ref={scrollContainerRef}>
-                <div className="max-w-screen-2xl mx-auto px-4 h-10 flex items-center gap-1 text-sm font-medium whitespace-nowrap">
-                    {activeCategories.map(cat => (
-                        <button
-                            key={cat}
-                            onClick={() => onCategorySelect && onCategorySelect(cat)}
-                            className={`px-3 h-full hover:text-gold hover:bg-white/5 transition-colors ${selectedCategory === cat ? 'text-gold border-b-2 border-gold' : ''}`}
-                        >
-                            {cat === 'All' ? <><Menu size={16} className="inline mr-1" /> All</> : cat}
-                        </button>
-                    ))}
+            {/* Quick Categories Rail */}
+            {(!currentUser || (currentUser.role !== 'Admin' && currentUser.role !== 'Sub-Admin')) && (
+                <div className="bg-white/90 backdrop-blur-xl text-midnight overflow-x-auto scrollbar-hide border-t border-gray-100 z-10 shadow-sm" ref={scrollContainerRef}>
+                    <div className="max-w-screen-2xl mx-auto px-6 h-10 flex items-center gap-2 text-[9px] font-black uppercase tracking-widest whitespace-nowrap">
+                        {activeCategories.map(cat => (
+                            <button
+                                key={cat}
+                                onClick={() => onCategorySelect && onCategorySelect(cat)}
+                                className={`h-full hover:bg-gray-50/10 transition-all relative group flex items-center px-5`}
+                            >
+                                <span className={`relative py-1 ${selectedCategory === cat ? 'text-gold' : 'text-midnight/60 group-hover:text-midnight'}`}>
+                                    {cat === 'All' ? <><Menu size={14} className="inline mr-2" /> All</> : cat.toUpperCase()}
+                                    {selectedCategory === cat && (
+                                        <div className="absolute -bottom-1 left-0 w-full h-0.5 bg-gold" />
+                                    )}
+                                </span>
+                            </button>
+                        ))}
 
-                    <button
-                        onClick={() => onCategorySelect && onCategorySelect('Great Deals')}
-                        className={`px-3 h-full text-gold hover:text-white hover:bg-white/5 transition-colors font-bold ml-auto ${selectedCategory === 'Great Deals' ? 'border-b-2 border-gold' : ''}`}
-                    >
-                        Great Deals
-                    </button>
-                    <button
-                        onClick={() => onCategorySelect && onCategorySelect('Customer Service')}
-                        className="px-3 h-full hover:text-gold hover:bg-white/5 transition-colors"
-                    >
-                        Customer Service
-                    </button>
+                        <button
+                            onClick={() => onCategorySelect && onCategorySelect('Great Deals')}
+                            className={`px-6 h-full text-gold hover:bg-gold hover:text-midnight transition-all ml-auto border-l border-gray-100 group ${selectedCategory === 'Great Deals' ? 'bg-gold text-midnight' : ''}`}
+                        >
+                            <span className="flex items-center gap-2">
+                                <Zap size={12} className={selectedCategory === 'Great Deals' ? 'animate-pulse' : ''} fill="currentColor" />
+                                Exclusive Yields
+                            </span>
+                        </button>
+                        <button
+                            onClick={() => onCategorySelect && onCategorySelect('Customer Service')}
+                            className="px-6 h-full hover:text-gold transition-all text-gray-400 border-l border-gray-100"
+                        >
+                            Concierge
+                        </button>
+                    </div>
                 </div>
-            </div>
+            )}
         </div>
+    );
+}
+
+const SEARCH_PHRASES = [
+    "ACCESSORIES",
+    "BLAZERS",
+    "LUXURY BAGS",
+    "SHOES",
+    "WATCHES",
+    "WEDDING ATTIRE"
+];
+
+function TypewriterPlaceholder() {
+    const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
+    const [currentText, setCurrentText] = useState("");
+    const [isDeleting, setIsDeleting] = useState(false);
+    const [typingSpeed, setTypingSpeed] = useState(100);
+
+    useEffect(() => {
+        let timer;
+        const currentPhrase = SEARCH_PHRASES[currentPhraseIndex];
+
+        const handleTyping = () => {
+            if (isDeleting) {
+                setCurrentText(currentPhrase.substring(0, currentText.length - 1));
+                setTypingSpeed(40); // Faster deletion
+            } else {
+                setCurrentText(currentPhrase.substring(0, currentText.length + 1));
+                setTypingSpeed(100); // Standard typing
+            }
+
+            // State Transitions
+            if (!isDeleting && currentText === currentPhrase) {
+                // Pause at the end of the phrase
+                timer = setTimeout(() => setIsDeleting(true), 2500);
+            } else if (isDeleting && currentText === "") {
+                // Pause before starting the next phrase
+                setIsDeleting(false);
+                setCurrentPhraseIndex((prev) => (prev + 1) % SEARCH_PHRASES.length);
+                timer = setTimeout(() => { }, 500);
+            } else {
+                // Continue typing/deleting
+                timer = setTimeout(handleTyping, typingSpeed);
+            }
+        };
+
+        timer = setTimeout(handleTyping, typingSpeed);
+        return () => clearTimeout(timer);
+    }, [currentText, isDeleting, currentPhraseIndex, typingSpeed]);
+
+    return (
+        <span className="text-midnight text-[11px] font-bold uppercase tracking-widest whitespace-nowrap flex items-center gap-1">
+            {currentText}
+            <span className="w-1.5 h-4 bg-gold animate-pulse rounded-sm"></span>
+        </span>
     );
 }

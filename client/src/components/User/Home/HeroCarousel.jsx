@@ -34,7 +34,6 @@ const SLIDES = [
 export default function HeroCarousel({ onAction }) {
     const [current, setCurrent] = useState(0);
 
-    // Auto-advance
     useEffect(() => {
         const timer = setInterval(() => {
             setCurrent(prev => (prev + 1) % SLIDES.length);
@@ -52,63 +51,64 @@ export default function HeroCarousel({ onAction }) {
     };
 
     return (
-        <div className="relative w-full h-[450px] md:h-[550px] lg:h-[700px] rounded-[3rem] overflow-hidden shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] group mb-16 border-4 border-white/10">
+        <div className="relative w-full h-[500px] md:h-[600px] lg:h-[750px] rounded-[3.5rem] overflow-hidden group mb-4 shadow-2xl border border-white/10">
             {SLIDES.map((slide, index) => (
                 <div
                     key={slide.id}
                     onClick={() => onAction && onAction(slide.category)}
-                    className={`absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.4,0,0.2,1)] cursor-pointer ${index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+                    className={`absolute inset-0 transition-opacity duration-1000 ease-in-out cursor-pointer ${index === current ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
                 >
-                    {/* Darkening Overlay for readability */}
-                    <div className="absolute inset-0 bg-black/20 z-[1] transition-opacity duration-1000" />
-
+                    {/* Background with Ken Burns */}
                     <img
                         src={slide.image}
                         alt={slide.title}
-                        className={`w-full h-full object-cover transition-transform duration-[8000ms] ease-out ${index === current ? 'scale-105' : 'scale-125'}`}
+                        className={`w-full h-full object-cover transition-transform duration-[10000ms] ease-out ${index === current ? 'scale-110' : 'scale-100'}`}
                     />
 
-                    {/* Gradient Mesh overlay */}
-                    <div className="absolute inset-0 bg-gradient-to-tr from-midnight/60 via-midnight/20 to-transparent z-[2]" />
+                    {/* Luxury Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-midnight-deep via-midnight-deep/20 to-transparent z-[2]" />
+                    <div className="absolute inset-0 bg-black/10 z-[1]" />
 
                     {/* Content */}
-                    <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-20 lg:px-32 z-[10]">
-                        <div className="max-w-2xl">
-                            {/* Staggered text animations using transition-delay */}
-                            <div className={`space-y-6 transition-all duration-1000 ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0'}`} style={{ transitionDelay: '300ms' }}>
-                                <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gold/90 backdrop-blur-md text-midnight text-[10px] font-black uppercase tracking-[0.3em] shadow-[0_0_20px_rgba(212,175,55,0.4)]">
-                                    <div className="w-1.5 h-1.5 rounded-full bg-midnight animate-pulse" />
-                                    Exclusive Collection
+                    <div className="absolute inset-0 flex flex-col justify-center px-10 md:px-24 lg:px-40 z-[10]">
+                        <div className="max-w-3xl space-y-8">
+                            <div className={`transition-all duration-1000 ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`} style={{ transitionDelay: '200ms' }}>
+                                <span className="inline-flex items-center gap-3 px-5 py-2 rounded-full bg-white/10 backdrop-blur-xl text-gold text-[11px] font-black uppercase tracking-[0.4em] border border-white/20 shadow-2xl">
+                                    <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+                                    The Elite Selection
                                 </span>
+                            </div>
 
-                                <h2 className="text-6xl md:text-8xl lg:text-9xl font-playfair font-bold text-white leading-[0.95] drop-shadow-[0_10px_30px_rgba(0,0,0,0.5)]">
-                                    {slide.title.split(' ').map((word, i) => (
-                                        <span key={i} className={i % 2 !== 0 ? 'text-gold italic md:block' : 'block'}>
-                                            {word}{' '}
-                                        </span>
-                                    ))}
-                                </h2>
+                            <h2 className={`text-6xl md:text-8xl lg:text-[10rem] font-playfair font-bold text-white leading-none tracking-tighter transition-all duration-1000 delay-300 ${index === current ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-10'}`}>
+                                {slide.title.split(' ').map((word, i) => (
+                                    <span key={i} className={i % 2 !== 0 ? 'text-gold italic block md:inline md:ml-4' : 'block md:inline'}>
+                                        {word}{' '}
+                                    </span>
+                                ))}
+                            </h2>
 
-                                <p className={`text-xl md:text-2xl text-gray-100/90 font-light max-w-md leading-relaxed drop-shadow-lg transition-all duration-1000 delay-[500ms] ${index === current ? 'translate-x-0 opacity-100' : 'translate-x-12 opacity-0'}`}>
-                                    {slide.subtitle}
-                                </p>
+                            <p className={`text-lg md:text-2xl text-gray-300 font-medium max-w-lg leading-relaxed transition-all duration-1000 delay-500 ${index === current ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'}`}>
+                                {slide.subtitle}
+                            </p>
 
-                                <div className={`pt-4 transition-all duration-1000 delay-[700ms] ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`}>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); onAction && onAction(slide.category); }}
-                                        className="shine-effect bg-white text-midnight font-black px-12 py-5 rounded-2xl hover:bg-gold hover:text-midnight transition-all shadow-[0_20px_40px_-10px_rgba(255,255,255,0.3)] hover:shadow-[0_20px_40px_-10px_rgba(212,175,55,0.4)] hover:scale-105 text-sm uppercase tracking-[0.2em]"
-                                    >
-                                        {slide.cta}
-                                    </button>
-                                </div>
+                            <div className={`pt-6 transition-all duration-1000 delay-700 ${index === current ? 'opacity-100 scale-100' : 'opacity-0 scale-95'}`}>
+                                <button
+                                    onClick={(e) => { e.stopPropagation(); onAction && onAction(slide.category); }}
+                                    className="group relative px-12 py-5 bg-gold text-midnight font-black text-sm uppercase tracking-[0.25em] rounded-2xl overflow-hidden shadow-glow hover:scale-105 active:scale-95 transition-all"
+                                >
+                                    <span className="relative z-10">{slide.cta}</span>
+                                    <div className="absolute inset-0 bg-white/20 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 ease-in-out" />
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    {/* Lateral Slide Counter */}
-                    <div className="absolute right-12 bottom-12 z-20 hidden md:flex items-end gap-2 font-playfair text-white/40">
-                        <span className="text-4xl font-bold text-gold">0{index + 1}</span>
-                        <span className="text-xl pb-1">/ 0{SLIDES.length}</span>
+                    {/* Luxury Side Counter */}
+                    <div className="absolute right-16 bottom-16 z-20 hidden lg:block overflow-hidden">
+                        <div className={`transition-all duration-1000 ${index === current ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+                            <span className="text-6xl font-playfair font-bold text-white/10">0{index + 1}</span>
+                            <div className="h-px w-20 bg-gold/30 mt-2" />
+                        </div>
                     </div>
                 </div>
             ))}
