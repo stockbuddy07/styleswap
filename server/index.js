@@ -49,7 +49,8 @@ try {
     app.use('/api/users', require('./routes/users'));
     app.use('/api/products', require('./routes/products'));
     app.use('/api/orders', require('./routes/orders'));
-    app.use('/api/marketing', require('./routes/marketing'));
+    app.use('/api/cart', require('./routes/cart'));
+    app.use('/api/users', require('./routes/users'));
     app.use('/api/settings', require('./routes/settings'));
 } catch (err) {
     console.error('❌ Route loading failed:', err.message);

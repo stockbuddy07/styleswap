@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Store, Star, Heart, RefreshCw, ShoppingBag } from 'lucide-react';
+import { Store, Star, Heart, RefreshCw, ShoppingBag, CheckCircle } from 'lucide-react';
 import Button from '../Shared/Button';
 import { formatCurrency, getStockStatus, DEFAULT_IMAGE } from '../../utils/helpers';
 
@@ -51,90 +51,76 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
 
     return (
         <div
-            className="group bg-white rounded-[2.5rem] border border-gray-100/50 overflow-hidden md:hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.1)] md:hover:border-gold/30 transition-all duration-700 flex flex-col relative cursor-pointer active:scale-95 md:active:scale-100"
+            className="group bg-white rounded-3xl border border-gray-100 overflow-hidden md:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col relative cursor-pointer active:scale-[0.98]"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={() => onRent(product)}
         >
             {/* Image Container */}
-            <div className="relative aspect-[3/4] overflow-hidden bg-gray-100">
+            <div className="relative aspect-[3/4] overflow-hidden bg-gray-50">
                 <img
                     src={images[currentImage]}
                     alt={product.name}
-                    className="w-full h-full object-cover transition-transform duration-[1.5s] ease-out md:group-hover:scale-110"
+                    className="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-105"
                     onError={e => { e.target.src = DEFAULT_IMAGE; }}
                 />
 
-                {/* Luxury Overlays */}
-                <div className="absolute inset-0 bg-gradient-to-t from-midnight/20 to-transparent opacity-0 md:group-hover:opacity-100 transition-all duration-700" />
-
-                {/* Badges - Premium Soft Style */}
-                <div className="absolute top-4 left-4 flex flex-col gap-2">
-                    {stock.label !== 'In Stock' && (
-                        <span className="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest bg-gold/90 text-midnight backdrop-blur-md shadow-lg">
-                            {stock.label}
-                        </span>
-                    )}
+                {/* AD Badge */}
+                <div className="absolute top-3 left-3 px-1.5 py-0.5 bg-black/40 backdrop-blur-md text-white text-[8px] font-bold rounded shadow-sm opacity-80 uppercase tracking-tighter">
+                    AD
                 </div>
 
-                {/* Wishlist Button - Minimalist */}
+                {/* Rating Badge */}
+                <div className="absolute bottom-3 left-3 flex items-center gap-1 px-2 py-1 bg-white/90 backdrop-blur-md rounded-lg shadow-sm">
+                    <span className="text-[10px] font-black text-midnight">{(product.ratings || 0).toFixed(1)}</span>
+                    <Star size={10} fill="currentColor" className="text-emerald-500" />
+                    <div className="w-px h-2 bg-gray-300 mx-0.5" />
+                    <span className="text-[9px] font-medium text-gray-500">{product.reviews?.length || 0}</span>
+                </div>
+
+                {/* Wishlist Button */}
                 <button
                     onClick={(e) => { e.stopPropagation(); }}
-                    className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center text-white hover:bg-white hover:text-midnight transition-all duration-500 shadow-xl opacity-0 md:group-hover:opacity-100"
+                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-400 hover:text-red-500 transition-all duration-300 border border-gray-100"
                 >
-                    <Heart size={18} className="transition-all" />
+                    <Heart size={16} className="transition-all" />
                 </button>
-
-                {/* Quick Add Button - Premium Slide Up */}
-                <div className="absolute inset-x-4 bottom-4 translate-y-4 opacity-0 md:group-hover:translate-y-0 md:group-hover:opacity-100 transition-all duration-500">
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onAddToCart && onAddToCart(product);
-                        }}
-                        className="w-full py-3 bg-white/95 backdrop-blur-md text-midnight text-[10px] font-black uppercase tracking-[0.2em] rounded-2xl shadow-2xl hover:bg-midnight hover:text-white transition-all flex items-center justify-center gap-2 border border-white/20"
-                    >
-                        <ShoppingBag size={12} />
-                        Add to Bag
-                    </button>
-                </div>
             </div>
 
             {/* Content Area */}
-            <div className="p-6 flex flex-col flex-1 bg-white relative">
-                {/* Brand & Rating Row */}
-                <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2 text-[10px] text-gray-400 font-black uppercase tracking-[0.3em]">
-                        <Store size={10} className="text-gray-400" />
-                        <span className="truncate max-w-[120px]">{product.designer?.brandName || product.shopName || 'StyleSwap Collection'}</span>
-                    </div>
-                </div>
+            <div className="p-3.5 sm:p-4 flex flex-col flex-1 bg-white">
+                {/* Brand Name */}
+                <h4 className="font-bold text-midnight text-[14px] sm:text-[15px] leading-tight truncate">
+                    {product.designer?.brandName || product.shopName || 'StyleSwap Elite'}
+                </h4>
 
-                {/* Product Name */}
-                <h3 className="font-serif font-medium text-midnight text-[1.25rem] leading-tight mb-4 line-clamp-2">
+                {/* Product Name (Subdued) */}
+                <p className="text-[11px] sm:text-[12px] text-gray-400 font-medium truncate mb-2">
                     {product.name}
-                </h3>
+                </p>
 
-                {/* Price & Badges Row */}
-                <div className="mt-auto">
-                    <div className="flex items-baseline gap-2 mb-2">
-                        <span className="text-3xl font-bold text-midnight tracking-tighter">
+                {/* Price & Discount Row */}
+                <div className="mt-auto space-y-1.5">
+                    <div className="flex items-center gap-2">
+                        {discount > 0 && (
+                            <span className="text-emerald-500 font-bold text-[12px] sm:text-[13px]">
+                                ↓{discount}%
+                            </span>
+                        )}
+                        <span className="text-gray-300 line-through text-[12px] sm:text-[13px]">
+                            ₹{Math.round(retailPrice)}
+                        </span>
+                        <span className="text-midnight font-bold ml-auto text-[14px] sm:text-[15px]">
                             {formatCurrency(product.pricePerDay || product.price)}
                         </span>
-                        <span className="text-[10px] text-gray-400 font-bold uppercase tracking-[0.2em] relative -top-1">/ Epoch</span>
                     </div>
 
-                    <div className="flex items-center gap-2">
-                        <span className="text-[12px] text-gray-300 line-through font-medium">
-                            {formatCurrency(retailPrice)}
-                        </span>
-                        <span className="px-2.5 py-1 rounded-md bg-red-50 text-red-500 text-[10px] font-bold tracking-tight">
-                            {discount}% Yield
-                        </span>
-                        <div className="flex items-center gap-1.5 bg-green-50 px-3 py-1 rounded-full border border-green-100 ml-auto">
-                            <RefreshCw size={10} className="text-green-600" />
-                            <span className="text-[9px] text-green-700 font-black uppercase tracking-widest">Eco-Return</span>
+                    {/* Bank Offer Banner */}
+                    <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50/50 rounded-lg border border-blue-100/50">
+                        <div className="flex items-center justify-center p-0.5 bg-blue-600 rounded">
+                            <CheckCircle size={8} className="text-white" />
                         </div>
+                        <span className="text-[9px] font-bold text-blue-700 uppercase tracking-tighter">₹290 with Bank Offer</span>
                     </div>
                 </div>
             </div>

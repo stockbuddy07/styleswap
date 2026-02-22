@@ -31,11 +31,17 @@ export default function OrdersDashboard({ onNavigate }) {
     if (loading) return <Loader fullPage={false} message="Fetching your orders..." />;
 
     return (
-        <div className="max-w-6xl mx-auto py-12 px-6 animate-luxury-entry">
+        <div className="max-w-6xl mx-auto py-10 px-6 animate-luxury-entry">
             <div className="mb-12 flex flex-col lg:flex-row lg:items-end justify-between gap-8">
-                <div className="space-y-2">
-                    <h1 className="font-playfair text-5xl font-black text-midnight tracking-tighter">Order Manifests</h1>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">Historical and Active Acquisition Log</p>
+                <div className="space-y-4">
+                    <h1 className="font-serif text-6xl font-medium text-midnight tracking-tighter leading-none">Acquisition Audit</h1>
+                    <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold text-[#8B7355] uppercase tracking-[0.4em] bg-[#FDFCF0] px-3 py-1 rounded-full border border-[#F5F1DA]">
+                            Log Verified
+                        </span>
+                        <div className="w-1 h-1 rounded-full bg-gray-200" />
+                        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">Historical and Active Acquisition Log</span>
+                    </div>
                 </div>
 
                 <div className="flex bg-midnight/5 backdrop-blur-xl p-1.5 rounded-2xl w-fit border border-midnight/5 shadow-inner">
@@ -101,8 +107,8 @@ export default function OrdersDashboard({ onNavigate }) {
 
                                 {/* Order Info */}
                                 <div className="flex-1 text-center lg:text-left space-y-4">
-                                    <h4 className="font-playfair text-xl font-black text-midnight truncate max-w-lg tracking-tight">
-                                        {order.items?.map(i => i.productName).join(', ') || 'Rental Pack'}
+                                    <h4 className="font-serif text-2xl font-medium text-midnight truncate max-w-lg tracking-tight">
+                                        {order.items?.map(i => i.productName).join(' & ') || 'Exclusive Rental Pack'}
                                     </h4>
 
                                     <div className="flex flex-wrap justify-center lg:justify-start gap-10">
@@ -114,8 +120,8 @@ export default function OrdersDashboard({ onNavigate }) {
                                             </div>
                                         </div>
                                         <div className="flex flex-col">
-                                            <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.3em] mb-2">Financial Commitment</span>
-                                            <span className="text-midnight font-black text-2xl tracking-tighter">{formatCurrency(order.totalAmount)}</span>
+                                            <span className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.3em] mb-2">Total Valuation</span>
+                                            <span className="text-midnight font-semibold text-3xl tracking-tighter leading-none">{formatCurrency(order.totalAmount)}</span>
                                         </div>
                                     </div>
                                 </div>

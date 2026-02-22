@@ -54,13 +54,13 @@ export default function Header({
     return (
         <div className="sticky top-0 z-[100] flex flex-col">
             {/* Top Bar - Main Header */}
-            <header className="bg-white/80 backdrop-blur-2xl border-b border-gray-100 relative z-50">
+            <header className={`${(isAdmin || isSubAdmin) ? 'bg-midnight/80 border-white/5 shadow-2xl' : 'bg-white/80 border-gray-100'} backdrop-blur-2xl border-b relative z-50 transition-colors duration-500`}>
                 <div className="max-w-screen-2xl mx-auto px-6 h-16 flex items-center gap-6">
                     {/* Mobile Menu (Only for management roles) */}
                     {(currentUser?.role === 'Admin' || currentUser?.role === 'Sub-Admin') && (
                         <button
                             onClick={onMenuToggle}
-                            className="lg:hidden text-midnight hover:text-gold transition-colors p-1"
+                            className={`lg:hidden ${(isAdmin || isSubAdmin) ? 'text-gray-400 hover:text-gold' : 'text-midnight hover:text-gold'} transition-colors p-1`}
                             aria-label="Toggle menu"
                         >
                             <Menu size={20} />
@@ -75,16 +75,16 @@ export default function Header({
                         <div className="w-8 h-8 bg-gold rounded-lg flex items-center justify-center shadow-luxury transition-transform group-hover:scale-105">
                             <span className="text-midnight font-playfair font-bold text-base">S</span>
                         </div>
-                        <span className="font-playfair font-bold text-midnight text-lg hidden sm:block tracking-wide">
+                        <span className={`font-playfair font-bold ${(isAdmin || isSubAdmin) ? 'text-white' : 'text-midnight'} text-lg hidden sm:block tracking-wide`}>
                             Style<span className="text-gold">Swap</span>
                         </span>
                     </div>
 
                     {/* Admin/Vendor Badge */}
                     {(isAdmin || isSubAdmin) && (
-                        <div className="flex items-center gap-2 px-3 py-1 bg-gray-50 rounded-full border border-gray-100 ml-2 shadow-sm">
+                        <div className={`flex items-center gap-2 px-3 py-1 ${(isAdmin || isSubAdmin) ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'} rounded-full border ml-2 shadow-sm`}>
                             <div className={`w-1.5 h-1.5 rounded-full ${isAdmin ? 'bg-purple-500 shadow-[0_0_8px_rgba(168,85,247,0.4)]' : 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.4)]'} animate-pulse`} />
-                            <span className="text-midnight text-[10px] font-black tracking-wider uppercase whitespace-nowrap">
+                            <span className={`text-[10px] font-black tracking-wider uppercase whitespace-nowrap ${(isAdmin || isSubAdmin) ? 'text-gray-300' : 'text-midnight'}`}>
                                 {isAdmin ? 'Admin' : 'Vendor'}
                             </span>
                         </div>
@@ -167,9 +167,9 @@ export default function Header({
                                 <div className="relative" ref={userMenuRef}>
                                     <button
                                         onClick={() => setUserMenuOpen(v => !v)}
-                                        className="hidden sm:flex flex-col items-start leading-tight text-midnight py-1 px-3 hover:bg-gray-50 rounded-xl transition-colors"
+                                        className={`hidden sm:flex flex-col items-start leading-tight ${(isAdmin || isSubAdmin) ? 'text-white hover:bg-white/10' : 'text-midnight hover:bg-gray-50'} py-1 px-3 rounded-xl transition-colors`}
                                     >
-                                        <span className="text-[9px] text-gray-500 font-bold uppercase tracking-wider">Hello, {currentUser.name.split(' ')[0]}</span>
+                                        <span className={`text-[9px] ${(isAdmin || isSubAdmin) ? 'text-gray-400' : 'text-gray-500'} font-bold uppercase tracking-wider`}>Hello, {currentUser.name.split(' ')[0]}</span>
                                         <span className="font-bold text-xs flex items-center gap-0.5">
                                             Account & Lists <ChevronDown size={10} className="text-gray-400" />
                                         </span>
@@ -178,16 +178,16 @@ export default function Header({
                                     {/* Mobile User Icon */}
                                     <button
                                         onClick={() => setUserMenuOpen(v => !v)}
-                                        className="sm:hidden text-midnight p-2"
+                                        className={`sm:hidden ${(isAdmin || isSubAdmin) ? 'text-white' : 'text-midnight'} p-2`}
                                     >
                                         <User size={20} />
                                     </button>
 
                                     {/* Dropdown Menu */}
                                     {userMenuOpen && (
-                                        <div className="absolute right-0 top-full mt-2 w-72 bg-white rounded-3xl shadow-luxury border border-gray-100 py-3 z-50 animate-luxury-entry">
-                                            <div className="px-6 py-5 bg-gray-50 border-b border-gray-100 rounded-t-3xl">
-                                                <p className="font-playfair text-xl font-black text-midnight truncate tracking-tight">{currentUser.name}</p>
+                                        <div className={`absolute right-0 top-full mt-2 w-72 ${(isAdmin || isSubAdmin) ? 'bg-midnight-deep border-white/5 text-white' : 'bg-white border-gray-100'} rounded-3xl shadow-luxury border py-3 z-50 animate-luxury-entry`}>
+                                            <div className={`px-6 py-5 ${(isAdmin || isSubAdmin) ? 'bg-white/5 border-white/5' : 'bg-gray-50 border-gray-100'} border-b rounded-t-3xl`}>
+                                                <p className={`font-playfair text-xl font-black ${(isAdmin || isSubAdmin) ? 'text-white' : 'text-midnight'} truncate tracking-tight`}>{currentUser.name}</p>
                                                 <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] mt-1 truncate">{currentUser.email}</p>
                                                 <div className="mt-4 flex items-center gap-2">
                                                     <span className={`px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-widest border ${isAdmin ? 'bg-purple-100 text-purple-700 border-purple-200' : 'bg-gold/10 text-gold border-gold/20'}`}>
@@ -199,8 +199,8 @@ export default function Header({
 
                                             <div className="py-3 px-2 space-y-1">
                                                 <div className="px-5 py-2 text-[9px] font-black text-gray-400 uppercase tracking-[0.3em]">Identity & Controls</div>
-                                                <button onClick={() => { onNavigate('profile'); setUserMenuOpen(false); }} className="w-full text-left px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 hover:text-midnight flex items-center gap-3 transition-all group">
-                                                    <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-gold group-hover:text-midnight transition-all">
+                                                <button onClick={() => { onNavigate('profile'); setUserMenuOpen(false); }} className={`w-full text-left px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest ${(isAdmin || isSubAdmin) ? 'text-gray-400 hover:bg-white/5 hover:text-white' : 'text-gray-500 hover:bg-gray-50 hover:text-midnight'} flex items-center gap-3 transition-all group`}>
+                                                    <div className={`p-2 ${(isAdmin || isSubAdmin) ? 'bg-white/5' : 'bg-gray-50'} rounded-lg group-hover:bg-gold group-hover:text-midnight transition-all`}>
                                                         <User size={14} />
                                                     </div>
                                                     {(isAdmin || isSubAdmin) ? 'System Settings' : 'Identity Profile'}
@@ -223,10 +223,10 @@ export default function Header({
                                                 )}
                                             </div>
 
-                                            <div className="border-t border-gray-100 pt-2 px-2">
+                                            <div className={`border-t ${(isAdmin || isSubAdmin) ? 'border-white/5' : 'border-gray-100'} pt-2 px-2`}>
                                                 <button
                                                     onClick={() => { setUserMenuOpen(false); logout(); }}
-                                                    className="w-full flex items-center gap-3 px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest text-red-500 hover:bg-red-50 transition-all"
+                                                    className={`w-full flex items-center gap-3 px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest text-red-500 ${(isAdmin || isSubAdmin) ? 'hover:bg-red-500/10' : 'hover:bg-red-50'} transition-all`}
                                                 >
                                                     <LogOut size={16} strokeWidth={3} />
                                                     Logout

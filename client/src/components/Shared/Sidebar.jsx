@@ -59,8 +59,13 @@ export default function Sidebar({ currentPage, onNavigate, isOpen, onClose }) {
                 `}
             >
                 {/* Mobile Header */}
-                <div className="lg:hidden h-16 flex items-center justify-between px-6 border-b border-white/10 bg-midnight/50 backdrop-blur-md">
-                    <span className="font-playfair font-bold text-xl text-white tracking-widest uppercase">Elite Menu</span>
+                <div className="lg:hidden h-16 flex items-center justify-between px-6 border-b border-white/5 bg-midnight-deep backdrop-blur-3xl">
+                    <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 bg-gold rounded-lg flex items-center justify-center shadow-luxury">
+                            <span className="text-midnight font-playfair font-bold text-base">S</span>
+                        </div>
+                        <span className="font-playfair font-bold text-white tracking-wide">Elite Console</span>
+                    </div>
                     <button
                         onClick={onClose}
                         className="p-2 text-gray-400 hover:text-white transition-colors"
@@ -106,7 +111,7 @@ export default function Sidebar({ currentPage, onNavigate, isOpen, onClose }) {
                                 onClick={() => { onNavigate(id); onClose(); }}
                                 className={`w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-sm font-bold transition-all duration-500 group relative overflow-hidden animate-luxury-entry stagger-${index + 1} ${isActive
                                     ? 'bg-white/10 text-white shadow-2xl border border-white/10'
-                                    : 'text-gray-500 hover:bg-white/5 hover:text-white border border-transparent'
+                                    : 'text-gray-400 hover:bg-white/5 hover:text-white border border-transparent'
                                     }`}
                             >
                                 {/* Active Indicator Glow */}

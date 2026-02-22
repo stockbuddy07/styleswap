@@ -62,13 +62,13 @@ export default function ProfileDashboard() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50/50 py-12 px-6">
-            <div className="max-w-7xl mx-auto space-y-10">
+        <div className="min-h-screen bg-gray-50/50 py-10 px-6">
+            <div className="max-w-7xl mx-auto space-y-8">
 
                 {/* Header */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div>
-                        <h1 className="font-playfair text-4xl font-bold text-midnight tracking-tight">My Account</h1>
+                        <h1 className="font-serif text-4xl font-medium text-midnight tracking-tight">My Account</h1>
                         <p className="text-gray-500 mt-2 font-medium">Manage your personal information and orders.</p>
                     </div>
                     <button
@@ -103,7 +103,7 @@ export default function ProfileDashboard() {
                                     </button>
                                 </div>
 
-                                <h2 className="mt-6 font-playfair font-bold text-2xl text-midnight">{currentUser?.name}</h2>
+                                <h2 className="mt-6 font-serif font-medium text-2xl text-midnight">{currentUser?.name}</h2>
                                 <p className="text-gray-400 text-sm font-medium tracking-wide uppercase mt-1">{currentUser?.role || 'Member'}</p>
 
                                 <div className="mt-8 flex items-center justify-center gap-3">
@@ -142,7 +142,7 @@ export default function ProfileDashboard() {
                                 <div className="space-y-10 animate-fade-in-up">
                                     <div className="flex items-center justify-between border-b border-gray-100 pb-8">
                                         <div>
-                                            <h2 className="font-playfair text-2xl font-bold text-midnight">Personal Details</h2>
+                                            <h2 className="font-serif text-2xl font-medium text-midnight">Personal Details</h2>
                                             <p className="text-gray-400 text-sm mt-1">Update your personal information</p>
                                         </div>
                                     </div>

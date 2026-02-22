@@ -24,14 +24,14 @@ function MetricCard({ icon: Icon, label, value, sub, color, trend, index }) {
             </div>
             <div className="relative z-10 space-y-1">
                 <p className="text-gray-500 text-[10px] font-black tracking-[0.2em] uppercase">{label}</p>
-                <h3 className="text-4xl font-black text-midnight font-numeric tracking-tighter">{value}</h3>
+                <h3 className="text-4xl font-black text-white font-numeric tracking-tighter">{value}</h3>
                 {sub && <p className="text-[10px] text-gray-500 font-bold uppercase mt-2 group-hover:text-gray-300 transition-colors tracking-wider">{sub}</p>}
             </div>
         </div>
     );
 }
 
-export default function Analytics() {
+export default function Analytics({ onNavigate }) {
     const { users } = useUsers();
     const { allProducts } = useProducts();
     const { allOrders } = useOrders();
@@ -92,12 +92,34 @@ export default function Analytics() {
         return { totalUsers, vendors, customers, totalProducts, activeRentals, totalRevenue, monthlyRevenue, topShops, maxRevenue };
     }, [users, allProducts, allOrders]);
 
+    const exportData = () => {
+        const headers = ["Metric", "Value", "Notes"];
+        const rows = [
+            ["Total Users", metrics.totalUsers, `${metrics.vendors.length} vendors, ${metrics.customers.length} customers`],
+            ["Total Products", metrics.totalProducts, ""],
+            ["Total Revenue", metrics.totalRevenue, ""],
+            ["Active Rentals", metrics.activeRentals, ""],
+            ["Monthly Revenue (Current)", metrics.monthlyRevenue[5]?.revenue || 0, ""]
+        ];
+
+        const csvContent = "data:text/csv;charset=utf-8,"
+            + [headers, ...rows].map(e => e.join(",")).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `StyleSwap_Analytics_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50 p-6 text-midnight space-y-8 font-sans">
+        <div className="min-h-screen bg-gradient-to-br from-midnight via-midnight-deep to-midnight p-6 text-white space-y-8 font-sans">
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/5 pb-8 animate-luxury-entry stagger-1">
                 <div className="space-y-2">
-                    <h1 className="font-playfair text-5xl font-black text-midnight tracking-tighter">Analytics & Reports</h1>
+                    <h1 className="font-playfair text-5xl font-black bg-clip-text text-transparent bg-gradient-to-r from-white via-gray-200 to-gray-500 tracking-tighter">Analytics & Reports</h1>
                     <div className="flex items-center gap-3">
                         <div className="w-2 h-2 rounded-full bg-gold animate-pulse" />
                         <p className="text-gray-500 text-xs font-black uppercase tracking-[0.2em]">Platform Performance Overview</p>
@@ -108,7 +130,10 @@ export default function Analytics() {
                         <Calendar size={18} />
                         Filter Period
                     </button>
-                    <button className="flex items-center gap-2.5 px-6 py-3.5 bg-gold text-midnight rounded-2xl text-[10px] font-black hover:scale-105 hover:shadow-glow transition-all shadow-2xl uppercase tracking-widest">
+                    <button
+                        onClick={exportData}
+                        className="flex items-center gap-2.5 px-6 py-3.5 bg-gold text-midnight rounded-2xl text-[10px] font-black hover:scale-105 hover:shadow-glow transition-all shadow-2xl uppercase tracking-widest"
+                    >
                         <Download size={18} strokeWidth={3} />
                         Export Data
                     </button>
@@ -217,7 +242,12 @@ export default function Analytics() {
                         </h2>
                         <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">Highest Performing Partners</p>
                     </div>
-                    <button className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-gold hover:bg-gold hover:text-midnight transition-all uppercase tracking-widest shadow-lg">View All Partners</button>
+                    <button
+                        onClick={() => onNavigate && onNavigate('users')}
+                        className="px-6 py-2.5 bg-white/5 border border-white/10 rounded-xl text-[10px] font-black text-gold hover:bg-gold hover:text-midnight transition-all uppercase tracking-widest shadow-lg"
+                    >
+                        View All Partners
+                    </button>
                 </div>
 
                 <div className="overflow-x-auto">

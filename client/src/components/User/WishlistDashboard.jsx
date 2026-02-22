@@ -28,13 +28,13 @@ export default function WishlistDashboard({ onNavigate, onProductClick }) {
     };
 
     return (
-        <div className="max-w-7xl mx-auto py-16 px-6 animate-luxury-entry">
+        <div className="max-w-7xl mx-auto py-10 px-6 animate-luxury-entry">
             <div className="mb-16 text-center space-y-4">
                 <div className="inline-flex items-center justify-center w-20 h-20 bg-midnight/5 backdrop-blur-xl text-gold rounded-full mb-2 border border-midnight/5 shadow-2xl">
                     <Heart size={32} fill="currentColor" />
                 </div>
-                <h1 className="font-playfair text-5xl font-black text-midnight tracking-tighter">Curated Desires</h1>
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Elite Selection for Upcoming Occasions</p>
+                <h1 className="font-serif text-5xl font-medium text-midnight tracking-tighter">Curated Desires</h1>
+                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.4em]">Elite Selection for Upcoming Occasions</p>
             </div>
 
             {wishlistItems.length === 0 ? (
@@ -72,7 +72,7 @@ export default function WishlistDashboard({ onNavigate, onProductClick }) {
                 <div className="mt-20 bg-midnight rounded-[3rem] p-12 text-white relative overflow-hidden group shadow-glow">
                     <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-10">
                         <div className="text-center lg:text-left">
-                            <h2 className="font-playfair text-4xl font-black mb-3 tracking-tight">Step into the Radiance</h2>
+                            <h2 className="font-serif text-4xl font-medium mb-3 tracking-tight">Step into the Radiance</h2>
                             <p className="text-[11px] font-black text-gold uppercase tracking-[0.3em]">Transition from Desire to Acquisition</p>
                         </div>
                         <button

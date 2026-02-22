@@ -15,11 +15,17 @@ export function ProductProvider({ children }) {
     const parseProduct = (p) => {
         if (!p) return p;
         try {
+            const reviews = p.reviews || [];
+            const avgRating = reviews.length > 0
+                ? reviews.reduce((acc, r) => acc + (r.rating || 0), 0) / reviews.length
+                : (p.ratings || 0);
+
             return {
                 ...p,
                 images: typeof p.images === 'string' ? JSON.parse(p.images) : (p.images || []),
                 sizes: typeof p.sizes === 'string' ? JSON.parse(p.sizes) : (p.sizes || []),
-                reviews: p.reviews || [],
+                reviews,
+                ratings: avgRating,
                 description: p.description || '',
                 // Ensure vendor shopName is flattened for easier UI access
                 shopName: p.vendor?.shopName || p.shopName || 'Premium Store'

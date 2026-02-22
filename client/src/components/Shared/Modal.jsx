@@ -29,34 +29,34 @@ export default function Modal({ isOpen, onClose, title, children, size = 'md', h
 
     return (
         <div
-            ref={overlayRef}
-            className="modal-backdrop fixed inset-0 z-50 flex items-center justify-center p-4"
-            style={{ backgroundColor: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(4px)' }}
-            onClick={(e) => { if (e.target === overlayRef.current) onClose(); }}
+            className="fixed inset-0 z-[60] flex items-center justify-center p-4 sm:p-6 md:p-10 transition-all duration-300"
+            style={{ backgroundColor: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)' }}
+            onClick={onClose} // Close on clicking any part of the backdrop
         >
             <div
-                className={`modal-content rounded-2xl shadow-2xl w-full ${sizes[size]} max-h-[90vh] flex flex-col ${className}`}
+                className={`modal-content relative rounded-[2rem] sm:rounded-[2.5rem] shadow-[0_32px_64px_-16px_rgba(0,0,0,0.3)] w-full ${sizes[size]} max-h-[90vh] flex flex-col scale-100 animate-in fade-in zoom-in duration-300 ${className}`}
                 role="dialog"
                 aria-modal="true"
                 aria-labelledby={title ? 'modal-title' : undefined}
+                onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside the card
             >
                 {!hideHeader && (
-                    <div className={`flex items-center justify-between px-6 py-4 border-b border-gray-100 ${headerClassName}`}>
+                    <div className={`flex items-center justify-between px-6 sm:px-10 py-5 sm:py-8 border-b border-gray-100/50 ${headerClassName}`}>
                         {title && (
-                            <h2 id="modal-title" className="text-xl font-playfair font-semibold">
+                            <h2 id="modal-title" className="text-xl sm:text-2xl font-playfair font-black text-midnight tracking-tight">
                                 {title}
                             </h2>
                         )}
                         <button
                             onClick={onClose}
-                            className="ml-auto p-2 rounded-lg hover:bg-white/10 transition-colors text-inherit opacity-70 hover:opacity-100"
+                            className="ml-auto p-2 rounded-xl bg-gray-50 hover:bg-gray-100 transition-all text-midnight"
                             aria-label="Close modal"
                         >
                             <X size={20} />
                         </button>
                     </div>
                 )}
-                <div className="overflow-y-auto flex-1 px-6 py-4 custom-scrollbar">
+                <div className="overflow-y-auto flex-1 custom-scrollbar">
                     {children}
                 </div>
             </div>

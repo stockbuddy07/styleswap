@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Star, Heart, Share2, ShieldCheck, Truck, RefreshCw, ChevronLeft, ChevronRight, ShoppingCart, MessageSquare, Send, User } from 'lucide-react';
+import { Star, Heart, Share2, Truck, RefreshCw, ChevronLeft, ChevronRight, ShoppingCart, MessageSquare, Send, User, Search, ArrowDown, ShoppingBag } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { useProducts } from '../../context/ProductContext';
@@ -8,8 +8,8 @@ import Button from '../Shared/Button';
 import Loader from '../Shared/Loader';
 import { formatCurrency, getStockStatus, getTodayString, DEFAULT_IMAGE } from '../../utils/helpers';
 
-export default function ProductDetailsModal({ product: initialProduct, isOpen, onClose }) {
-    const { addToCart } = useCart();
+export default function ProductDetailsModal({ product: initialProduct, isOpen, onClose, onNavigate }) {
+    const { addToCart, cartCount } = useCart();
     const { getDetailedProduct, submitReview } = useProducts();
     const { currentUser } = useAuth();
     const toast = useToast();
@@ -112,176 +112,143 @@ export default function ProductDetailsModal({ product: initialProduct, isOpen, o
         <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-6 overflow-hidden">
             <div className="absolute inset-0 bg-black/70 backdrop-blur-md transition-opacity" onClick={onClose} />
 
-            <div className="relative bg-white rounded-3xl w-full max-w-7xl h-full max-h-[96vh] overflow-hidden shadow-2xl flex flex-col animate-scale-in">
-                {/* Header Actions */}
-                <div className="absolute top-6 right-6 z-20 flex gap-3">
-                    <button className="p-3 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white text-gray-500 hover:text-red-500 transition-all shadow-lg border border-gray-100">
-                        <Heart size={20} />
-                    </button>
-                    <button className="p-3 bg-white/90 backdrop-blur-sm rounded-full hover:bg-white text-gray-500 hover:text-blue-500 transition-all shadow-lg border border-gray-100">
-                        <Share2 size={20} />
-                    </button>
-                    <button onClick={onClose} className="p-3 bg-midnight text-white rounded-full hover:bg-red-600 transition-all shadow-lg">
-                        <X size={20} />
-                    </button>
-                </div>
+            <div className="relative bg-white w-full max-w-7xl h-full md:h-[96vh] md:max-h-[96vh] md:rounded-3xl overflow-hidden shadow-2xl flex flex-col">
+                <div className="flex flex-col h-full w-full animate-scale-in">
+                    {/* Marketplace Sticky Header */}
+                    <div className="sticky top-0 z-40 bg-white border-b border-gray-100 px-4 h-14 flex items-center gap-4 shrink-0">
+                        <button onClick={onClose} className="p-1 -ml-1 text-midnight hover:bg-gray-100 rounded-full transition-colors">
+                            <ChevronLeft size={24} strokeWidth={2.5} />
+                        </button>
 
-                <div className="flex-1 overflow-y-auto">
-                    <div className="p-6 lg:p-10">
-                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
-
-                            {/* Left: Image Gallery (LG: 7 cols) */}
-                            <div className="lg:col-span-7 flex flex-col md:flex-row gap-6">
-                                {/* Thumbnails Sidebar */}
-                                <div className="hidden md:flex flex-col gap-3 order-1">
-                                    {images.map((img, idx) => (
-                                        <button
-                                            key={idx}
-                                            onMouseEnter={() => setCurrentImageIndex(idx)}
-                                            onClick={() => setCurrentImageIndex(idx)}
-                                            className={`relative w-20 h-24 rounded-xl overflow-hidden border-2 transition-all duration-200 shadow-sm ${idx === currentImageIndex ? 'border-midnight ring-2 ring-midnight/10' : 'border-gray-100 opacity-60 hover:opacity-100 hover:border-gray-300'}`}
-                                        >
-                                            <img src={img} alt="" className="w-full h-full object-cover" />
-                                        </button>
-                                    ))}
-                                </div>
-
-                                {/* Main Image */}
-                                <div className="flex-1 relative aspect-[4/5] rounded-3xl overflow-hidden bg-gray-50 border border-gray-100 shadow-inner group order-2">
-                                    <img
-                                        src={images[currentImageIndex]}
-                                        alt={displayProduct.name}
-                                        className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
-                                    />
-                                    {images.length > 1 && (
-                                        <>
-                                            <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/90 text-midnight hover:bg-white shadow-xl opacity-0 group-hover:opacity-100 transition-all">
-                                                <ChevronLeft size={24} />
-                                            </button>
-                                            <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/90 text-midnight hover:bg-white shadow-xl opacity-0 group-hover:opacity-100 transition-all">
-                                                <ChevronRight size={24} />
-                                            </button>
-                                        </>
-                                    )}
-                                    <div className="absolute top-6 left-6">
-                                        <div className="flex flex-col gap-2">
-                                            <span className={`px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest shadow-lg ${stock.color === 'text-green-600' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-                                                {stock.label}
-                                            </span>
-                                            {displayProduct.ratings >= 4 && (
-                                                <span className="bg-gold text-midnight px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-widest flex items-center gap-2 shadow-lg w-fit">
-                                                    <Star size={14} fill="currentColor" /> Bestseller
-                                                </span>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                        <div className="flex-1 relative">
+                            <div className="flex items-center gap-2 bg-blue-50/50 border border-blue-200/50 px-3 py-1.5 rounded-lg w-full">
+                                <Search size={16} className="text-gray-400" />
+                                <span className="text-[13px] text-gray-500 font-medium">Search for products</span>
                             </div>
+                        </div>
 
-                            {/* Right: Product Info (LG: 5 cols) */}
-                            <div className="lg:col-span-5 flex flex-col">
-                                <div className="mb-2">
-                                    <p className="text-gold font-bold text-sm tracking-widest uppercase mb-1">Brand: {displayProduct.vendor?.shopName || 'Premium Collection'}</p>
-                                    <h1 className="text-4xl font-playfair font-bold text-midnight leading-tight">{displayProduct.name}</h1>
-                                </div>
+                        <div className="flex items-center gap-2">
+                            <div className="relative p-2 text-midnight hover:bg-gray-100 rounded-full transition-colors">
+                                <ShoppingCart size={22} />
+                                <span className="absolute top-1 right-1 bg-red-500 text-white text-[9px] font-black w-4 h-4 rounded-full flex items-center justify-center border-2 border-white">2</span>
+                            </div>
+                        </div>
+                    </div>
 
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="flex items-center gap-1 bg-green-50 px-2.5 py-1 rounded-lg">
-                                        <span className="text-green-700 font-bold">{displayProduct.ratings || '5.0'}</span>
-                                        <Star size={14} fill="currentColor" className="text-gold" />
+                    <div className="flex-1 overflow-y-auto pb-24 scrollbar-hide">
+                        <div className="lg:p-10">
+                            <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-10">
+
+                                {/* Left: Image Gallery (LG: 7 cols) */}
+                                <div className="lg:col-span-7 flex flex-col md:flex-row gap-6">
+                                    {/* Thumbnails Sidebar */}
+                                    <div className="hidden md:flex flex-col gap-3 order-1">
+                                        {images.map((img, idx) => (
+                                            <button
+                                                key={idx}
+                                                onMouseEnter={() => setCurrentImageIndex(idx)}
+                                                onClick={() => setCurrentImageIndex(idx)}
+                                                className={`relative w-20 h-24 rounded-xl overflow-hidden border-2 transition-all duration-200 shadow-sm ${idx === currentImageIndex ? 'border-midnight ring-2 ring-midnight/10' : 'border-gray-100 opacity-60 hover:opacity-100 hover:border-gray-300'}`}
+                                            >
+                                                <img src={img} alt="" className="w-full h-full object-cover" />
+                                            </button>
+                                        ))}
                                     </div>
-                                    <span className="text-gray-400 text-sm border-l border-gray-200 pl-3">
-                                        {displayProduct.reviewCount || 0} Dynamic Global Reviews
-                                    </span>
-                                </div>
 
-                                <div className="bg-gray-50/50 rounded-3xl p-6 border border-gray-100 mb-8">
-                                    <div className="flex items-center gap-3 text-red-500 font-bold text-sm uppercase tracking-tighter mb-2">
-                                        <span className="flex items-center gap-1 bg-red-100 px-3 py-1 rounded-full"><TrendingUp size={14} /> Limited time deal</span>
-                                    </div>
-                                    <div className="flex items-baseline gap-4 mb-2">
-                                        <span className="text-3xl text-red-500 font-extralight italic">-{discount}%</span>
-                                        <div className="flex flex-col">
-                                            <div className="flex items-baseline gap-1">
-                                                <span className="text-sm font-bold text-midnight mt-1">₹</span>
-                                                <span className="text-5xl font-bold text-midnight leading-none">{Math.floor(displayProduct.pricePerDay)}</span>
-                                                <span className="text-xl font-bold text-midnight leading-none">00</span>
+                                    {/* Main Image */}
+                                    <div className="flex-1 relative aspect-[4/5] md:rounded-3xl overflow-hidden bg-gray-50 border-b lg:border border-gray-100 shadow-inner group lg:order-2">
+                                        <img
+                                            src={images[currentImageIndex]}
+                                            alt={displayProduct.name}
+                                            className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+                                        />
+
+                                        {/* Vertical Floating Actions (Top-Right) */}
+                                        <div className="absolute top-4 right-4 flex flex-col gap-3">
+                                            <button className="p-2.5 bg-white/95 rounded-full shadow-lg border border-gray-100 text-midnight hover:text-red-500 transition-all active:scale-90">
+                                                <Heart size={22} strokeWidth={1.5} />
+                                            </button>
+                                            <button className="p-2.5 bg-white/95 rounded-full shadow-lg border border-gray-100 text-midnight hover:text-blue-500 transition-all active:scale-90">
+                                                <Share2 size={20} strokeWidth={1.5} />
+                                            </button>
+                                        </div>
+
+                                        {/* Rating Badge Overlay (Bottom-Left) */}
+                                        <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-3 py-1 bg-white/90 backdrop-blur-md rounded-lg shadow-sm border border-black/5">
+                                            <div className="flex items-center gap-1 pr-1.5 border-r border-gray-300">
+                                                <span className="text-[13px] font-black text-midnight">{(displayProduct.ratings || 0).toFixed(1)}</span>
+                                                <Star size={12} fill="currentColor" className="text-emerald-500" />
                                             </div>
-                                            <p className="text-gray-400 text-xs mt-1">M.R.P: <span className="line-through">{formatCurrency(retailPrice)}</span></p>
+                                            <span className="text-[12px] font-medium text-gray-500">{displayProduct.reviews?.length || 0}</span>
                                         </div>
-                                    </div>
-                                    <p className="text-xs text-gray-500 italic mt-2">Inclusive of all taxes & dry cleaning charges</p>
-                                </div>
 
-                                {/* Custom Offers Selection */}
-                                <div className="mb-8">
-                                    <h3 className="flex items-center gap-2 font-bold text-midnight mb-4 uppercase tracking-tighter text-sm">
-                                        <ShieldCheck size={18} className="text-gold" /> Offers & Benefits
-                                    </h3>
-                                    <div className="grid grid-cols-2 gap-3">
-                                        <div className="p-3 border-2 border-dashed border-gray-200 rounded-2xl hover:border-gold transition-colors cursor-pointer group">
-                                            <p className="font-bold text-xs text-midnight group-hover:text-gold transition-colors">Bank Offer</p>
-                                            <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">Upto ₹1500 off on select bank cards</p>
-                                        </div>
-                                        <div className="p-3 border-2 border-dashed border-gray-200 rounded-2xl hover:border-gold transition-colors cursor-pointer group">
-                                            <p className="font-bold text-xs text-midnight group-hover:text-gold transition-colors">Style Points</p>
-                                            <p className="text-[10px] text-gray-500 mt-1 line-clamp-2">Earn 50 bonus points on this rental</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                {/* Selection Form */}
-                                <div className="space-y-6 mb-8">
-                                    <div>
-                                        <label className="block text-sm font-bold text-midnight mb-3">Select Size</label>
-                                        <div className="flex flex-wrap gap-2">
-                                            {displayProduct.sizes?.map(s => (
-                                                <button
-                                                    key={s}
-                                                    onClick={() => setSize(s)}
-                                                    className={`px-6 py-3 rounded-2xl font-bold border-2 transition-all ${size === s ? 'bg-midnight border-midnight text-white shadow-xl scale-105' : 'bg-white border-gray-100 text-gray-600 hover:border-gold hover:text-gold'}`}
-                                                >
-                                                    {s}
+                                        {images.length > 1 && (
+                                            <>
+                                                <button onClick={prevImage} className="absolute left-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/90 text-midnight hover:bg-white shadow-xl opacity-0 lg:group-hover:opacity-100 transition-all hidden lg:block">
+                                                    <ChevronLeft size={24} />
                                                 </button>
-                                            ))}
-                                        </div>
-                                        {errors.size && <p className="text-red-500 text-xs mt-2 font-medium">{errors.size}</p>}
-                                    </div>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div className="space-y-2">
-                                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rental Starts</label>
-                                            <input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-gold" />
-                                        </div>
-                                        <div className="space-y-2">
-                                            <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rental Ends</label>
-                                            <input type="date" value={endDate} min={startDate || today} onChange={e => setEndDate(e.target.value)} className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-gold" />
-                                        </div>
+                                                <button onClick={nextImage} className="absolute right-4 top-1/2 -translate-y-1/2 p-3 rounded-full bg-white/90 text-midnight hover:bg-white shadow-xl opacity-0 lg:group-hover:opacity-100 transition-all hidden lg:block">
+                                                    <ChevronRight size={24} />
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
 
-                                {/* Primary CTA */}
-                                <div className="mt-auto space-y-4">
-                                    {rentalDays > 0 && (
-                                        <div className="flex items-center justify-between p-4 bg-midnight text-white rounded-3xl shadow-glow overflow-hidden relative group">
-                                            <div className="absolute inset-0 bg-gradient-to-r from-gold/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                                            <div className="relative z-10 flex flex-col">
-                                                <span className="text-[10px] uppercase font-bold tracking-widest opacity-80">Final Quote ({rentalDays} days)</span>
-                                                <span className="text-2xl font-bold">{formatCurrency(total)}</span>
+                                {/* Right: Product Info (LG: 5 cols) */}
+                                <div className="lg:col-span-5 flex flex-col pt-10">
+                                    {/* Size Selector (Top) */}
+                                    <div className="space-y-6 mb-10">
+                                        <div>
+                                            <div className="flex items-center gap-3 mb-4">
+                                                <label className="text-[17px] font-bold text-midnight">Select Size</label>
+                                                <button className="text-[14px] font-bold text-blue-600 hover:underline">Size Chart</button>
                                             </div>
-                                            <Button onClick={handleAddToCart} className="bg-gold text-midnight hover:bg-white border-none px-8 py-3 rounded-2xl shadow-xl font-black uppercase text-sm">
-                                                Confirm Rental
-                                            </Button>
+                                            <div className="flex flex-wrap gap-3">
+                                                {['M', 'L', 'XL', 'XXL', '3XL'].map(s => (
+                                                    <button
+                                                        key={s}
+                                                        onClick={() => setSize(s)}
+                                                        className={`min-w-[56px] h-14 flex items-center justify-center rounded-xl font-bold text-[15px] border transition-all ${size === s ? 'border-midnight bg-white ring-1 ring-midnight shadow-sm' : 'border-gray-200 text-gray-500 hover:border-midnight'}`}
+                                                    >
+                                                        {s}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            {errors.size && <p className="text-red-500 text-xs mt-2 font-medium">{errors.size}</p>}
                                         </div>
-                                    )}
-                                    {rentalDays <= 0 && (
-                                        <Button fullWidth onClick={handleAddToCart} size="lg" className="rounded-3xl py-6 font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3">
-                                            <ShoppingCart size={24} /> Add to Cart (Pick dates)
-                                        </Button>
-                                    )}
+                                    </div>
+
+                                    <div className="space-y-8">
+                                        {/* Brand & Price (Now below Size) */}
+                                        <div className="pt-8 border-t border-gray-100">
+                                            <h1 className="text-[18px] font-bold text-midnight leading-tight mb-1">{displayProduct.vendor?.shopName || 'Marketplace Collection'}</h1>
+                                            <p className="text-[15px] text-gray-500 font-medium mb-6">{displayProduct.name}</p>
+
+                                            <div className="flex items-center gap-3">
+                                                <span className="text-emerald-600 flex items-center gap-0.5 font-bold text-2xl">
+                                                    <ArrowDown size={20} strokeWidth={3} />
+                                                    {discount}%
+                                                </span>
+                                                <span className="text-gray-400 text-xl line-through">999</span>
+                                                <span className="text-3xl font-black text-midnight">₹{displayProduct.pricePerDay}</span>
+                                            </div>
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rental Starts</label>
+                                                <input type="date" value={startDate} min={today} onChange={e => setStartDate(e.target.value)} className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-gold" />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Rental Ends</label>
+                                                <input type="date" value={endDate} min={startDate || today} onChange={e => setEndDate(e.target.value)} className="w-full bg-gray-50 border-none rounded-2xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-gold" />
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     {/* Seller Info */}
-                                    <div className="flex items-center gap-4 p-4 bg-gray-50 rounded-3xl border border-gray-100">
+                                    <div className="mt-8 flex items-center gap-4 p-4 bg-gray-50 rounded-3xl border border-gray-100">
                                         <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center border border-gray-200 text-gold shadow-sm">
                                             {displayProduct.vendor?.avatar ? <img src={displayProduct.vendor.avatar} className="w-full h-full rounded-full object-cover" /> : <User size={24} />}
                                         </div>
@@ -296,7 +263,7 @@ export default function ProductDetailsModal({ product: initialProduct, isOpen, o
                         </div>
 
                         {/* Reviews & Description Extension */}
-                        <div className="mt-16 border-t border-gray-100 pt-16">
+                        <div className="mt-16 border-t border-gray-100 pt-16 px-4 lg:px-10">
                             <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
                                 {/* Left Side: Description & Info */}
                                 <div className="lg:col-span-4 space-y-10">
@@ -329,7 +296,9 @@ export default function ProductDetailsModal({ product: initialProduct, isOpen, o
                                         <h3 className="font-playfair text-2xl font-bold text-midnight">Customer Reviews</h3>
                                         <div className="flex items-center gap-2">
                                             <div className="flex text-gold">
-                                                {[...Array(5)].map((_, i) => <Star key={i} size={18} fill={i < Math.floor(displayProduct.ratings || 0) ? "currentColor" : "none"} className={i < Math.floor(displayProduct.ratings || 0) ? "" : "text-gray-200"} />)}
+                                                {[...Array(5)].map((_, i) => (
+                                                    <Star key={i} size={18} fill={i < Math.floor(displayProduct.ratings || 0) ? "currentColor" : "none"} className={i < Math.floor(displayProduct.ratings || 0) ? "" : "text-gray-200"} />
+                                                ))}
                                             </div>
                                             <span className="font-bold text-midnight">{displayProduct.ratings || '5.0'} out of 5</span>
                                         </div>
@@ -389,7 +358,7 @@ export default function ProductDetailsModal({ product: initialProduct, isOpen, o
                                                 <div key={rev.id || idx} className="group animate-fade-in-up" style={{ animationDelay: `${idx * 100}ms` }}>
                                                     <div className="flex items-start gap-4 mb-3">
                                                         <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center text-midnight font-bold border-2 border-white shadow-sm">
-                                                            {rev.user?.avatar ? <img src={rev.user.avatar} className="w-full h-full rounded-full object-cover" /> : rev.user?.name[0] || 'U'}
+                                                            {rev.user?.avatar ? <img src={rev.user.avatar} className="w-full h-full rounded-full object-cover" /> : rev.user?.name?.[0] || 'U'}
                                                         </div>
                                                         <div className="flex-1">
                                                             <div className="flex items-center justify-between mb-1">
@@ -415,13 +384,43 @@ export default function ProductDetailsModal({ product: initialProduct, isOpen, o
                             </div>
                         </div>
                     </div>
+
+                </div>
+
+                {/* Fixed Twin-Button Bar */}
+                <div className="bg-white/95 backdrop-blur-md border-t border-gray-100 px-6 py-4 flex items-center gap-4 z-[60] shrink-0">
+                    <button
+                        onClick={handleAddToCart}
+                        className="flex-1 h-14 bg-white border border-gray-200 text-midnight rounded-2xl font-bold text-[15px] hover:bg-gray-50 hover:border-midnight/30 hover:shadow-sm active:scale-[0.98] transition-all"
+                    >
+                        Add to cart
+                    </button>
+
+                    <button
+                        onClick={handleAddToCart}
+                        className="flex-1 h-14 bg-[#FFC107] text-midnight rounded-2xl font-black text-[15px] hover:bg-[#FFB300] hover:shadow-gold/20 hover:shadow-lg active:scale-[0.98] transition-all shadow-md"
+                    >
+                        {rentalDays > 0 ? `Buy at ${formatCurrency(total)}` : `Buy at ${formatCurrency(displayProduct.pricePerDay)}`}
+                    </button>
+
+                    <button
+                        onClick={() => {
+                            if (onNavigate) {
+                                onNavigate('cart');
+                                onClose();
+                            }
+                        }}
+                        className="w-14 h-14 flex items-center justify-center border border-gray-100 rounded-2xl text-midnight hover:bg-gray-50 active:scale-95 transition-all relative group"
+                    >
+                        <ShoppingBag size={24} className="group-hover:rotate-12 transition-transform" />
+                        {cartCount > 0 && (
+                            <span className="absolute -top-1 -right-1 bg-midnight text-white text-[9px] font-black rounded-full w-5 h-5 flex items-center justify-center border-2 border-white shadow-lg animate-bounce">
+                                {cartCount}
+                            </span>
+                        )}
+                    </button>
                 </div>
             </div>
         </div>
     );
-}
-
-// Helper icon
-function TrendingUp({ size }) {
-    return <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="m3 17 6-6 4 4 8-8" /><path d="M17 7h4v4" /></svg>;
 }

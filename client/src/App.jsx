@@ -12,6 +12,7 @@ import Header from './components/Shared/Header';
 import Sidebar from './components/Shared/Sidebar';
 import Login from './components/Auth/Login';
 import Register from './components/Auth/Register';
+import LaserLoader from './components/Shared/LaserLoader';
 
 // Admin
 import Analytics from './components/Admin/Analytics';
@@ -98,6 +99,10 @@ function AppContent() {
     const { currentUser, loading, isAdmin, isSubAdmin, isUser, vendorProfileComplete } = useAuth();
     const { allProducts } = useProducts();
     const { cartCount } = useCart();
+    const [showPreloader, setShowPreloader] = useState(() => {
+        // Only show preloader if it hasn't been shown in this session
+        return !sessionStorage.getItem('loader-shown');
+    });
     const [authPage, setAuthPage] = useState('login');
     const [currentPage, setCurrentPage] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -183,6 +188,13 @@ function AppContent() {
         window.scrollTo({ top: 0, behavior: 'instant' });
     };
 
+    if (showPreloader) {
+        return <LaserLoader onFadeOut={() => {
+            setShowPreloader(false);
+            sessionStorage.setItem('loader-shown', 'true');
+        }} />;
+    }
+
     if (loading) return <Loader message="Loading StyleSwap..." />;
 
     // Explicit Auth Pages
@@ -233,10 +245,10 @@ function AppContent() {
 
         if (isAdmin) {
             switch (currentPage) {
-                case 'dashboard': return <AdminDashboard />;
+                case 'dashboard': return <AdminDashboard onNavigate={navigate} />;
                 case 'users': return <UserManagement />;
                 case 'products': return <ProductOverview />;
-                case 'analytics': return <Analytics />;
+                case 'analytics': return <Analytics onNavigate={navigate} />;
                 case 'subscribers': return <SubscriberList />;
                 case 'profile':
                 case 'settings': return <AdminSettings />;
@@ -259,7 +271,7 @@ function AppContent() {
         if (isUser) {
             switch (currentPage) {
                 case 'catalog': return renderCatalog({ onCategorySelect: handleCategorySelect });
-                case 'product-details': return <ProductDetailsPage productId={selectedProductId} onBack={() => setCurrentPage('catalog')} />;
+                case 'product-details': return <ProductDetailsPage productId={selectedProductId} onBack={() => setCurrentPage('catalog')} onNavigate={navigate} />;
                 case 'cart': return <CartPage onNavigate={navigate} />;
                 case 'rentals': case 'orders': return <OrdersDashboard onNavigate={navigate} />;
                 case 'profile': return <ProfileDashboard />;

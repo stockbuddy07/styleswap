@@ -20,7 +20,7 @@ function KPICard({ icon: Icon, label, value, sub, trend, index }) {
             <div className="relative z-10 flex items-start justify-between">
                 <div className="space-y-1">
                     <p className="text-gray-500 text-[10px] font-black uppercase tracking-[0.2em]">{label}</p>
-                    <h3 className="text-4xl font-black text-midnight font-numeric tracking-tighter">{value}</h3>
+                    <h3 className="text-4xl font-black text-white font-numeric tracking-tighter">{value}</h3>
                     {sub && (
                         <div className="flex items-center gap-2 pt-1">
                             {trend !== undefined && (
@@ -47,7 +47,7 @@ const statusColors = {
     Cancelled: 'bg-gray-500/20 text-gray-400 border-gray-500/30',
 };
 
-export default function AdminDashboard() {
+export default function AdminDashboard({ onNavigate }) {
     const { currentUser } = useAuth();
     const { users, loading: usersLoading } = useUsers();
     const { allProducts, loading: productsLoading } = useProducts();
@@ -110,15 +110,61 @@ export default function AdminDashboard() {
                 .reduce((s, o) => s + (o.totalAmount || 0), 0),
         })).sort((a, b) => b.revenue - a.revenue).slice(0, 5);
 
+        // Monthly Revenue (Last 12 Months)
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        const monthlyRevenue = Array(12).fill(0).map((_, i) => {
+            const date = new Date(now.getFullYear(), now.getMonth() - (11 - i), 1);
+            const month = date.getMonth();
+            const year = date.getFullYear();
+
+            const amount = allOrders
+                .filter(o => {
+                    const od = new Date(o.orderDate);
+                    return od.getMonth() === month && od.getFullYear() === year;
+                })
+                .reduce((s, o) => s + (o.totalAmount || 0), 0);
+
+            return { label: monthNames[month], amount, year };
+        });
+
+        const maxMonthlyRevenue = Math.max(...monthlyRevenue.map(m => m.amount), 1);
+        const chartData = monthlyRevenue.map(m => ({
+            ...m,
+            height: (m.amount / maxMonthlyRevenue) * 100
+        }));
+
         return {
             vendors, customers, activeRentals, overdueRentals,
             totalRevenue, todayRevenue, incompleteVendors, recentOrders, vendorStats,
-            revenueTrend, userTrend
+            revenueTrend, userTrend, chartData
         };
     }, [users, allProducts, allOrders]);
 
+    const downloadReport = () => {
+        const headers = ["Order ID", "Customer", "Shop", "Date", "Amount", "Status"];
+        const rows = allOrders.map(o => [
+            o.id,
+            o.customerName || 'N/A',
+            o.shopName || 'N/A',
+            new Date(o.orderDate).toLocaleDateString(),
+            o.totalAmount,
+            o.status
+        ]);
+
+        const csvContent = "data:text/csv;charset=utf-8,"
+            + [headers, ...rows].map(e => e.join(",")).join("\n");
+
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `StyleSwap_Report_${new Date().toISOString().split('T')[0]}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50 p-6 text-midnight space-y-8 font-sans">
+        <div className="min-h-screen bg-gradient-to-br from-midnight via-midnight-deep to-midnight p-6 text-white space-y-8 font-sans">
             {loading && <Loader fullPage={false} message="Gathering insights..." />}
 
             {!loading && (
@@ -137,10 +183,16 @@ export default function AdminDashboard() {
                             </p>
                         </div>
                         <div className="flex flex-wrap gap-3">
-                            <button className="flex-1 sm:flex-none px-4 py-2 bg-white/50 hover:bg-white/10 text-midnight text-sm font-medium rounded-xl border border-gray-200 transition-colors backdrop-blur-sm whitespace-nowrap">
+                            <button
+                                onClick={downloadReport}
+                                className="flex-1 sm:flex-none px-4 py-2 bg-white/5 hover:bg-white/10 text-white text-sm font-medium rounded-xl border border-white/10 transition-colors backdrop-blur-sm whitespace-nowrap"
+                            >
                                 Download Report
                             </button>
-                            <button className="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-gold to-yellow-600 text-midnight text-sm font-bold rounded-xl shadow-glow hover:shadow-lg hover:scale-105 transition-all whitespace-nowrap">
+                            <button
+                                onClick={() => onNavigate && onNavigate('users')}
+                                className="flex-1 sm:flex-none px-4 py-2 bg-gradient-to-r from-gold to-yellow-600 text-midnight text-sm font-bold rounded-xl shadow-glow hover:shadow-lg hover:scale-105 transition-all whitespace-nowrap"
+                            >
                                 + Add New User
                             </button>
                         </div>
@@ -229,24 +281,28 @@ export default function AdminDashboard() {
                                     </div>
                                 </div>
 
-                                {/* CSS-only Bar Chart Mockup */}
-                                <div className="h-48 flex items-end justify-between gap-1 sm:gap-4 px-2">
-                                    {[35, 55, 40, 70, 50, 85, 60, 75, 50, 65, 80, 95].map((h, i) => (
-                                        <div key={i} className="w-full bg-white/5 rounded-t-lg relative group h-full flex items-end">
+                                {/* Real Revenue Bar Chart */}
+                                <div
+                                    className="h-48 flex items-end justify-between gap-1 sm:gap-4 px-2 cursor-pointer"
+                                    onClick={() => onNavigate && onNavigate('analytics')}
+                                >
+                                    {stats.chartData.map((data, i) => (
+                                        <div key={`${data.label}-${i}`} className="w-full bg-white/5 rounded-t-lg relative group h-full flex items-end">
                                             <div
                                                 className="w-full bg-gradient-to-t from-gold/50 to-gold rounded-t-lg transition-all duration-500 group-hover:from-gold group-hover:to-yellow-300 relative"
-                                                style={{ height: `${h}%` }}
+                                                style={{ height: `${data.height}%` }}
                                             >
-                                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-midnight text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
-                                                    {h}%
+                                                <div className="absolute -top-10 left-1/2 -translate-x-1/2 bg-white text-midnight text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                                                    ₹{data.amount.toLocaleString()}
                                                 </div>
                                             </div>
                                         </div>
                                     ))}
                                 </div>
                                 <div className="flex justify-between mt-4 text-[10px] sm:text-xs text-gray-500 font-medium uppercase tracking-wider overflow-x-auto scrollbar-hide">
-                                    <span className="min-w-[30px] text-center">Jan</span><span className="min-w-[30px] text-center">Feb</span><span className="min-w-[30px] text-center">Mar</span><span className="min-w-[30px] text-center">Apr</span><span className="min-w-[30px] text-center">May</span><span className="min-w-[30px] text-center">Jun</span>
-                                    <span className="min-w-[30px] text-center">Jul</span><span className="min-w-[30px] text-center">Aug</span><span className="min-w-[30px] text-center">Sep</span><span className="min-w-[30px] text-center">Oct</span><span className="min-w-[30px] text-center">Nov</span><span className="min-w-[30px] text-center">Dec</span>
+                                    {stats.chartData.map((data, i) => (
+                                        <span key={`${data.label}-lbl-${i}`} className="min-w-[30px] text-center">{data.label}</span>
+                                    ))}
                                 </div>
                             </div>
 
@@ -343,32 +399,37 @@ export default function AdminDashboard() {
                                     )}
                                 </div>
 
-                                <button className="w-full mt-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-gray-400 hover:text-white border border-white/5 transition-colors">
+                                <button
+                                    onClick={() => onNavigate && onNavigate('users')}
+                                    className="w-full mt-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 text-xs font-bold text-gray-400 hover:text-white border border-white/5 transition-colors"
+                                >
                                     VIEW ALL VENDORS
                                 </button>
                             </div>
 
-                            {/* System Status (Mock) */}
+                            {/* System Status */}
                             <div className="bg-gradient-to-br from-midnight-deep to-[#1e1e2e] border border-white/10 rounded-[2.5rem] p-8 backdrop-blur-3xl shadow-2xl relative overflow-hidden group hover:border-gold/20 transition-all duration-700">
                                 <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-all duration-700" />
                                 <h3 className="font-bold text-white mb-4 flex items-center gap-2">
-                                    <Activity size={18} className="text-blue-400" /> System Health
+                                    <Activity size={18} className="text-blue-400" /> System status
                                 </h3>
                                 <div className="space-y-3">
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-gray-400">Server Status</span>
-                                        <span className="flex items-center gap-1.5 text-green-400 font-bold text-xs">
-                                            <span className="w-1.5 h-1.5 bg-green-400 rounded-full animate-pulse"></span>
-                                            Operational
+                                        <span className={`flex items-center gap-1.5 font-bold text-xs ${loading ? 'text-amber-400' : 'text-green-400'}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full animate-pulse ${loading ? 'bg-amber-400' : 'bg-green-400'}`}></span>
+                                            {loading ? 'Syncing' : 'Operational'}
                                         </span>
                                     </div>
                                     <div className="flex justify-between items-center text-sm">
                                         <span className="text-gray-400">Database</span>
-                                        <span className="text-green-400 font-bold text-xs">Connected</span>
+                                        <span className={`${loading ? 'text-amber-400' : 'text-green-400'} font-bold text-xs`}>
+                                            {loading ? 'Connecting...' : 'Connected'}
+                                        </span>
                                     </div>
                                     <div className="mt-4 pt-4 border-t border-white/10 flex justify-between items-center text-xs text-gray-500">
-                                        <span>Last backup: 2 hours ago</span>
-                                        <span>v2.4.0</span>
+                                        <span>Infrastructure Node: AP-SOUTH-1</span>
+                                        <span>v2.5.0-LIVE</span>
                                     </div>
                                 </div>
                             </div>

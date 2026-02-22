@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import {
     ShoppingCart, Trash2, ShoppingBag, Store, ChevronDown,
     ChevronUp, Edit3, Check, X, Tag, Shield, Truck, RotateCcw,
-    CreditCard, Info, AlertCircle, Package, Clock, Gift
+    CreditCard, Info, AlertCircle, Package, Clock, Gift, ArrowRight
 } from 'lucide-react';
 import { useCart } from '../../context/CartContext';
 import { useOrders } from '../../context/OrderContext';
@@ -223,9 +223,9 @@ function CheckoutModal({ isOpen, onClose, onConfirm, loading }) {
     const [payMethod, setPayMethod] = useState('card');
 
     const PAY_METHODS = [
-        { id: 'card', label: 'Credit / Debit Card', icon: CreditCard },
-        { id: 'cod', label: 'Cash on Delivery', icon: Package },
-        { id: 'upi', label: 'UPI / Net Banking', icon: Shield },
+        { id: 'card', label: 'Priority Credit/Debit', icon: CreditCard, sub: 'Instant authorization' },
+        { id: 'upi', label: 'UPI / Digital Link', icon: Shield, sub: 'Seamless transfer' },
+        { id: 'cod', label: 'Cash Collection', icon: Package, sub: 'Verified on delivery' },
     ];
 
     return (
@@ -259,32 +259,44 @@ function CheckoutModal({ isOpen, onClose, onConfirm, loading }) {
                 </div>
 
                 {/* Payment method */}
-                <div>
-                    <p className="text-sm font-semibold text-midnight mb-2 transition-colors">Payment Method</p>
-                    <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <div className="space-y-3">
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-1">Select Payment Protocol</p>
+                    <div className="grid grid-cols-1 gap-2">
                         {PAY_METHODS.map(m => (
                             <button key={m.id} onClick={() => setPayMethod(m.id)}
-                                className={`flex flex-col items-center gap-1.5 p-3 rounded-xl border text-xs font-medium transition-all ${payMethod === m.id ? 'border-gold bg-yellow-50 text-midnight' : 'border-gray-200 text-gray-500 hover:border-gray-300'}`}>
-                                <m.icon size={18} className={payMethod === m.id ? 'text-gold' : 'text-gray-400'} />
-                                {m.label}
+                                className={`flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 ${payMethod === m.id ? 'border-midnight bg-midnight text-white shadow-xl translate-x-1' : 'border-gray-100 bg-gray-50/50 text-gray-400 hover:border-midnight/20'}`}>
+                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${payMethod === m.id ? 'bg-white/10 text-gold' : 'bg-white text-gray-400 border border-gray-100'}`}>
+                                    <m.icon size={20} strokeWidth={1.5} />
+                                </div>
+                                <div className="text-left flex-1">
+                                    <p className={`text-sm font-bold ${payMethod === m.id ? 'text-white' : 'text-midnight'}`}>{m.label}</p>
+                                    <p className={`text-[10px] uppercase tracking-widest ${payMethod === m.id ? 'text-blue-300' : 'text-gray-400'}`}>{m.sub}</p>
+                                </div>
+                                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${payMethod === m.id ? 'border-gold bg-gold' : 'border-gray-200'}`}>
+                                    {payMethod === m.id && <Check size={12} className="text-midnight font-bold" />}
+                                </div>
                             </button>
                         ))}
                     </div>
                 </div>
 
                 {/* Price summary */}
-                <div className="bg-gradient-to-br from-midnight to-blue-900 rounded-2xl p-4 text-white space-y-2">
-                    <div className="flex justify-between text-sm text-blue-200">
-                        <span>Rental Fees</span><span>{formatCurrency(totalRentalFees)}</span>
+                <div className="bg-white border-2 border-midnight rounded-[2rem] p-6 space-y-4">
+                    <div className="space-y-2">
+                        <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
+                            <span>Service Valuation</span><span>{formatCurrency(totalRentalFees)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs font-bold text-gray-400 uppercase tracking-widest">
+                            <span>Assurance Deposits</span><span>{formatCurrency(totalDeposits)}</span>
+                        </div>
+                        <div className="flex justify-between text-xs font-bold text-emerald-600 uppercase tracking-widest">
+                            <span>Global Logistics</span><span>COMPLIMENTARY</span>
+                        </div>
                     </div>
-                    <div className="flex justify-between text-sm text-blue-200">
-                        <span>Security Deposits (refundable)</span><span>{formatCurrency(totalDeposits)}</span>
-                    </div>
-                    <div className="flex justify-between text-sm text-blue-200">
-                        <span>Delivery</span><span className="text-green-400 font-medium">FREE</span>
-                    </div>
-                    <div className="flex justify-between font-bold text-lg border-t border-blue-700 pt-2">
-                        <span>Total Payable</span><span className="text-gold">{formatCurrency(grandTotal)}</span>
+                    <div className="h-px bg-gray-100" />
+                    <div className="flex justify-between items-center pt-1">
+                        <span className="font-luxury text-xl text-midnight">Amount Payable</span>
+                        <span className="text-2xl font-bold text-midnight tracking-tighter">{formatCurrency(grandTotal)}</span>
                     </div>
                 </div>
 
@@ -306,11 +318,15 @@ function CheckoutModal({ isOpen, onClose, onConfirm, loading }) {
                     By confirming, you agree to our rental terms. Deposits are refunded within 3–5 business days after return.
                 </p>
 
-                <div className="flex gap-3">
-                    <Button variant="outline" onClick={onClose} fullWidth>Cancel</Button>
-                    <Button onClick={() => onConfirm(payMethod)} loading={loading} fullWidth>
-                        <CreditCard size={15} className="mr-2" /> Confirm & Pay {formatCurrency(grandTotal)}
-                    </Button>
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                    <button onClick={onClose}
+                        className="h-14 rounded-2xl border border-gray-100 font-bold text-[13px] uppercase tracking-widest hover:bg-gray-50 transition-all">
+                        Review Assets
+                    </button>
+                    <button onClick={() => onConfirm(payMethod)}
+                        className="h-14 rounded-2xl bg-midnight text-white font-bold text-[13px] uppercase tracking-widest hover:bg-blue-900 shadow-xl active:scale-[0.98] transition-all flex items-center justify-center gap-2">
+                        {loading ? 'Processing...' : `Confirm & Acquire`}
+                    </button>
                 </div>
             </div>
         </Modal>
@@ -391,25 +407,34 @@ export default function CartPage({ onNavigate }) {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between">
+            <div className="flex items-end justify-between mb-8">
                 <div>
-                    <h1 className="font-playfair text-4xl font-black text-midnight tracking-tighter">Acquisition Manifest</h1>
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1">
-                        {cartCount} Asset(s) across {vendorCount} Curators
-                    </p>
+                    <h1 className="font-serif text-5xl font-medium text-midnight tracking-tight leading-none mb-3">Acquisition Manifest</h1>
+                    <div className="flex items-center gap-3">
+                        <span className="text-[10px] font-bold text-[#8B7355] uppercase tracking-[0.4em] bg-[#FDFCF0] px-3 py-1 rounded-full border border-[#F5F1DA]">
+                            {cartCount} Asset{cartCount > 1 ? 's' : ''} Locked
+                        </span>
+                        <div className="w-1 h-1 rounded-full bg-gray-200" />
+                        <span className="text-[10px] font-medium text-gray-400 uppercase tracking-widest">{vendorCount} Curators Involved</span>
+                    </div>
                 </div>
                 <button onClick={clearCart}
-                    className="text-[10px] font-black text-red-400 hover:text-red-600 uppercase tracking-widest transition-colors flex items-center gap-2">
-                    <Trash2 size={12} /> Dissolve Manifest
+                    className="group flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-bold text-gray-400 hover:text-red-500 hover:bg-red-50 transition-all duration-300 uppercase tracking-widest">
+                    <Trash2 size={12} className="group-hover:rotate-12 transition-transform" /> Dissolve Manifest
                 </button>
             </div>
 
             {/* Info banner */}
-            <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-xl px-4 py-3">
-                <Info size={15} className="text-blue-500 flex-shrink-0 mt-0.5" />
-                <p className="text-xs text-blue-700">
-                    Click on <strong>Size</strong> badge or <strong>dates</strong> on any item to edit them inline. Use <strong>STYLE10</strong> for 10% off.
-                </p>
+            <div className="flex items-start gap-4 bg-midnight/5 border border-midnight/5 rounded-2xl p-4 mb-8">
+                <div className="w-8 h-8 rounded-xl bg-midnight text-gold flex items-center justify-center flex-shrink-0 animate-pulse-slow">
+                    <Info size={16} />
+                </div>
+                <div className="space-y-1">
+                    <p className="text-sm font-semibold text-midnight">Curator Instructions</p>
+                    <p className="text-xs text-gray-500 leading-relaxed">
+                        Adjust <strong>Size</strong> or <strong>Rental Dates</strong> directly on the items below. Use code <span className="text-gold font-bold">STYLE10</span> for exclusive valuation yields.
+                    </p>
+                </div>
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
@@ -485,44 +510,55 @@ export default function CartPage({ onNavigate }) {
 
                 {/* Order Summary Sidebar */}
                 <div className="xl:col-span-1">
-                    <div className="bg-white rounded-2xl shadow-md border border-gray-100 overflow-hidden sticky top-24">
-                        <div className="bg-gradient-to-r from-midnight to-blue-900 px-5 py-4">
-                            <h2 className="font-playfair text-lg font-semibold text-white">Order Summary</h2>
-                            <p className="text-blue-300 text-xs mt-0.5">{cartCount} item(s)</p>
-                        </div>
-                        <div className="p-5 space-y-3">
-                            <div className="flex justify-between text-sm text-gray-600">
-                                <span>Rental Fees</span><span>{formatCurrency(totalRentalFees)}</span>
+                    <div className="bg-white/80 backdrop-blur-xl rounded-[2.5rem] shadow-luxury border border-white/50 overflow-hidden sticky top-24">
+                        <div className="p-8 space-y-6">
+                            <div className="space-y-1">
+                                <h2 className="font-serif text-2xl font-medium text-midnight tracking-tight">Summary</h2>
+                                <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Final Valuation</p>
                             </div>
-                            {couponApplied && (
-                                <div className="flex justify-between text-sm text-gold font-black uppercase tracking-widest">
-                                    <span>ELITE10 Yield</span><span>−{formatCurrency(discount)}</span>
-                                </div>
-                            )}
-                            <div className="flex justify-between text-sm text-gray-600">
-                                <span>Security Deposits</span><span>{formatCurrency(totalDeposits)}</span>
-                            </div>
-                            <div className="flex justify-between text-sm text-green-600 font-medium">
-                                <span>Delivery</span><span>FREE</span>
-                            </div>
-                            <div className="flex justify-between font-bold text-midnight border-t border-gray-100 pt-3 text-lg transition-colors">
-                                <span>Total</span><span>{formatCurrency(finalTotal)}</span>
-                            </div>
-                            <p className="text-xs text-gray-400">Deposits refundable on return</p>
 
-                            <Button fullWidth className="mt-2" onClick={() => setCheckoutOpen(true)}>
-                                Proceed to Checkout →
-                            </Button>
-                            <button onClick={() => onNavigate('catalog')}
-                                className="w-full text-center text-sm text-gold hover:underline transition-colors">
-                                ← Continue Shopping
+                            <div className="space-y-4">
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500">Rental Fees</span>
+                                    <span className="font-medium text-midnight">{formatCurrency(totalRentalFees)}</span>
+                                </div>
+                                {couponApplied && (
+                                    <div className="flex justify-between text-sm">
+                                        <span className="text-[#8B7355] font-bold uppercase tracking-widest text-[10px]">Valuation Yield</span>
+                                        <span className="font-bold text-emerald-600">−{formatCurrency(discount)}</span>
+                                    </div>
+                                )}
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500">Security Deposits</span>
+                                    <span className="font-medium text-midnight">{formatCurrency(totalDeposits)}</span>
+                                </div>
+                                <div className="flex justify-between text-sm">
+                                    <span className="text-gray-500">Logistics</span>
+                                    <span className="text-emerald-600 font-bold uppercase tracking-widest text-[10px]">Complimentary</span>
+                                </div>
+
+                                <div className="h-px bg-gradient-to-r from-transparent via-gray-100 to-transparent my-2" />
+
+                                <div className="flex justify-between items-end">
+                                    <span className="font-serif text-lg text-midnight">Total</span>
+                                    <span className="text-3xl font-semibold text-midnight tracking-tighter">
+                                        {formatCurrency(finalTotal)}
+                                    </span>
+                                </div>
+                            </div>
+
+                            <button
+                                onClick={() => setCheckoutOpen(true)}
+                                className="w-full h-14 bg-midnight text-white rounded-2xl font-bold text-[15px] hover:bg-blue-900 active:scale-[0.98] transition-all shadow-xl flex items-center justify-center gap-3 group"
+                            >
+                                Proceed to Checkout
+                                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
                             </button>
 
-                            {/* Gift option */}
-                            <div className="flex items-center gap-2 pt-2 border-t border-gray-50">
-                                <Gift size={14} className="text-gold flex-shrink-0" />
-                                <p className="text-xs text-gray-500">Add a gift message at checkout</p>
-                            </div>
+                            <button onClick={() => onNavigate('catalog')}
+                                className="w-full text-center text-[11px] font-bold text-[#8B7355] hover:text-midnight uppercase tracking-widest transition-colors py-2">
+                                Continue Exploration
+                            </button>
                         </div>
                     </div>
                 </div>
