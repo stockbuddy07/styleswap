@@ -304,12 +304,10 @@ export default function ProductDetailsPage({ productId, onBack, onNavigate }) {
                                         </div>
                                     </div>
                                 </div>
-                                <p className="text-sm font-bold text-gray-700 mt-2">500+ bought in past month</p>
                             </div>
 
                             {/* Price & Offers */}
                             <div className="py-2 space-y-2 border-b border-gray-200">
-                                {stats.discount > 0 && <span className="bg-[#CC0C39] text-white px-2 py-1 text-xs font-bold rounded-sm inline-block mb-1">Limited time deal</span>}
                                 <div className="flex items-end gap-3 mt-1">
                                     {stats.discount > 0 && <span className="text-3xl font-light text-[#CC0C39]">-{(stats.discount || 0)}%</span>}
                                     <span className="text-3xl font-medium text-gray-900 flex items-start">
@@ -481,11 +479,6 @@ export default function ProductDetailsPage({ productId, onBack, onNavigate }) {
                                     <button onClick={handleAddToCart} className="w-full bg-[#FFA41C] hover:bg-[#FA8900] text-[#0F1111] text-[13px] py-2 px-4 rounded-full border border-[#FF8F00] shadow-[0_1px_2px_rgba(0,0,0,0.1)] transition-colors text-center">
                                         Buy Now
                                     </button>
-                                </div>
-
-                                <div className="flex items-center gap-2 text-sm text-gray-900 mb-4 px-1">
-                                    <input type="checkbox" id="gift" className="rounded-sm border-gray-400 text-[#007185] focus:ring-[#007185]" />
-                                    <label htmlFor="gift">Add gift options</label>
                                 </div>
 
                                 <div className="border-t border-gray-200 mt-2">

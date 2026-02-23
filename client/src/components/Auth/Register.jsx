@@ -81,7 +81,7 @@ export default function Register({ onNavigate, onClose }) {
         return (
             <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-${THEME_PRIMARY}/95 backdrop-blur-3xl animate-fade-in`}>
                 <div className="bg-white/5 border border-white/10 rounded-[3rem] p-10 text-center max-w-sm w-full mx-4 shadow-2xl relative overflow-hidden">
-                    <LaserFlow color1="#10B981" color2={ACCENT_GOLD} />
+                    {isMobile && <LaserFlow color1="#10B981" color2={ACCENT_GOLD} />}
                     <div className="relative z-10">
                         <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30">
                             <CheckCircle size={32} className="text-green-400" />
@@ -226,7 +226,7 @@ export default function Register({ onNavigate, onClose }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md p-4 bg-black/60">
             <div className={`w-full max-w-5xl max-h-[90vh] bg-${THEME_PRIMARY} rounded-[3rem] shadow-2xl overflow-hidden flex relative animate-fade-in-up border border-white/10`}>
-                <LaserFlow color1={ACCENT_GOLD} color2={ACCENT_INDIGO} />
+                {/* LaserFlow removed for desktop per request */}
 
                 <button onClick={handleClose} className="absolute top-6 right-6 z-30 p-2.5 bg-white/5 hover:bg-red-500/20 hover:text-red-400 rounded-full text-white/30 transition-all border border-white/10">
                     <X size={18} />
@@ -241,7 +241,7 @@ export default function Register({ onNavigate, onClose }) {
                         <div className="w-12 h-12 bg-gold rounded-2xl flex items-center justify-center mb-6 shadow-glow -rotate-6">
                             <span className="text-xl font-black text-midnight">S</span>
                         </div>
-                        <h2 className="font-playfair text-4xl font-black mb-4 leading-none tracking-tighter">Join the<br /><span className="text-gold italic underline underline-offset-8 decoration-gold/30">Movement</span></h2>
+                        <h2 className="font-playfair text-4xl font-black mb-4 leading-none tracking-tighter text-white">Join <br /><span className="text-gold italic underline underline-offset-8 decoration-gold/30">StyleSwap</span></h2>
                         <ul className="space-y-3 text-gold/40 text-[9px] font-black uppercase tracking-widest">
                             <li className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-gold/20 flex items-center justify-center text-gold text-[7px]">✓</span> Elite Access</li>
                             <li className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-gold/20 flex items-center justify-center text-gold text-[7px]">✓</span> Insured Protocol</li>
@@ -333,7 +333,7 @@ export default function Register({ onNavigate, onClose }) {
                             disabled={loading}
                             className="h-14 rounded-xl bg-gold text-midnight text-[13px] font-black uppercase tracking-[0.2em] shadow-lg hover:shadow-gold/20 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50"
                         >
-                            {loading ? 'Creating Identity...' : 'Join The Movement'} <ArrowRight size={18} />
+                            {loading ? 'Creating Identity...' : 'Join StyleSwap'} <ArrowRight size={18} />
                         </button>
                     </form>
 

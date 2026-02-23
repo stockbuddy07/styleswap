@@ -140,7 +140,7 @@ export default function Login({ onNavigate, onClose }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md p-4 bg-black/60">
             <div className={`w-full max-w-4xl max-h-[90vh] bg-${THEME_PRIMARY} rounded-[3rem] shadow-2xl overflow-hidden flex relative animate-fade-in-up border border-white/10`}>
-                <LaserFlow color1={ACCENT_GOLD} color2={ACCENT_INDIGO} />
+                {/* LaserFlow removed for desktop per request */}
 
                 <button onClick={handleClose} className="absolute top-6 right-6 z-30 p-2.5 bg-white/5 hover:bg-red-500/20 hover:text-red-400 rounded-full text-white/30 transition-all border border-white/10">
                     <X size={18} />
@@ -155,8 +155,8 @@ export default function Login({ onNavigate, onClose }) {
                         <div className="w-12 h-12 bg-gold rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-glow rotate-2">
                             <span className="text-xl font-black text-midnight">S</span>
                         </div>
-                        <h2 className="font-playfair text-4xl font-black mb-3">StyleSwap</h2>
-                        <p className="text-gold/30 font-bold italic text-[9px] uppercase tracking-[0.4em]">DNA OF LUXURY</p>
+                        <h2 className="font-playfair text-4xl font-black mb-3 text-white">StyleSwap</h2>
+                        <p className="text-gold/60 font-bold italic text-[9px] uppercase tracking-[0.4em]">DNA OF LUXURY</p>
                     </div>
                 </div>
 

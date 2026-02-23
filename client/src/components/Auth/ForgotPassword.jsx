@@ -81,7 +81,7 @@ export default function ForgotPassword({ onNavigate, onClose }) {
     if (step === 'success') {
         return (
             <div className={`fixed inset-0 z-[100] flex items-center justify-center bg-${THEME_PRIMARY} flex flex-col overflow-hidden animate-fade-in`}>
-                <LaserFlow color1="#10B981" color2={ACCENT_GOLD} />
+                {isMobile && <LaserFlow color1="#10B981" color2={ACCENT_GOLD} />}
                 <div className="bg-white/5 border border-white/10 rounded-[3rem] p-10 text-center max-w-sm w-full mx-4 shadow-2xl relative overflow-hidden backdrop-blur-2xl">
                     <div className="relative z-10">
                         <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-6 border border-green-500/30">
@@ -190,7 +190,7 @@ export default function ForgotPassword({ onNavigate, onClose }) {
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md p-4 bg-black/60 font-sans">
             <div className={`w-full max-w-xl bg-${THEME_PRIMARY} rounded-[3rem] shadow-2xl overflow-hidden relative animate-fade-in-up border border-white/10 p-1`}>
-                <LaserFlow color1={ACCENT_GOLD} color2={ACCENT_INDIGO} />
+                {/* LaserFlow removed for desktop per request */}
 
                 <div className="relative z-20 p-10 lg:p-14">
                     <button onClick={handleClose} className="absolute top-8 right-8 z-30 p-2.5 bg-white/5 hover:bg-red-500/20 hover:text-red-400 rounded-full text-white/30 transition-all border border-white/10">

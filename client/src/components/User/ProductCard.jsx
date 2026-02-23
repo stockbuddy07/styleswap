@@ -144,12 +144,9 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
             <div className={`p-5 flex flex-col flex-1 bg-white transition-colors duration-700 ${isHovered ? catStyles.tint.replace('/5', '/10') : ''}`}>
                 {/* Brand Name */}
                 <div className="flex items-center justify-between mb-1.5 text-[11px] font-black uppercase tracking-[0.2em]">
-                    <p className="text-gray-400 truncate max-w-[70%]">
+                    <p className="text-gray-400 truncate max-w-[full]">
                         {product.designer?.brandName || product.shopName || 'StyleSwap Elite'}
                     </p>
-                    <span className={`${catStyles.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
-                        {product.category || 'Luxury'}
-                    </span>
                 </div>
 
                 {/* Product Name */}
@@ -176,9 +173,6 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-1 text-[9px] font-black text-gold uppercase tracking-[0.2em] transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
-                            Rent Now <ChevronRight size={10} />
-                        </div>
                     </div>
                 </div>
             </div>
