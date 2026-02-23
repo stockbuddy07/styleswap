@@ -1,12 +1,15 @@
 import React, { useState } from 'react';
 import { Store, Star, Heart, RefreshCw, ShoppingBag, CheckCircle } from 'lucide-react';
+import { useWishlist } from '../../context/WishlistContext';
 import Button from '../Shared/Button';
 import { formatCurrency, getStockStatus, DEFAULT_IMAGE } from '../../utils/helpers';
 
 export default function ProductCard({ product, onRent, onAddToCart }) {
+    const { toggleWishlist, isInWishlist } = useWishlist();
     const [isHovered, setIsHovered] = useState(false);
     const [currentImage, setCurrentImage] = useState(0);
     const stock = getStockStatus(product.availableQuantity);
+    const isWishlisted = isInWishlist(product.id);
 
     // Ultra-robust image handling: handles raw strings, JSON strings, and arrays
     const getImages = (raw) => {
@@ -80,10 +83,16 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
 
                 {/* Wishlist Button */}
                 <button
-                    onClick={(e) => { e.stopPropagation(); }}
-                    className="absolute top-3 right-3 w-8 h-8 rounded-full bg-white shadow-lg flex items-center justify-center text-gray-400 hover:text-red-500 transition-all duration-300 border border-gray-100"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        toggleWishlist(product);
+                    }}
+                    className={`absolute top-3 right-3 w-8 h-8 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 border ${isWishlisted
+                        ? 'bg-midnight text-gold border-gold/50 shadow-glow scale-110'
+                        : 'bg-white text-gray-400 border-gray-100 hover:text-red-500 hover:scale-110'
+                        }`}
                 >
-                    <Heart size={16} className="transition-all" />
+                    <Heart size={16} fill={isWishlisted ? "currentColor" : "none"} className="transition-all" />
                 </button>
             </div>
 

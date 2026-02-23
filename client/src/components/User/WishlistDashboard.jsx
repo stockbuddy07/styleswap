@@ -1,18 +1,14 @@
-import React from 'react';
 import { Heart, ShoppingBag, ArrowRight } from 'lucide-react';
-import { useProducts } from '../../context/ProductContext';
+import { useWishlist } from '../../context/WishlistContext';
 import ProductCard from './ProductCard';
 import Button from '../Shared/Button';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 
 export default function WishlistDashboard({ onNavigate, onProductClick }) {
-    // We'll mock wishlist data for now by taking a slice of products
-    // In a real app, this would come from a WishlistContext or API
-    const { allProducts } = useProducts();
+    const { wishlistItems, loading: wishlistLoading, removeFromWishlist } = useWishlist();
     const { addToCart } = useCart();
     const { addToast } = useToast();
-    const wishlistItems = allProducts.slice(0, 2); // Mock: first two items
 
     const handleQuickAdd = (product) => {
         const today = new Date();
@@ -60,6 +56,7 @@ export default function WishlistDashboard({ onNavigate, onProductClick }) {
                             <button
                                 className="absolute top-4 right-4 z-10 p-2 bg-white/90 backdrop-blur-sm rounded-full text-red-500 shadow-md transform scale-0 group-hover:scale-100 transition-all duration-300 hover:bg-red-500 hover:text-white"
                                 title="Remove from wishlist"
+                                onClick={() => removeFromWishlist(product.id)}
                             >
                                 <Heart size={16} fill="currentColor" />
                             </button>

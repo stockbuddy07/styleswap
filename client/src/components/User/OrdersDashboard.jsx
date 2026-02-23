@@ -72,13 +72,13 @@ export default function OrdersDashboard({ onNavigate }) {
             ) : (
                 <div className="grid grid-cols-1 gap-6">
                     {filteredOrders.map((order) => (
-                        <div key={order.orderId} className="bg-white/40 backdrop-blur-2xl rounded-[2.5rem] border border-white/40 shadow-xl hover:shadow-2xl hover:border-gold/30 transition-all duration-700 overflow-hidden group/order">
+                        <div key={order.id} className="bg-white/40 backdrop-blur-2xl rounded-[2.5rem] border border-white/40 shadow-xl hover:shadow-2xl hover:border-gold/30 transition-all duration-700 overflow-hidden group/order">
                             <div className="px-8 py-5 bg-midnight/5 border-b border-white/40 flex flex-wrap items-center justify-between gap-6">
                                 <div className="flex items-center gap-6">
                                     <div className="flex flex-col">
                                         <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Manifest ID</span>
                                         <span className="font-mono text-[10px] font-black text-midnight bg-white px-3 py-1 rounded-lg border border-gray-100 shadow-sm">
-                                            #{order.orderId?.slice(-8).toUpperCase()}
+                                            #{order.id?.slice(-8).toUpperCase()}
                                         </span>
                                     </div>
                                     <div className="flex flex-col">

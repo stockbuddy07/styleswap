@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { Star, Heart, Share2, Info, ShoppingCart, MessageSquare, ChevronDown, Scissors, Layers, Award, Sparkles, TrendingUp, Globe, ArrowLeft, ArrowDown, ShoppingBag } from 'lucide-react';
+import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { useProducts } from '../../context/ProductContext';
@@ -11,6 +12,7 @@ export default function ProductDetailsPage({ productId, onBack }) {
     const { addToCart, cartCount } = useCart();
     const { getDetailedProduct, submitReview, allProducts } = useProducts();
     const { currentUser } = useAuth();
+    const { toggleWishlist, isInWishlist } = useWishlist();
     const toast = useToast();
     const today = getTodayString();
 
@@ -25,7 +27,7 @@ export default function ProductDetailsPage({ productId, onBack }) {
     const [startDate, setStartDate] = useState(today);
     const [endDate, setEndDate] = useState(defaultEnd);
     const [errors, setErrors] = useState({});
-    const [isWishlisted, setIsWishlisted] = useState(false);
+    const isWishlisted = product ? isInWishlist(product.id) : false;
 
     // Mobile UI States
     const [isGalleryOpen, setIsGalleryOpen] = useState(false);
@@ -95,6 +97,11 @@ export default function ProductDetailsPage({ productId, onBack }) {
     const images = product.images?.length > 0 ? product.images : [DEFAULT_IMAGE];
 
     const handleAddToCart = () => {
+        if (!currentUser) {
+            toast.info('Initiate session to lock your manifest');
+            onNavigate && onNavigate('login');
+            return;
+        }
         const errs = {};
         if (!size) errs.size = 'Selection required';
         if (new Date(endDate) <= new Date(startDate)) errs.date = 'Invalid range';
@@ -109,7 +116,7 @@ export default function ProductDetailsPage({ productId, onBack }) {
         }
 
         addToCart(product, startDate, endDate, size, quantity);
-        toast.success('Added to your collection!');
+        toast.success('Asset locked in manifest!');
     };
 
     const handleAddReview = async () => {
@@ -154,11 +161,6 @@ export default function ProductDetailsPage({ productId, onBack }) {
         }
     };
 
-    const toggleWishlist = (product) => {
-        // Placeholder for wishlist logic
-        setIsWishlisted(!isWishlisted);
-        toast.info(isWishlisted ? 'Removed from wishlist' : 'Added to wishlist');
-    };
 
     return (
         <>

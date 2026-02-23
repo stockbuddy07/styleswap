@@ -6,11 +6,13 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { useWishlist } from '../../context/WishlistContext';
 import Button from '../Shared/Button';
-import { DEFAULT_IMAGE } from '../../utils/helpers';
+import { DEFAULT_IMAGE, formatCurrency } from '../../utils/helpers';
 
-export default function ProfileDashboard() {
+export default function ProfileDashboard({ onNavigate }) {
     const { currentUser, updateCurrentUser, logout } = useAuth();
+    const { wishlistItems, removeFromWishlist } = useWishlist();
     const toast = useToast();
     const [loading, setLoading] = useState(false);
     const [activeTab, setActiveTab] = useState('details');
@@ -122,7 +124,13 @@ export default function ProfileDashboard() {
                             {navItems.map(item => (
                                 <button
                                     key={item.id}
-                                    onClick={() => setActiveTab(item.id)}
+                                    onClick={() => {
+                                        if (item.id === 'orders' && onNavigate) {
+                                            onNavigate('orders');
+                                        } else {
+                                            setActiveTab(item.id);
+                                        }
+                                    }}
                                     className={`w-full flex items-center justify-between p-4 rounded-xl transition-all group ${activeTab === item.id ? 'bg-midnight text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50 hover:text-midnight'}`}
                                 >
                                     <div className="flex items-center gap-3">
@@ -243,7 +251,66 @@ export default function ProfileDashboard() {
                                 </div>
                             )}
 
-                            {activeTab !== 'details' && (
+                            {activeTab === 'wishlist' && (
+                                <div className="space-y-8 animate-fade-in-up">
+                                    <div className="flex items-center justify-between border-b border-gray-100 pb-8">
+                                        <div>
+                                            <h2 className="font-serif text-2xl font-medium text-midnight">My Collection</h2>
+                                            <p className="text-gray-400 text-sm mt-1">Assets you've curated for future acquisitions.</p>
+                                        </div>
+                                        <div className="bg-midnight/5 px-4 py-2 rounded-2xl border border-midnight/10">
+                                            <span className="text-xl font-bold text-midnight">{wishlistItems.length}</span>
+                                            <span className="text-[10px] font-black uppercase tracking-wider text-gray-400 ml-2">Assets</span>
+                                        </div>
+                                    </div>
+
+                                    {wishlistItems.length === 0 ? (
+                                        <div className="py-20 text-center space-y-4">
+                                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto">
+                                                <Heart size={32} className="text-gray-200" />
+                                            </div>
+                                            <h3 className="font-playfair text-xl font-bold text-midnight">Empty Collection</h3>
+                                            <p className="text-gray-400 max-w-xs mx-auto text-sm">Your manifest is currently empty. Explore our catalog to curate your collection.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                                            {wishlistItems.map(item => (
+                                                <div key={item.id} className="group relative bg-gray-50/50 rounded-3xl p-4 border border-transparent hover:border-gold/20 hover:bg-white transition-all duration-500 overflow-hidden">
+                                                    <div className="flex gap-4">
+                                                        <div className="w-24 h-32 rounded-2xl overflow-hidden bg-gray-200 flex-shrink-0">
+                                                            <img
+                                                                src={item.images?.[0] || DEFAULT_IMAGE}
+                                                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+                                                                alt={item.name}
+                                                            />
+                                                        </div>
+                                                        <div className="flex flex-col justify-between py-1">
+                                                            <div>
+                                                                <h4 className="font-bold text-midnight text-sm line-clamp-1">{item.name}</h4>
+                                                                <p className="text-[10px] text-gray-400 font-black uppercase tracking-widest mt-1">{item.category}</p>
+                                                            </div>
+                                                            <div className="space-y-1">
+                                                                <p className="text-xs font-bold text-midnight">
+                                                                    {formatCurrency(item.pricePerDay)}
+                                                                    <span className="text-[9px] font-medium text-gray-400 ml-1">/day</span>
+                                                                </p>
+                                                                <button
+                                                                    onClick={() => removeFromWishlist(item.id)}
+                                                                    className="text-[10px] font-black text-red-400 hover:text-red-500 uppercase tracking-wider transition-colors"
+                                                                >
+                                                                    Remove Asset
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {activeTab !== 'details' && activeTab !== 'wishlist' && (
                                 <div className="h-full flex flex-col items-center justify-center text-center opacity-50 py-20 animate-fade-in-up">
                                     <div className="w-24 h-24 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                                         <Settings size={40} className="text-gray-300" />

@@ -335,8 +335,12 @@ function CheckoutModal({ isOpen, onClose, onConfirm, loading }) {
 
 // ─── Main CartPage ──────────────────────────────────────────────────────────────
 export default function CartPage({ onNavigate }) {
-    const { cartItems, removeFromCart, clearCart, cartCount, totalRentalFees, totalDeposits, grandTotal, groupCartByVendor } = useCart();
-    const { placeOrder } = useOrders();
+    const {
+        cartItems, removeFromCart, clearCart, cartCount,
+        totalRentalFees, totalDeposits, grandTotal,
+        groupCartByVendor, loading: cartLoading
+    } = useCart();
+    const { userOrders, loading: ordersLoading } = useOrders();
     const { allProducts, updateAvailability } = useProducts();
     const toast = useToast();
     const [checkoutOpen, setCheckoutOpen] = useState(false);
@@ -386,20 +390,29 @@ export default function CartPage({ onNavigate }) {
         }
     };
 
+    const isLoading = cartLoading || ordersLoading;
+
+    if (isLoading && cartItems.length === 0) {
+        return <Loader message="Accessing Manifest..." />
+    }
+
     if (cartItems.length === 0) {
         return (
-            <div className="space-y-6">
-                <h1 className="font-playfair text-2xl font-bold text-midnight">My Cart</h1>
-                <div className="bg-white rounded-2xl shadow-md p-16 text-center">
-                    <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <ShoppingCart size={36} className="text-gray-300" />
+            <div className="space-y-12">
+                <div className="space-y-6">
+                    <h1 className="font-serif text-5xl font-medium text-midnight tracking-tight">Accessing Manifest</h1>
+                    <div className="bg-white rounded-3xl shadow-luxury p-16 text-center border border-gray-100">
+                        <div className="w-24 h-24 bg-midnight/5 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <ShoppingCart size={40} className="text-gray-300" />
+                        </div>
+                        <h3 className="font-serif text-2xl font-medium text-gray-500 mb-2">Manifest is currently empty</h3>
+                        <p className="text-gray-400 text-sm mb-8">Initiate an acquisition to begin your curation.</p>
+                        <Button onClick={() => onNavigate('catalog')}>
+                            <ShoppingBag size={16} className="mr-2" /> Begin Search
+                        </Button>
                     </div>
-                    <h3 className="font-playfair text-xl font-semibold text-gray-500 mb-2">Your cart is empty</h3>
-                    <p className="text-gray-400 text-sm mb-6">Browse our luxury collection and add items to rent</p>
-                    <Button onClick={() => onNavigate('catalog')}>
-                        <ShoppingBag size={16} className="mr-2" /> Browse Products
-                    </Button>
                 </div>
+
             </div>
         );
     }
@@ -564,13 +577,71 @@ export default function CartPage({ onNavigate }) {
                 </div>
             </div>
 
-            <CheckoutModal
-                isOpen={checkoutOpen}
-                onClose={() => setCheckoutOpen(false)}
-                onConfirm={handleCheckout}
-                loading={loading}
-            />
+            {/* Integrated Order Manifest (History) */}
+            {userOrders.length > 0 && (
+                <div className="mt-20 space-y-8 animate-fade-in-up">
+                    <div className="flex items-end justify-between border-b border-gray-100 pb-6">
+                        <div>
+                            <h2 className="font-serif text-4xl font-medium text-midnight tracking-tight mb-2">Acquisition Audit</h2>
+                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.4em]">Historical Manifest Records</p>
+                        </div>
+                        <button onClick={() => onNavigate('rentals')}
+                            className="group flex items-center gap-2 px-6 py-3 rounded-xl text-[10px] font-bold text-midnight bg-midnight/5 hover:bg-midnight hover:text-white transition-all duration-500 uppercase tracking-widest border border-midnight/5">
+                            View Full Archive <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                        </button>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {userOrders.slice(0, 3).map(order => (
+                            <RecentAuditCard key={order.id} order={order} />
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* Models */}
+            {checkoutOpen && (
+                <CheckoutModal
+                    isOpen={checkoutOpen}
+                    onClose={() => setCheckoutOpen(false)}
+                    totalAmount={finalTotal}
+                    cartItems={cartItems}
+                    onConfirm={handleCheckout}
+                    vendorGroups={vendorGroups}
+                />
+            )}
             {loading && <Loader fullPage={true} message="Processing your order..." />}
+        </div>
+    );
+}
+
+// ─── Recent Audit Card ──────────────────────────────────────────────────────────
+function RecentAuditCard({ order }) {
+    return (
+        <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-[2rem] p-6 shadow-sm hover:shadow-xl hover:border-gold/30 transition-all duration-500 group">
+            <div className="flex gap-4 items-center">
+                <div className="flex -space-x-4">
+                    {order.items?.slice(0, 2).map((item, idx) => (
+                        <div key={idx} className="w-16 h-16 rounded-2xl border-2 border-white overflow-hidden shadow-lg transform group-hover:-translate-y-1 transition-transform" style={{ zIndex: 5 - idx }}>
+                            <img src={item.productImage} alt="" className="w-full h-full object-cover" />
+                        </div>
+                    ))}
+                    {order.items?.length > 2 && (
+                        <div className="w-16 h-16 rounded-2xl border-2 border-white bg-midnight text-gold flex items-center justify-center text-xs font-bold shadow-lg z-0">
+                            +{order.items.length - 2}
+                        </div>
+                    )}
+                </div>
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 mb-1">
+                        <span className={`w-2 h-2 rounded-full ${order.status === 'Active' ? 'bg-blue-400' : 'bg-emerald-400'}`} />
+                        <span className="text-[9px] font-black text-gray-400 uppercase tracking-[0.2em]">{order.status}</span>
+                    </div>
+                    <h4 className="font-serif text-lg font-medium text-midnight truncate tracking-tight group-hover:text-gold transition-colors">{order.items?.[0]?.productName || 'Order'}</h4>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">{formatDate(order.orderDate)} · {formatCurrency(order.totalAmount)}</p>
+                </div>
+                <ArrowRight size={16} className="text-gray-300 group-hover:text-gold group-hover:translate-x-1 transition-all" />
+            </div>
         </div>
     );
 }

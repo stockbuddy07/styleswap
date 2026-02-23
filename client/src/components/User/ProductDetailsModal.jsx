@@ -4,6 +4,7 @@ import { useCart } from '../../context/CartContext';
 import { useToast } from '../../context/ToastContext';
 import { useProducts } from '../../context/ProductContext';
 import { useAuth } from '../../context/AuthContext';
+import { useWishlist } from '../../context/WishlistContext';
 import Button from '../Shared/Button';
 import Loader from '../Shared/Loader';
 import { formatCurrency, getStockStatus, getTodayString, DEFAULT_IMAGE } from '../../utils/helpers';
@@ -12,6 +13,7 @@ export default function ProductDetailsModal({ product: initialProduct, isOpen, o
     const { addToCart, cartCount } = useCart();
     const { getDetailedProduct, submitReview } = useProducts();
     const { currentUser } = useAuth();
+    const { toggleWishlist, isInWishlist } = useWishlist();
     const toast = useToast();
     const today = getTodayString();
     const tomorrow = new Date(Date.now() + 86400000).toISOString().split('T')[0];
@@ -75,10 +77,16 @@ export default function ProductDetailsModal({ product: initialProduct, isOpen, o
     };
 
     const handleAddToCart = () => {
+        if (!currentUser) {
+            toast.info('Please sign in to modify manifest');
+            onNavigate && onNavigate('login');
+            onClose();
+            return;
+        }
         const errs = validate();
         if (Object.keys(errs).length) { setErrors(errs); return; }
         addToCart(displayProduct, startDate, endDate, size, quantity);
-        toast.success(`${displayProduct.name} added to cart!`);
+        toast.success(`Asset locked in manifest!`);
         onClose();
     };
 
@@ -165,8 +173,17 @@ export default function ProductDetailsModal({ product: initialProduct, isOpen, o
 
                                         {/* Vertical Floating Actions (Top-Right) */}
                                         <div className="absolute top-4 right-4 flex flex-col gap-3">
-                                            <button className="p-2.5 bg-white/95 rounded-full shadow-lg border border-gray-100 text-midnight hover:text-red-500 transition-all active:scale-90">
-                                                <Heart size={22} strokeWidth={1.5} />
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    toggleWishlist(displayProduct);
+                                                }}
+                                                className={`p-2.5 rounded-full shadow-lg border transition-all active:scale-90 ${isInWishlist(displayProduct.id)
+                                                        ? 'bg-midnight text-gold border-gold/50 shadow-glow'
+                                                        : 'bg-white/95 border-gray-100 text-midnight hover:text-red-500'
+                                                    }`}
+                                            >
+                                                <Heart size={22} fill={isInWishlist(displayProduct.id) ? "currentColor" : "none"} strokeWidth={1.5} />
                                             </button>
                                             <button className="p-2.5 bg-white/95 rounded-full shadow-lg border border-gray-100 text-midnight hover:text-blue-500 transition-all active:scale-90">
                                                 <Share2 size={20} strokeWidth={1.5} />

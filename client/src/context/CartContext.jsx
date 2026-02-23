@@ -1,88 +1,120 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { useAuth } from './AuthContext';
-import { generateId, calculateRentalDays } from '../utils/helpers';
+import { calculateRentalDays } from '../utils/helpers';
+import { api } from '../utils/api';
 
 const CartContext = createContext(null);
 
 export function CartProvider({ children }) {
     const { currentUser } = useAuth();
     const [cartItems, setCartItems] = useState([]);
+    const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        if (currentUser) {
-            const key = `styleswap_cart_${currentUser.id}`;
-            const stored = localStorage.getItem(key);
-            try {
-                setCartItems(stored ? JSON.parse(stored) : []);
-            } catch (e) {
-                console.error('Failed to parse cart JSON:', e);
-                setCartItems([]);
-                localStorage.removeItem(key);
-            }
-        } else {
+    const fetchCart = useCallback(async () => {
+        if (!currentUser) {
             setCartItems([]);
+            return;
+        }
+        setLoading(true);
+        try {
+            const items = await api.cart.list();
+            // Backend returns items, we need to ensure rentalDays and subtotal are calculated if not in DB
+            const enriched = items.map(item => {
+                const rentalDays = calculateRentalDays(item.rentalStartDate, item.rentalEndDate);
+                const subtotal = item.pricePerDay * rentalDays * item.quantity;
+                const depositTotal = item.securityDeposit * item.quantity;
+                return { ...item, rentalDays, subtotal, depositTotal };
+            });
+            setCartItems(enriched);
+        } catch (err) {
+            console.error('Failed to fetch manifest from DB:', err);
+        } finally {
+            setLoading(false);
         }
     }, [currentUser]);
 
-    const saveCart = (items) => {
-        setCartItems(items);
-        if (currentUser) {
-            localStorage.setItem(`styleswap_cart_${currentUser.id}`, JSON.stringify(items));
+    useEffect(() => {
+        fetchCart();
+    }, [fetchCart]);
+
+    const addToCart = async (product, rentalStartDate, rentalEndDate, size, quantity) => {
+        if (!currentUser) return;
+        setLoading(true);
+        try {
+            await api.cart.add({
+                productId: product.id,
+                quantity,
+                size,
+                rentalStartDate,
+                rentalEndDate
+            });
+            await fetchCart();
+        } catch (err) {
+            console.error('Failed to lock asset in manifest:', err);
+        } finally {
+            setLoading(false);
         }
     };
 
-    const addToCart = (product, rentalStartDate, rentalEndDate, size, quantity) => {
-        const rentalDays = calculateRentalDays(rentalStartDate, rentalEndDate);
-        const subtotal = product.pricePerDay * rentalDays * quantity;
-        const depositTotal = product.securityDeposit * quantity;
-        const cartItem = {
-            id: generateId(),
-            productId: product.id,
-            productName: product.name,
-            productImage: product.images?.[0] || '',
-            category: product.category,
-            vendorId: product.subAdminId,
-            vendorShopName: product.shopName,
-            pricePerDay: product.pricePerDay,
-            securityDeposit: product.securityDeposit,
-            size,
-            quantity,
-            rentalStartDate,
-            rentalEndDate,
-            rentalDays,
-            subtotal,
-            depositTotal,
-        };
-        saveCart([...cartItems, cartItem]);
+    const removeFromCart = async (cartItemId) => {
+        setLoading(true);
+        try {
+            await api.cart.remove(cartItemId);
+            await fetchCart();
+        } catch (err) {
+            console.error('Failed to release asset:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const removeFromCart = (cartItemId) => {
-        saveCart(cartItems.filter(i => i.id !== cartItemId));
+    const updateQuantity = async (cartItemId, newQuantity) => {
+        setLoading(true);
+        try {
+            await api.cart.update(cartItemId, { quantity: newQuantity });
+            await fetchCart();
+        } catch (err) {
+            console.error('Failed to update manifest quantity:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const updateQuantity = (cartItemId, newQuantity) => {
-        saveCart(cartItems.map(i => {
-            if (i.id !== cartItemId) return i;
-            const subtotal = i.pricePerDay * i.rentalDays * newQuantity;
-            const depositTotal = i.securityDeposit * newQuantity;
-            return { ...i, quantity: newQuantity, subtotal, depositTotal };
-        }));
+    const updateDates = async (cartItemId, rentalStartDate, rentalEndDate) => {
+        setLoading(true);
+        try {
+            await api.cart.update(cartItemId, { rentalStartDate, rentalEndDate });
+            await fetchCart();
+        } catch (err) {
+            console.error('Failed to update manifest dates:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const updateDates = (cartItemId, rentalStartDate, rentalEndDate) => {
-        saveCart(cartItems.map(i => {
-            if (i.id !== cartItemId) return i;
-            const rentalDays = calculateRentalDays(rentalStartDate, rentalEndDate);
-            const subtotal = i.pricePerDay * rentalDays * i.quantity;
-            return { ...i, rentalStartDate, rentalEndDate, rentalDays, subtotal };
-        }));
+    const updateSize = async (cartItemId, newSize) => {
+        setLoading(true);
+        try {
+            await api.cart.update(cartItemId, { size: newSize });
+            await fetchCart();
+        } catch (err) {
+            console.error('Failed to update manifest size:', err);
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const updateSize = (cartItemId, newSize) => {
-        saveCart(cartItems.map(i => i.id !== cartItemId ? i : { ...i, size: newSize }));
+    const clearCart = async () => {
+        setLoading(true);
+        try {
+            await api.cart.clear();
+            await fetchCart();
+        } catch (err) {
+            console.error('Failed to dissolve manifest:', err);
+        } finally {
+            setLoading(false);
+        }
     };
-
-    const clearCart = () => saveCart([]);
 
     const cartCount = cartItems.reduce((sum, i) => sum + i.quantity, 0);
     const totalRentalFees = cartItems.reduce((sum, i) => sum + i.subtotal, 0);
@@ -110,6 +142,7 @@ export function CartProvider({ children }) {
             totalDeposits,
             grandTotal,
             uniqueVendorCount,
+            loading,
             addToCart,
             removeFromCart,
             updateQuantity,

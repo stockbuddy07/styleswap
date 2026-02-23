@@ -6,6 +6,7 @@ import { UserProvider } from './context/UserContext';
 import { ProductProvider, useProducts } from './context/ProductContext';
 import { CartProvider, useCart } from './context/CartContext';
 import { OrderProvider } from './context/OrderContext';
+import { WishlistProvider } from './context/WishlistContext';
 
 import Loader from './components/Shared/Loader';
 import Header from './components/Shared/Header';
@@ -274,7 +275,7 @@ function AppContent() {
                 case 'product-details': return <ProductDetailsPage productId={selectedProductId} onBack={() => setCurrentPage('catalog')} onNavigate={navigate} />;
                 case 'cart': return <CartPage onNavigate={navigate} />;
                 case 'rentals': case 'orders': return <OrdersDashboard onNavigate={navigate} />;
-                case 'profile': return <ProfileDashboard />;
+                case 'profile': return <ProfileDashboard onNavigate={navigate} />;
                 case 'wishlist': return <WishlistDashboard onNavigate={navigate} onProductClick={handleProductClick} />;
                 default: return renderCatalog({ onCategorySelect: handleCategorySelect });
             }
@@ -301,6 +302,7 @@ function AppContent() {
                 onCategorySelect={handleCategorySelect}
                 currentPage={currentPage}
                 onNavigate={navigate}
+                onCartClick={() => navigate('cart')}
             />
 
             <div className="flex flex-1 max-w-screen-2xl mx-auto w-full relative">
@@ -331,11 +333,13 @@ export default function App() {
                 <ToastProvider>
                     <UserProvider>
                         <ProductProvider>
-                            <CartProvider>
-                                <OrderProvider>
-                                    <AppContent />
-                                </OrderProvider>
-                            </CartProvider>
+                            <WishlistProvider>
+                                <CartProvider>
+                                    <OrderProvider>
+                                        <AppContent />
+                                    </OrderProvider>
+                                </CartProvider>
+                            </WishlistProvider>
                         </ProductProvider>
                     </UserProvider>
                 </ToastProvider>

@@ -113,6 +113,21 @@ export const api = {
         update: (data) => request('PUT', '/api/settings', data),
     },
 
+    // ─── Cart ────────────────────────────────────────────────────────────────
+    cart: {
+        list: () => request('GET', '/api/cart'),
+        add: (data) => request('POST', '/api/cart', data),
+        update: (id, data) => request('PUT', `/api/cart/${id}`, data),
+        remove: (id) => request('DELETE', `/api/cart/${id}`),
+        clear: () => request('DELETE', '/api/cart'),
+    },
+    wishlist: {
+        list: () => request('GET', '/api/wishlist'),
+        add: (productId) => request('POST', '/api/wishlist', { productId }),
+        remove: (id) => request('DELETE', `/api/wishlist/${id}`),
+        removeByProduct: (productId) => request('DELETE', `/api/wishlist/product/${productId}`),
+    },
+
     // ─── External Services ────────────────────────────────────────────────────
     clients: {
         update: () => {
