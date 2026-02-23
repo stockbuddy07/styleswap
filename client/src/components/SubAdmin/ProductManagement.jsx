@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Plus, Edit2, Trash2, Package, AlertTriangle, ArrowRight } from 'lucide-react';
+import { Plus, Edit2, Trash2, Package, AlertTriangle, ArrowRight, UploadCloud, X } from 'lucide-react';
 import { useProducts } from '../../context/ProductContext';
 import { useOrders } from '../../context/OrderContext';
 import { useToast } from '../../context/ToastContext';
@@ -9,6 +9,7 @@ import Modal from '../Shared/Modal';
 import Input from '../Shared/Input';
 import Loader from '../Shared/Loader';
 import { formatCurrency, getStockStatus, DEFAULT_IMAGE } from '../../utils/helpers';
+import { uploadImageFast } from '../../utils/supabaseUtility';
 
 const CATEGORIES = ['Wedding Attire', 'Blazers', 'Shoes', 'Accessories'];
 const ALL_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '5', '6', '7', '8', '9', '10', '11', '12', 'One Size'];
@@ -18,9 +19,11 @@ function ProductFormModal({ isOpen, onClose, editProduct, onSave }) {
     const [form, setForm] = useState(editProduct || empty);
     const [errors, setErrors] = useState({});
     const [loading, setLoading] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const toast = useToast();
 
     React.useEffect(() => {
-        setForm(editProduct ? { ...editProduct, images: editProduct.images?.length ? editProduct.images : [''] } : empty);
+        setForm(editProduct ? { ...editProduct, images: editProduct.images?.length ? editProduct.images : [] } : empty);
         setErrors({});
     }, [editProduct, isOpen]);
 
@@ -66,6 +69,28 @@ function ProductFormModal({ isOpen, onClose, editProduct, onSave }) {
             ...f,
             sizes: f.sizes.includes(size) ? f.sizes.filter(s => s !== size) : [...f.sizes, size],
         }));
+    };
+
+    const handleImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 5 * 1024 * 1024) {
+            toast.error("Image must be less than 5MB");
+            return;
+        }
+
+        setUploadingImage(true);
+        try {
+            const optimizedUrl = await uploadImageFast(file, 'products');
+            setForm(f => ({ ...f, images: [...f.images.filter(img => img !== ''), optimizedUrl] }));
+            toast.success("Image uploaded & optimized!");
+        } catch (error) {
+            console.error(error);
+            toast.error("Failed to upload image. Please check Supabase config.");
+        } finally {
+            setUploadingImage(false);
+        }
     };
 
     return (
@@ -117,34 +142,43 @@ function ProductFormModal({ isOpen, onClose, editProduct, onSave }) {
                     {errors.sizes && <p className="text-red-500 text-xs mt-1">{errors.sizes}</p>}
                 </div>
 
-                {/* Image URLs */}
+                {/* Image Uploads */}
                 <div>
-                    <label className="text-sm font-medium text-darkGray block mb-2">Image URLs <span className="text-red-500">*</span></label>
-                    <div className="space-y-2">
-                        {form.images.map((img, i) => (
-                            <div key={i} className="flex gap-2">
-                                <input type="url" value={img} onChange={e => {
-                                    const imgs = [...form.images];
-                                    imgs[i] = e.target.value;
-                                    setForm(f => ({ ...f, images: imgs }));
-                                }} placeholder={`Image URL ${i + 1}`} className="input-field text-sm" />
-                                {form.images.length > 1 && (
-                                    <button type="button" onClick={() => setForm(f => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }))}
-                                        className="px-3 py-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors text-sm">✕</button>
-                                )}
+                    <label className="text-sm font-medium text-darkGray block mb-2">Images <span className="text-red-500">*</span></label>
+                    <div className="flex flex-wrap gap-3">
+                        {form.images.filter(img => img.trim()).map((img, i) => (
+                            <div key={i} className="relative w-20 h-20 rounded-xl overflow-hidden border border-gray-200 group">
+                                <img src={img} alt={`Product ${i + 1}`} className="w-full h-full object-cover" />
+                                <button type="button" onClick={() => setForm(f => ({ ...f, images: f.images.filter((_, idx) => idx !== i) }))}
+                                    className="absolute top-1 right-1 bg-white/90 text-red-500 p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                    <X size={14} />
+                                </button>
                             </div>
                         ))}
+
                         {form.images.length < 5 && (
-                            <button type="button" onClick={() => setForm(f => ({ ...f, images: [...f.images, ''] }))}
-                                className="text-sm text-gold hover:underline">+ Add another image</button>
+                            <label className="w-20 h-20 border-2 border-dashed border-gray-300 rounded-xl flex flex-col items-center justify-center text-gray-400 hover:border-gold hover:text-gold hover:bg-gold/5 cursor-pointer transition-colors">
+                                {uploadingImage ? (
+                                    <div className="flex flex-col items-center">
+                                        <div className="w-4 h-4 border-2 border-gold border-t-transparent rounded-full animate-spin mb-1"></div>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <UploadCloud size={20} className="mb-1" />
+                                        <span className="text-[10px] font-semibold">Upload</span>
+                                    </>
+                                )}
+                                <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" disabled={uploadingImage} />
+                            </label>
                         )}
                     </div>
+                    <p className="text-xs text-gray-400 mt-2">Upload up to 5 images. Images are automatically optimized & converted to WebP format for fast loading.</p>
                     {errors.images && <p className="text-red-500 text-xs mt-1">{errors.images}</p>}
                 </div>
 
                 <div className="flex gap-3 pt-2">
                     <Button type="button" variant="outline" onClick={onClose} fullWidth>Cancel</Button>
-                    <Button type="submit" loading={loading} fullWidth>{editProduct ? 'Save Changes' : 'Add Product'}</Button>
+                    <Button type="submit" loading={loading || uploadingImage} fullWidth disabled={uploadingImage}>{editProduct ? 'Save Changes' : 'Add Product'}</Button>
                 </div>
             </form>
         </Modal>

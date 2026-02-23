@@ -519,7 +519,7 @@ export default function ProductDetailsPage({ productId, onBack }) {
                                 <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide snap-x">
                                     {[1, 2, 3, 4].map(i => (
                                         <div key={i} className="flex-shrink-0 w-32 h-32 rounded-xl overflow-hidden bg-gray-100 snap-center border border-gray-200">
-                                            <img src={images[i % images.length]} className="w-full h-full object-cover" alt="User Review" />
+                                            <img src={images[i % images.length]} loading="lazy" decoding="async" className="w-full h-full object-cover" alt="User Review" />
                                         </div>
                                     ))}
                                 </div>
@@ -633,6 +633,8 @@ export default function ProductDetailsPage({ productId, onBack }) {
                                             <img
                                                 src={p.images?.[0] || DEFAULT_IMAGE}
                                                 alt={p.name}
+                                                loading="lazy"
+                                                decoding="async"
                                                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                                             />
                                             <div className="absolute top-2 right-2 bg-white/90 px-2 py-1 rounded-md text-[10px] font-bold">

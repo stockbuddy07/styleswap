@@ -1,13 +1,16 @@
 import React, { useState } from 'react';
 import { Store, Star, Heart, RefreshCw, ShoppingBag, CheckCircle } from 'lucide-react';
 import { useWishlist } from '../../context/WishlistContext';
+import { useProducts } from '../../context/ProductContext';
 import Button from '../Shared/Button';
 import { formatCurrency, getStockStatus, DEFAULT_IMAGE } from '../../utils/helpers';
 
 export default function ProductCard({ product, onRent, onAddToCart }) {
     const { toggleWishlist, isInWishlist } = useWishlist();
+    const { getDetailedProduct } = useProducts();
     const [isHovered, setIsHovered] = useState(false);
     const [currentImage, setCurrentImage] = useState(0);
+    const [isPrefetched, setIsPrefetched] = useState(false);
     const stock = getStockStatus(product.availableQuantity);
     const isWishlisted = isInWishlist(product.id);
 
@@ -31,6 +34,11 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
 
     const handleMouseEnter = () => {
         setIsHovered(true);
+        // Intent-Based Prefetching
+        if (!isPrefetched && getDetailedProduct) {
+            getDetailedProduct(product.id).catch(() => { }); // silently catch errors
+            setIsPrefetched(true);
+        }
     };
 
     const handleMouseLeave = () => {
@@ -64,6 +72,8 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
                 <img
                     src={images[currentImage]}
                     alt={product.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-105"
                     onError={e => { e.target.src = DEFAULT_IMAGE; }}
                 />

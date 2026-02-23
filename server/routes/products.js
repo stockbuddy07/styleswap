@@ -15,16 +15,26 @@ router.get('/', async (req, res) => {
             return res.json(cachedProducts);
         }
 
+        const ObjectKeys = {
+            id: true,
+            name: true,
+            category: true,
+            pricePerDay: true,
+            retailPrice: true,
+            availableQuantity: true,
+            images: true,
+            createdAt: true,
+            vendor: {
+                select: { id: true, shopName: true } // only shopName needed for catalog
+            },
+            reviews: {
+                select: { rating: true } // only rating needed for average
+            }
+        };
+
         const products = await prisma.product.findMany({
             orderBy: { createdAt: 'desc' },
-            include: {
-                vendor: {
-                    select: { id: true, name: true, shopName: true, shopDescription: true, avatar: true },
-                },
-                reviews: {
-                    include: { user: { select: { name: true, avatar: true } } }
-                }
-            },
+            select: ObjectKeys
         });
 
         const parsed = products.map(p => {
@@ -34,10 +44,12 @@ router.get('/', async (req, res) => {
 
             return {
                 ...p,
-                sizes: p.sizes || [],
                 images: p.images || [],
                 ratings,
-                reviewCount: p.reviews.length
+                reviewCount: p.reviews.length,
+                shopName: p.vendor?.shopName,
+                vendor: undefined, // remove nested vendor to flatten
+                reviews: undefined  // remove nested reviews
             };
         });
 
@@ -52,6 +64,12 @@ router.get('/', async (req, res) => {
 // ─── GET /api/products/:id — Single product (public) ─────────────────────────
 router.get('/:id', async (req, res) => {
     try {
+        const cacheKey = `product_${req.params.id}`;
+        const cachedProduct = cache.get(cacheKey);
+        if (cachedProduct) {
+            return res.json(cachedProduct);
+        }
+
         const product = await prisma.product.findUnique({
             where: { id: req.params.id },
             include: {
@@ -71,13 +89,16 @@ router.get('/:id', async (req, res) => {
             ? Number((product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length).toFixed(1))
             : 0;
 
-        res.json({
+        const responseData = {
             ...product,
             sizes: product.sizes || [],
             images: product.images || [],
             ratings,
             reviewCount: product.reviews.length
-        });
+        };
+
+        cache.set(cacheKey, responseData);
+        res.json(responseData);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch product details' });
     }
@@ -106,6 +127,7 @@ router.post('/:id/reviews', authenticate, async (req, res) => {
         });
 
         cache.del('all_products');
+        cache.del(`product_${productId}`);
         res.status(201).json(review);
     } catch (err) {
         res.status(500).json({ error: 'Failed to post review' });
@@ -195,6 +217,7 @@ router.put('/:id', authenticate, requireVendor, async (req, res) => {
         });
 
         cache.del('all_products');
+        cache.del(`product_${id}`);
         res.json(updated);
     } catch (err) {
         res.status(500).json({ error: 'Failed to update product' });
@@ -212,6 +235,7 @@ router.delete('/:id', authenticate, requireVendor, async (req, res) => {
         }
         await prisma.product.delete({ where: { id } });
         cache.del('all_products');
+        cache.del(`product_${id}`);
         res.json({ message: 'Product deleted' });
     } catch (err) {
         res.status(500).json({ error: 'Failed to delete product' });
@@ -231,6 +255,7 @@ router.patch('/:id/availability', authenticate, async (req, res) => {
             data: { availableQuantity: newQty },
         });
         cache.del('all_products');
+        cache.del(`product_${req.params.id}`);
         res.json(updated);
     } catch (err) {
         res.status(500).json({ error: 'Failed to update availability' });

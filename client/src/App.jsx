@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { X } from 'lucide-react';
 import { ToastProvider } from './context/ToastContext';
@@ -11,36 +11,37 @@ import { WishlistProvider } from './context/WishlistContext';
 import Loader from './components/Shared/Loader';
 import Header from './components/Shared/Header';
 import Sidebar from './components/Shared/Sidebar';
-import Login from './components/Auth/Login';
-import Register from './components/Auth/Register';
 import LaserLoader from './components/Shared/LaserLoader';
+import Footer from './components/Shared/Footer';
+
+// Auth
+const Login = lazy(() => import('./components/Auth/Login'));
+const Register = lazy(() => import('./components/Auth/Register'));
 
 // Admin
-import Analytics from './components/Admin/Analytics';
-import AdminDashboard from './components/Admin/AdminDashboard';
-import UserManagement from './components/Admin/UserManagement';
-import ProductOverview from './components/Admin/ProductOverview';
-import SubscriberList from './components/Admin/SubscriberList';
-import AdminSettings from './components/Admin/AdminSettings';
+const Analytics = lazy(() => import('./components/Admin/Analytics'));
+const AdminDashboard = lazy(() => import('./components/Admin/AdminDashboard'));
+const UserManagement = lazy(() => import('./components/Admin/UserManagement'));
+const ProductOverview = lazy(() => import('./components/Admin/ProductOverview'));
+const SubscriberList = lazy(() => import('./components/Admin/SubscriberList'));
+const AdminSettings = lazy(() => import('./components/Admin/AdminSettings'));
 
 // SubAdmin
-import ProductManagement from './components/SubAdmin/ProductManagement';
-import InventoryDashboard from './components/SubAdmin/InventoryDashboard';
-import SalesAnalytics from './components/SubAdmin/SalesAnalytics';
-import ActiveRentals from './components/SubAdmin/ActiveRentals';
-import VendorOnboarding from './components/SubAdmin/VendorOnboarding';
+const ProductManagement = lazy(() => import('./components/SubAdmin/ProductManagement'));
+const InventoryDashboard = lazy(() => import('./components/SubAdmin/InventoryDashboard'));
+const SalesAnalytics = lazy(() => import('./components/SubAdmin/SalesAnalytics'));
+const ActiveRentals = lazy(() => import('./components/SubAdmin/ActiveRentals'));
+const VendorOnboarding = lazy(() => import('./components/SubAdmin/VendorOnboarding'));
 
 // User
-import ProductCatalog from './components/User/ProductCatalog';
-import CategoryRail from './components/User/Home/CategoryRail';
-import ProductDetailsPage from './components/User/ProductDetailsPage';
-import ProfileDashboard from './components/User/ProfileDashboard';
-import OrdersDashboard from './components/User/OrdersDashboard';
-import WishlistDashboard from './components/User/WishlistDashboard';
-import CartPage from './components/User/CartPage';
-
-import Footer from './components/Shared/Footer';
-import ContactUs from './components/User/ContactUs';
+const ProductCatalog = lazy(() => import('./components/User/ProductCatalog'));
+const CategoryRail = lazy(() => import('./components/User/Home/CategoryRail'));
+const ProductDetailsPage = lazy(() => import('./components/User/ProductDetailsPage'));
+const ProfileDashboard = lazy(() => import('./components/User/ProfileDashboard'));
+const OrdersDashboard = lazy(() => import('./components/User/OrdersDashboard'));
+const WishlistDashboard = lazy(() => import('./components/User/WishlistDashboard'));
+const CartPage = lazy(() => import('./components/User/CartPage'));
+const ContactUs = lazy(() => import('./components/User/ContactUs'));
 
 class ErrorBoundary extends React.Component {
     constructor(props) {
@@ -201,13 +202,13 @@ function AppContent() {
     // Explicit Auth Pages
     if (!currentUser && (currentPage === 'login' || currentPage === 'register')) {
         return currentPage === 'login'
-            ? <Login onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} />
-            : <Register onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} />;
+            ? <Suspense fallback={<Loader />}><Login onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} /></Suspense>
+            : <Suspense fallback={<Loader />}><Register onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} /></Suspense>;
     }
 
     // Vendor with incomplete profile
     if (isSubAdmin && !vendorProfileComplete) {
-        return <VendorOnboarding />;
+        return <Suspense fallback={<Loader />}><VendorOnboarding /></Suspense>;
     }
 
     const navigate = (page) => {
@@ -317,7 +318,9 @@ function AppContent() {
                 )}
 
                 <main className="flex-1 w-full min-w-0">
-                    {renderPage()}
+                    <Suspense fallback={<div className="h-full flex items-center justify-center p-8"><Loader message="Loading content..." /></div>}>
+                        {renderPage()}
+                    </Suspense>
                 </main>
             </div>
 

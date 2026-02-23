@@ -35,6 +35,10 @@ model User {
   reviews  Review[]
   cart     CartItem[]
   wishlist WishlistItem[]
+
+  @@index([email])
+  @@index([role])
+  @@index([status])
 }
 
 model Product {
@@ -60,6 +64,7 @@ model Product {
   @@index([subAdminId])
   @@index([category])
   @@index([pricePerDay])
+  @@index([createdAt])
 }
 
 model Review {
@@ -97,6 +102,7 @@ model Order {
   @@index([customerId])
   @@index([vendorId])
   @@index([status])
+  @@index([orderDate])
 }
 
 model Subscriber {
@@ -125,6 +131,7 @@ model CartItem {
   updatedAt       DateTime @updatedAt
 
   @@index([userId])
+  @@index([productId])
 }
 
 model WishlistItem {
@@ -137,4 +144,5 @@ model WishlistItem {
 
   @@unique([userId, productId])
   @@index([userId])
+  @@index([productId])
 }
