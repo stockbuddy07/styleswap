@@ -3,22 +3,36 @@ import { Facebook, Twitter, Instagram, Linkedin, Mail, MapPin, Phone, ArrowRight
 import { useToast } from '../../context/ToastContext';
 
 import { useAuth } from '../../context/AuthContext';
+import { api } from '../../utils/api';
 
 export default function Footer({ onNavigate, onCategorySelect }) {
     const toast = useToast();
-    const { isAdmin, isSubAdmin } = useAuth();
+    const { isAuthenticated } = useAuth();
     const [email, setEmail] = useState('');
 
     const handleSubscribe = async (e) => {
-        // ... (existing code)
+        e.preventDefault();
+        if (!email) return;
+        try {
+            await api.marketing.subscribe(email);
+            toast.success('Welcome to the Circle. Elite access granted.');
+            setEmail('');
+        } catch (err) {
+            toast.error('Manifest subscription failed. Protocol mismatch.');
+        }
     };
 
-    // ... (handleLinkClick code)
+    const handleLinkClick = (e, type, value) => {
+        e.preventDefault();
+        if (type === 'navigate') onNavigate(value);
+        else if (type === 'category') onCategorySelect(value);
+        else if (type === 'coming-soon') toast.info('Access point under construction');
+    };
 
     return (
         <footer className="relative z-20 bg-midnight text-white border-t border-white/10 mt-auto">
-            {/* Newsletter Section - Hidden for Admins */}
-            {!isAdmin && !isSubAdmin && (
+            {/* Newsletter Section - Only for Guests */}
+            {!isAuthenticated && (
                 <div className="bg-gradient-to-r from-midnight-deep via-midnight to-midnight-deep py-20 px-6 border-b border-white/5 relative overflow-hidden group">
                     <div className="absolute inset-0 bg-gold/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
                     <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-gold/5 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/2" />

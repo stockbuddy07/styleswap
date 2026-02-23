@@ -1,7 +1,7 @@
 import React from 'react';
 import {
     LayoutDashboard, Users, Package, BarChart2, ShoppingBag,
-    ClipboardList, Warehouse, TrendingUp, Store, X, ChevronRight, CheckCircle, Settings
+    ClipboardList, Warehouse, TrendingUp, Store, X, ChevronRight, CheckCircle, Settings, Bell, Heart
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -24,9 +24,10 @@ const subAdminNav = [
 ];
 
 const userNav = [
-    { id: 'catalog', label: 'Browse Products', icon: Store },
+    { id: 'catalog', label: 'Discovery Catalog', icon: Store },
     { id: 'cart', label: 'My Cart', icon: ShoppingBag },
-    { id: 'rentals', label: 'My Rentals', icon: ClipboardList },
+    { id: 'orders', label: 'Order History', icon: Bell },
+    { id: 'wishlist', label: 'My Wishlist', icon: Heart },
 ];
 
 export default function Sidebar({ currentPage, onNavigate, isOpen, onClose }) {

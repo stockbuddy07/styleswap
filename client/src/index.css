@@ -170,6 +170,10 @@
     opacity: 1;
     animation: trace 2s linear infinite;
   }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
 }
 
 @keyframes splitReveal {

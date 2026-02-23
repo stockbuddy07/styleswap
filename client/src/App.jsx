@@ -17,6 +17,7 @@ import Footer from './components/Shared/Footer';
 // Auth
 const Login = lazy(() => import('./components/Auth/Login'));
 const Register = lazy(() => import('./components/Auth/Register'));
+const ForgotPassword = lazy(() => import('./components/Auth/ForgotPassword'));
 
 // Admin
 const Analytics = lazy(() => import('./components/Admin/Analytics'));
@@ -105,7 +106,7 @@ function AppContent() {
         // Only show preloader if it hasn't been shown in this session
         return !sessionStorage.getItem('loader-shown');
     });
-    const [authPage, setAuthPage] = useState('login');
+    const [authPage, setAuthPage] = useState('login'); // 'login' | 'register' | 'forgot-password'
     const [currentPage, setCurrentPage] = useState(null);
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
@@ -200,10 +201,13 @@ function AppContent() {
     if (loading) return <Loader message="Loading StyleSwap..." />;
 
     // Explicit Auth Pages
-    if (!currentUser && (currentPage === 'login' || currentPage === 'register')) {
-        return currentPage === 'login'
-            ? <Suspense fallback={<Loader />}><Login onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} /></Suspense>
-            : <Suspense fallback={<Loader />}><Register onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} /></Suspense>;
+    if (!currentUser && (currentPage === 'login' || currentPage === 'register' || currentPage === 'forgot-password')) {
+        switch (currentPage) {
+            case 'login': return <Suspense fallback={<Loader />}><Login onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} /></Suspense>;
+            case 'register': return <Suspense fallback={<Loader />}><Register onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} /></Suspense>;
+            case 'forgot-password': return <Suspense fallback={<Loader />}><ForgotPassword onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} /></Suspense>;
+            default: return <Suspense fallback={<Loader />}><Login onNavigate={(p) => p === 'home' ? setCurrentPage('catalog') : setCurrentPage(p)} /></Suspense>;
+        }
     }
 
     // Vendor with incomplete profile
@@ -273,8 +277,8 @@ function AppContent() {
         if (isUser) {
             switch (currentPage) {
                 case 'catalog': return renderCatalog({ onCategorySelect: handleCategorySelect });
-                case 'product-details': return <ProductDetailsPage productId={selectedProductId} onBack={() => setCurrentPage('catalog')} onNavigate={navigate} />;
-                case 'cart': return <CartPage onNavigate={navigate} />;
+                case 'product-details': return <ProductDetailsPage productId={selectedProductId} onBack={() => window.history.back()} onNavigate={navigate} />;
+                case 'cart': return <CartPage onNavigate={navigate} onProductClick={handleProductClick} />;
                 case 'rentals': case 'orders': return <OrdersDashboard onNavigate={navigate} />;
                 case 'profile': return <ProfileDashboard onNavigate={navigate} />;
                 case 'wishlist': return <WishlistDashboard onNavigate={navigate} onProductClick={handleProductClick} />;

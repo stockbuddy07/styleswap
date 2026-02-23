@@ -87,6 +87,10 @@ export default function ProductDetailsModal({ product: initialProduct, isOpen, o
         if (Object.keys(errs).length) { setErrors(errs); return; }
         addToCart(displayProduct, startDate, endDate, size, quantity);
         toast.success(`Asset locked in manifest!`);
+
+        if (onNavigate) {
+            onNavigate('cart');
+        }
         onClose();
     };
 
@@ -179,8 +183,8 @@ export default function ProductDetailsModal({ product: initialProduct, isOpen, o
                                                     toggleWishlist(displayProduct);
                                                 }}
                                                 className={`p-2.5 rounded-full shadow-lg border transition-all active:scale-90 ${isInWishlist(displayProduct.id)
-                                                        ? 'bg-midnight text-gold border-gold/50 shadow-glow'
-                                                        : 'bg-white/95 border-gray-100 text-midnight hover:text-red-500'
+                                                    ? 'bg-midnight text-gold border-gold/50 shadow-glow'
+                                                    : 'bg-white/95 border-gray-100 text-midnight hover:text-red-500'
                                                     }`}
                                             >
                                                 <Heart size={22} fill={isInWishlist(displayProduct.id) ? "currentColor" : "none"} strokeWidth={1.5} />

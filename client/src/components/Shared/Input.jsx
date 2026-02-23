@@ -20,22 +20,22 @@ const Input = forwardRef(function Input({
     rows,
     ...props
 }, ref) {
-    const inputClass = `w-full border rounded-xl px-5 py-3.5 focus:outline-none focus:ring-4 transition-all duration-300 min-h-[52px] ${error
+    const inputClass = `w-full border rounded-xl px-4 py-3 focus:outline-none focus:ring-2 transition-all duration-300 ${error
         ? 'border-red-400 focus:ring-red-400/10'
-        : 'border-gray-200 focus:ring-gold/10 focus:border-gold shadow-sm'
-        } ${Icon ? 'pl-12' : ''} ${IconRight ? 'pr-12' : ''} ${disabled ? 'bg-gray-50/50 cursor-not-allowed opacity-60' : ''} ${inputClassName || 'bg-white/70 backdrop-blur-sm text-midnight'}`;
+        : 'border-white/10 focus:ring-gold/10 focus:border-gold'
+        } ${Icon ? 'pl-11' : ''} ${IconRight ? 'pr-11' : ''} ${disabled ? 'bg-gray-50/50 cursor-not-allowed opacity-60' : ''} bg-white/5 backdrop-blur-md text-white placeholder:text-gray-400 ${inputClassName}`;
 
     return (
         <div className={`flex flex-col gap-1.5 ${className}`}>
             {label && (
-                <label className={`text-[10px] uppercase font-black tracking-widest ${inputClassName?.includes('text-white') ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
+                <label className="text-[10px] uppercase font-black tracking-widest text-gray-400 mb-1">
                     {label}
                     {required && <span className="text-red-500 ml-1">*</span>}
                 </label>
             )}
             <div className="relative">
                 {Icon && (
-                    <div className={`absolute left-3 top-1/2 -translate-y-1/2 ${inputClassName?.includes('text-white') ? 'text-gray-400' : 'text-gray-400'}`}>
+                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
                         <Icon size={18} />
                     </div>
                 )}

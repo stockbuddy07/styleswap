@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Store, Star, Heart, RefreshCw, ShoppingBag, CheckCircle } from 'lucide-react';
+import { Store, Star, Heart, RefreshCw, ShoppingBag, CheckCircle, ChevronRight, Eye } from 'lucide-react';
 import { useWishlist } from '../../context/WishlistContext';
 import { useProducts } from '../../context/ProductContext';
 import Button from '../Shared/Button';
@@ -14,17 +14,28 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
     const stock = getStockStatus(product.availableQuantity);
     const isWishlisted = isInWishlist(product.id);
 
-    // Ultra-robust image handling: handles raw strings, JSON strings, and arrays
+    // Category-based color mapping for luxury tints
+    const getCategoryStyles = (category) => {
+        const cat = category?.toLowerCase() || '';
+        if (cat.includes('wedding')) return { tint: 'bg-emerald-500/5', glow: 'shadow-emerald-500/10', text: 'text-emerald-500' };
+        if (cat.includes('party')) return { tint: 'bg-indigo-500/5', glow: 'shadow-indigo-500/10', text: 'text-indigo-500' };
+        if (cat.includes('jewelry')) return { tint: 'bg-rose-500/5', glow: 'shadow-rose-500/10', text: 'text-rose-500' };
+        if (cat.includes('accessories')) return { tint: 'bg-amber-500/5', glow: 'shadow-amber-500/10', text: 'text-amber-600' };
+        if (cat.includes('shoes')) return { tint: 'bg-orange-500/5', glow: 'shadow-orange-500/10', text: 'text-orange-500' };
+        return { tint: 'bg-gray-500/5', glow: 'shadow-gray-500/10', text: 'text-gold' };
+    };
+
+    const catStyles = getCategoryStyles(product.category);
+
+    // Ultra-robust image handling
     const getImages = (raw) => {
         if (!raw) return [DEFAULT_IMAGE];
         let arr = [];
         try {
             arr = typeof raw === 'string' ? JSON.parse(raw) : raw;
         } catch (e) {
-            // Handle cases where it's a raw comma-separated string or just one URL
             arr = typeof raw === 'string' ? raw.split(',').map(s => s.trim()) : [raw];
         }
-
         if (!Array.isArray(arr)) arr = [arr];
         const valid = arr.filter(img => typeof img === 'string' && img.trim() !== '');
         return valid.length > 0 ? valid : [DEFAULT_IMAGE];
@@ -34,9 +45,8 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
 
     const handleMouseEnter = () => {
         setIsHovered(true);
-        // Intent-Based Prefetching
         if (!isPrefetched && getDetailedProduct) {
-            getDetailedProduct(product.id).catch(() => { }); // silently catch errors
+            getDetailedProduct(product.id).catch(() => { });
             setIsPrefetched(true);
         }
     };
@@ -46,13 +56,12 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
         setCurrentImage(0);
     };
 
-    // Cycle images on hover
     React.useEffect(() => {
         let interval;
         if (isHovered && images.length > 1) {
             interval = setInterval(() => {
                 setCurrentImage(prev => (prev + 1) % images.length);
-            }, 1200); // Slightly slower for elegance
+            }, 1200);
         }
         return () => clearInterval(interval);
     }, [isHovered, images.length]);
@@ -62,7 +71,7 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
 
     return (
         <div
-            className="group bg-white rounded-3xl border border-gray-100 overflow-hidden md:hover:shadow-[0_20px_40px_-15px_rgba(0,0,0,0.08)] transition-all duration-500 flex flex-col relative cursor-pointer active:scale-[0.98]"
+            className={`group bg-white rounded-[2rem] border border-gray-100 overflow-hidden transition-all duration-700 flex flex-col relative cursor-pointer active:scale-[0.98] ${isHovered ? `shadow-2xl ${catStyles.glow} -translate-y-2` : 'shadow-sm'}`}
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={() => onRent(product)}
@@ -74,21 +83,46 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
                     alt={product.name}
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-cover transition-transform duration-700 md:group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-[2s] ease-out md:group-hover:scale-110"
                     onError={e => { e.target.src = DEFAULT_IMAGE; }}
                 />
 
+                {/* Thematic Tint Overlay */}
+                <div className={`absolute inset-0 ${catStyles.tint} opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none`} />
+
                 {/* AD Badge */}
-                <div className="absolute top-3 left-3 px-1.5 py-0.5 bg-black/40 backdrop-blur-md text-white text-[8px] font-bold rounded shadow-sm opacity-80 uppercase tracking-tighter">
+                <div className="absolute top-4 left-4 px-2 py-0.5 bg-black/40 backdrop-blur-md text-white text-[9px] font-black rounded shadow-sm opacity-80 uppercase tracking-widest z-10">
                     AD
                 </div>
 
                 {/* Rating Badge */}
-                <div className="absolute bottom-3 left-3 flex items-center gap-1 px-2 py-1 bg-white/90 backdrop-blur-md rounded-lg shadow-sm">
-                    <span className="text-[10px] font-black text-midnight">{(product.ratings || 0).toFixed(1)}</span>
-                    <Star size={10} fill="currentColor" className="text-emerald-500" />
-                    <div className="w-px h-2 bg-gray-300 mx-0.5" />
-                    <span className="text-[9px] font-medium text-gray-500">{product.reviews?.length || 0}</span>
+                <div className="absolute bottom-4 left-4 flex items-center gap-1.5 px-2.5 py-1.5 bg-white/90 backdrop-blur-md rounded-2xl shadow-xl z-10 border border-white/20">
+                    <span className="text-[11px] font-black text-midnight">{(product.ratings || 0).toFixed(1)}</span>
+                    <Star size={11} fill="currentColor" className="text-emerald-500" />
+                    <div className="w-px h-3 bg-gray-200 mx-1" />
+                    <span className="text-[10px] font-bold text-gray-400">{product.reviews?.length || 0}</span>
+                </div>
+
+                {/* Glassmorphic Actions Group - Appear on hover */}
+                <div className={`absolute inset-0 flex items-center justify-center gap-3 z-20 transition-all duration-500 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100`}>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onRent(product);
+                        }}
+                        className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-3xl border border-white/30 text-white hover:bg-gold hover:text-midnight hover:border-gold transition-all flex items-center justify-center shadow-2xl"
+                    >
+                        <Eye size={20} />
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onRent(product); // Direct to rent flow as per user's Direct Acquisition preference
+                        }}
+                        className="w-12 h-12 rounded-full bg-midnight/80 backdrop-blur-3xl border border-white/10 text-white hover:bg-gold hover:text-midnight transition-all flex items-center justify-center shadow-2xl"
+                    >
+                        <ShoppingBag size={18} />
+                    </button>
                 </div>
 
                 {/* Wishlist Button */}
@@ -97,49 +131,54 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
                         e.stopPropagation();
                         toggleWishlist(product);
                     }}
-                    className={`absolute top-3 right-3 w-8 h-8 rounded-full shadow-lg flex items-center justify-center transition-all duration-300 border ${isWishlisted
+                    className={`absolute top-4 right-4 w-10 h-10 rounded-full shadow-2xl flex items-center justify-center transition-all duration-500 border z-10 ${isWishlisted
                         ? 'bg-midnight text-gold border-gold/50 shadow-glow scale-110'
-                        : 'bg-white text-gray-400 border-gray-100 hover:text-red-500 hover:scale-110'
+                        : 'bg-white/80 backdrop-blur-md text-gray-400 border-white/20 hover:text-red-500 hover:scale-110 opacity-0 group-hover:opacity-100'
                         }`}
                 >
-                    <Heart size={16} fill={isWishlisted ? "currentColor" : "none"} className="transition-all" />
+                    <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} className="transition-all" />
                 </button>
             </div>
 
             {/* Content Area */}
-            <div className="p-3.5 sm:p-4 flex flex-col flex-1 bg-white">
+            <div className={`p-5 flex flex-col flex-1 bg-white transition-colors duration-700 ${isHovered ? catStyles.tint.replace('/5', '/10') : ''}`}>
                 {/* Brand Name */}
-                <h4 className="font-bold text-midnight text-[14px] sm:text-[15px] leading-tight truncate">
-                    {product.designer?.brandName || product.shopName || 'StyleSwap Elite'}
+                <div className="flex items-center justify-between mb-1.5 text-[11px] font-black uppercase tracking-[0.2em]">
+                    <p className="text-gray-400 truncate max-w-[70%]">
+                        {product.designer?.brandName || product.shopName || 'StyleSwap Elite'}
+                    </p>
+                    <span className={`${catStyles.text} opacity-0 group-hover:opacity-100 transition-opacity`}>
+                        {product.category || 'Luxury'}
+                    </span>
+                </div>
+
+                {/* Product Name */}
+                <h4 className="font-playfair font-black text-midnight text-[17px] leading-tight truncate mb-3 group-hover:text-gold transition-colors">
+                    {product.name}
                 </h4>
 
-                {/* Product Name (Subdued) */}
-                <p className="text-[11px] sm:text-[12px] text-gray-400 font-medium truncate mb-2">
-                    {product.name}
-                </p>
-
                 {/* Price & Discount Row */}
-                <div className="mt-auto space-y-1.5">
-                    <div className="flex items-center gap-2">
-                        {discount > 0 && (
-                            <span className="text-emerald-500 font-bold text-[12px] sm:text-[13px]">
-                                ↓{discount}%
-                            </span>
-                        )}
-                        <span className="text-gray-300 line-through text-[12px] sm:text-[13px]">
-                            ₹{Math.round(retailPrice)}
-                        </span>
-                        <span className="text-midnight font-bold ml-auto text-[14px] sm:text-[15px]">
-                            {formatCurrency(product.pricePerDay || product.price)}
-                        </span>
-                    </div>
-
-                    {/* Bank Offer Banner */}
-                    <div className="flex items-center gap-1.5 px-2 py-1 bg-blue-50/50 rounded-lg border border-blue-100/50">
-                        <div className="flex items-center justify-center p-0.5 bg-blue-600 rounded">
-                            <CheckCircle size={8} className="text-white" />
+                <div className="mt-auto pt-3 border-t border-gray-50">
+                    <div className="flex items-end justify-between">
+                        <div className="flex flex-col">
+                            {discount > 0 && (
+                                <span className="text-emerald-500 font-black text-[10px] uppercase tracking-widest mb-0.5">
+                                    SAVE {discount}%
+                                </span>
+                            )}
+                            <div className="flex items-center gap-2">
+                                <span className="text-gray-300 line-through text-[12px]">
+                                    ₹{Math.round(retailPrice)}
+                                </span>
+                                <span className="text-midnight font-black text-[18px] leading-none">
+                                    {formatCurrency(product.pricePerDay || product.price)}
+                                </span>
+                            </div>
                         </div>
-                        <span className="text-[9px] font-bold text-blue-700 uppercase tracking-tighter">₹290 with Bank Offer</span>
+
+                        <div className="flex items-center gap-1 text-[9px] font-black text-gold uppercase tracking-[0.2em] transform translate-x-4 opacity-0 group-hover:translate-x-0 group-hover:opacity-100 transition-all duration-500">
+                            Rent Now <ChevronRight size={10} />
+                        </div>
                     </div>
                 </div>
             </div>

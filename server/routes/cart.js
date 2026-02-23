@@ -32,23 +32,32 @@ router.get('/', authenticate, async (req, res) => {
         });
 
         // Map to a cleaner format for the frontend
-        const formatted = cartItems.map(item => ({
-            id: item.id,
-            productId: item.product.id,
-            productName: item.product.name,
-            productImage: item.product.images?.[0] || '',
-            category: item.product.category,
-            vendorId: item.product.subAdminId,
-            vendorShopName: item.product.vendor?.shopName || 'Luxury Curator',
-            pricePerDay: item.product.pricePerDay,
-            securityDeposit: item.product.securityDeposit,
-            size: item.size,
-            quantity: item.quantity,
-            rentalStartDate: item.rentalStartDate,
-            rentalEndDate: item.rentalEndDate,
-            createdAt: item.createdAt,
-            // Subtotal and days can be calculated on frontend or here
-        }));
+        const formatted = cartItems.map(item => {
+            let images = [];
+            try {
+                images = typeof item.product.images === 'string' ? JSON.parse(item.product.images) : (item.product.images || []);
+            } catch (e) {
+                images = [item.product.images];
+            }
+            if (!Array.isArray(images)) images = [images];
+
+            return {
+                id: item.id,
+                productId: item.product.id,
+                productName: item.product.name,
+                productImage: images[0] || '',
+                category: item.product.category,
+                vendorId: item.product.subAdminId,
+                vendorShopName: item.product.vendor?.shopName || 'Luxury Curator',
+                pricePerDay: item.product.pricePerDay,
+                securityDeposit: item.product.securityDeposit,
+                size: item.size,
+                quantity: item.quantity,
+                rentalStartDate: item.rentalStartDate,
+                rentalEndDate: item.rentalEndDate,
+                createdAt: item.createdAt,
+            };
+        });
 
         res.json(formatted);
     } catch (err) {
@@ -66,21 +75,24 @@ router.post('/', authenticate, async (req, res) => {
             return res.status(400).json({ error: 'Missing acquisition parameters' });
         }
 
-        // Check if item already exists with same size/dates (merging logic)
+        // Check if item already exists with same size (merging logic)
+        // We relax the check to only productId and size to prevent duplicates in the UI
         const existing = await prisma.cartItem.findFirst({
             where: {
                 userId: req.user.id,
                 productId,
-                size,
-                rentalStartDate,
-                rentalEndDate
+                size
             }
         });
 
         if (existing) {
             const updated = await prisma.cartItem.update({
                 where: { id: existing.id },
-                data: { quantity: existing.quantity + (quantity || 1) }
+                data: {
+                    quantity: existing.quantity + (quantity || 1),
+                    rentalStartDate: rentalStartDate, // Update to latest selected dates
+                    rentalEndDate: rentalEndDate
+                }
             });
             return res.json(updated);
         }

@@ -211,13 +211,19 @@ export default function Header({
                                                             <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-gold group-hover:text-midnight transition-all">
                                                                 <Bell size={14} />
                                                             </div>
-                                                            Order Manifests
+                                                            Order History
                                                         </button>
                                                         <button onClick={() => { onNavigate('wishlist'); setUserMenuOpen(false); }} className="w-full text-left px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 hover:text-midnight flex items-center gap-3 transition-all group">
                                                             <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-gold group-hover:text-midnight transition-all">
                                                                 <Heart size={14} />
                                                             </div>
-                                                            Curated Desires
+                                                            My Wishlist
+                                                        </button>
+                                                        <button onClick={() => { onNavigate('cart'); setUserMenuOpen(false); }} className="w-full text-left px-5 py-3 rounded-2xl text-[11px] font-black uppercase tracking-widest text-gray-500 hover:bg-gray-50 hover:text-midnight flex items-center gap-3 transition-all group">
+                                                            <div className="p-2 bg-gray-50 rounded-lg group-hover:bg-gold group-hover:text-midnight transition-all">
+                                                                <ShoppingCart size={14} />
+                                                            </div>
+                                                            My Cart
                                                         </button>
                                                     </>
                                                 )}

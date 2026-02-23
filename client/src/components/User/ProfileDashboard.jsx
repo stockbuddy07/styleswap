@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import {
     User, Mail, Phone, MapPin, Camera, Save,
     ArrowLeft, CheckCircle, Package, Heart, Star,
-    CreditCard, Settings, ChevronRight, LogOut
+    CreditCard, Settings, ChevronRight, LogOut, Bell, ShoppingCart
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
@@ -57,9 +57,10 @@ export default function ProfileDashboard({ onNavigate }) {
     };
 
     const navItems = [
-        { id: 'details', label: 'Personal Details', icon: User },
-        { id: 'orders', label: 'Order History', icon: Package },
-        { id: 'wishlist', label: 'My Collection', icon: Heart },
+        { id: 'details', label: 'Identity Profile', icon: User },
+        { id: 'orders', label: 'Order History', icon: Bell },
+        { id: 'wishlist', label: 'My Wishlist', icon: Heart },
+        { id: 'cart', label: 'My Cart', icon: ShoppingCart },
         { id: 'payment', label: 'Payment Methods', icon: CreditCard },
     ];
 
@@ -125,19 +126,21 @@ export default function ProfileDashboard({ onNavigate }) {
                                 <button
                                     key={item.id}
                                     onClick={() => {
-                                        if (item.id === 'orders' && onNavigate) {
-                                            onNavigate('orders');
-                                        } else {
+                                        if (item.id === 'details') {
                                             setActiveTab(item.id);
+                                        } else if (onNavigate) {
+                                            onNavigate(item.id);
                                         }
                                     }}
-                                    className={`w-full flex items-center justify-between p-4 rounded-xl transition-all group ${activeTab === item.id ? 'bg-midnight text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50 hover:text-midnight'}`}
+                                    className={`w-full flex items-center justify-between p-4 rounded-2xl transition-all group ${activeTab === item.id ? 'bg-midnight text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50 hover:text-midnight'}`}
                                 >
-                                    <div className="flex items-center gap-3">
-                                        <item.icon size={20} className={activeTab === item.id ? 'text-gold' : 'text-gray-400 group-hover:text-midnight'} />
+                                    <div className="flex items-center gap-4">
+                                        <div className={`p-2 rounded-lg transition-all ${activeTab === item.id ? 'bg-gold text-midnight' : 'bg-gray-100/50 text-gray-400 group-hover:bg-gold group-hover:text-midnight'}`}>
+                                            <item.icon size={16} />
+                                        </div>
                                         <span className="font-bold text-sm tracking-wide">{item.label}</span>
                                     </div>
-                                    <ChevronRight size={16} className={`transition-transform ${activeTab === item.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-50'}`} />
+                                    <ChevronRight size={16} className={`transition-transform duration-500 ${activeTab === item.id ? 'opacity-100 translate-x-1' : 'opacity-0 group-hover:opacity-50 group-hover:translate-x-1'}`} />
                                 </button>
                             ))}
                         </div>

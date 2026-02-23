@@ -65,6 +65,8 @@ export const api = {
         register: (name, email, password, role, shopName) =>
             request('POST', '/api/auth/register', { name, email, password, role, shopName }, false),
         me: () => request('GET', '/api/auth/me'),
+        forgotPassword: (email) => request('POST', '/api/auth/forgot-password', { email }, false),
+        resetPassword: (email, password) => request('POST', '/api/auth/reset-password', { email, password }, false),
     },
 
     // ─── Users ────────────────────────────────────────────────────────────────

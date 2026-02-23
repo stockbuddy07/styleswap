@@ -51,7 +51,7 @@ export default function HeroCarousel({ onAction }) {
     };
 
     return (
-        <div className="relative w-full h-[500px] md:h-[600px] lg:h-[750px] rounded-[3.5rem] overflow-hidden group mb-4 shadow-2xl border border-white/10">
+        <div className="relative w-full h-[500px] md:h-[550px] lg:h-[600px] rounded-[3.5rem] overflow-hidden group mb-4 shadow-2xl border border-white/10">
             {SLIDES.map((slide, index) => (
                 <div
                     key={slide.id}

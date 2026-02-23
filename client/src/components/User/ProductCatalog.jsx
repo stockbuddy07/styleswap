@@ -81,6 +81,19 @@ export default function ProductCatalog({ searchTerm = '', selectedCategory = 'Al
 
                     {/* Content Section */}
                     <div className="px-4 py-6">
+                        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+                            <div className="space-y-1">
+                                <h3 className="font-playfair text-4xl font-black text-midnight tracking-tighter">Discover Products</h3>
+                                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.4em]">Curated for your elegance</p>
+                            </div>
+                            <div className="hidden md:flex items-center gap-6">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2 h-2 rounded-full bg-gold animate-pulse" />
+                                    <span className="text-[10px] font-black text-midnight/40 uppercase tracking-widest">{filtered.length} Unique Pieces</span>
+                                </div>
+                            </div>
+                        </div>
+
                         {filtered.length === 0 ? (
                             <div className="text-center py-20">
                                 <Search size={48} className="mx-auto text-gray-200 mb-4" strokeWidth={1.5} />

@@ -85,7 +85,7 @@ function SizeEditor({ item, availableSizes, onSave, onCancel }) {
 }
 
 // ─── Cart Item Card ─────────────────────────────────────────────────────────────
-function CartItemCard({ item, allProducts }) {
+function CartItemCard({ item, allProducts, onProductClick }) {
     const { removeFromCart, updateQuantity, updateDates, updateSize } = useCart();
     const toast = useToast();
     const [editingDates, setEditingDates] = useState(false);
@@ -93,7 +93,9 @@ function CartItemCard({ item, allProducts }) {
     const [expanded, setExpanded] = useState(false);
 
     const product = allProducts.find(p => p.id === item.productId);
-    const maxQty = product?.availableQuantity || 10;
+    // Use the global product state for live stock updates
+    const availableQty = product?.availableQuantity ?? 10;
+    const maxQty = availableQty;
 
     const handleSaveDates = (start, end) => {
         updateDates(item.id, start, end);
@@ -118,17 +120,20 @@ function CartItemCard({ item, allProducts }) {
             <div className="p-4">
                 <div className="flex gap-4">
                     {/* Image */}
-                    <div className="relative flex-shrink-0">
-                        <img src={item.productImage} alt={item.productName}
-                            className="w-24 h-24 sm:w-28 sm:h-28 object-cover rounded-xl"
-                            onError={e => { e.target.src = DEFAULT_IMAGE; }} />
+                    <div className="relative flex-shrink-0 cursor-pointer overflow-hidden rounded-xl bg-gray-100 border border-gray-100" onClick={() => onProductClick && onProductClick(product || { id: item.productId })}>
+                        <img
+                            src={item.productImage || (product?.images && Array.isArray(product.images) ? product.images[0] : null) || DEFAULT_IMAGE}
+                            alt={item.productName}
+                            className="w-24 h-24 sm:w-28 sm:h-28 object-cover hover:scale-110 transition-transform duration-700 mix-blend-multiply"
+                            onError={e => { e.target.src = DEFAULT_IMAGE; }}
+                        />
                     </div>
 
                     {/* Details */}
                     <div className="flex-1 min-w-0">
                         <div className="flex justify-between gap-2">
-                            <div className="min-w-0 flex-1">
-                                <h3 className="font-playfair text-lg font-black text-midnight leading-tight truncate group-hover:text-gold transition-colors duration-500">{item.productName}</h3>
+                            <div className="min-w-0 flex-1 cursor-pointer group/title" onClick={() => onProductClick && onProductClick(product || { id: item.productId })}>
+                                <h3 className="font-playfair text-lg font-black text-midnight leading-tight truncate group-hover/title:text-gold transition-colors duration-500">{item.productName}</h3>
                                 <div className="flex items-center gap-2 mt-1">
                                     <Store size={10} className="text-gold" />
                                     <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest truncate">{item.vendorShopName}</span>
@@ -170,7 +175,16 @@ function CartItemCard({ item, allProducts }) {
                                 <button onClick={() => handleQtyChange(1)}
                                     disabled={item.quantity >= maxQty}
                                     className="w-8 h-8 rounded-lg border border-gray-300 flex items-center justify-center hover:bg-gray-100 disabled:opacity-40 transition-colors font-bold text-lg leading-none">+</button>
-                                {maxQty <= 3 && <span className="text-xs text-amber-600 font-medium">Only {maxQty} left</span>}
+                                {maxQty <= 5 && maxQty > 0 && (
+                                    <span className="text-[10px] bg-amber-50 text-amber-600 px-2 py-1 rounded-full font-bold uppercase tracking-wider animate-pulse flex items-center gap-1">
+                                        <AlertCircle size={10} /> Live: Only {maxQty} left
+                                    </span>
+                                )}
+                                {maxQty === 0 && (
+                                    <span className="text-[10px] bg-red-50 text-red-600 px-2 py-1 rounded-full font-bold uppercase tracking-wider flex items-center gap-1">
+                                        <X size={10} /> Out of Stock
+                                    </span>
+                                )}
                             </div>
                             <div className="text-right">
                                 <p className="font-bold text-midnight text-base transition-colors">{formatCurrency(item.subtotal + item.depositTotal)}</p>
@@ -334,7 +348,7 @@ function CheckoutModal({ isOpen, onClose, onConfirm, loading }) {
 }
 
 // ─── Main CartPage ──────────────────────────────────────────────────────────────
-export default function CartPage({ onNavigate }) {
+export default function CartPage({ onNavigate, onProductClick }) {
     const {
         cartItems, removeFromCart, clearCart, cartCount,
         totalRentalFees, totalDeposits, grandTotal,
@@ -465,7 +479,7 @@ export default function CartPage({ onNavigate }) {
                             </div>
                             <div className="space-y-3">
                                 {items.map(item => (
-                                    <CartItemCard key={item.id} item={item} allProducts={allProducts} />
+                                    <CartItemCard key={item.id} item={item} allProducts={allProducts} onProductClick={onProductClick} />
                                 ))}
                             </div>
                         </div>
@@ -618,12 +632,17 @@ export default function CartPage({ onNavigate }) {
 // ─── Recent Audit Card ──────────────────────────────────────────────────────────
 function RecentAuditCard({ order }) {
     return (
-        <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-[2rem] p-6 shadow-sm hover:shadow-xl hover:border-gold/30 transition-all duration-500 group">
+        <div className="bg-white/40 backdrop-blur-xl border border-white/50 rounded-[2rem] p-6 shadow-sm hover:shadow-xl hover:border-gold/30 transition-all duration-500 group cursor-default">
             <div className="flex gap-4 items-center">
                 <div className="flex -space-x-4">
                     {order.items?.slice(0, 2).map((item, idx) => (
                         <div key={idx} className="w-16 h-16 rounded-2xl border-2 border-white overflow-hidden shadow-lg transform group-hover:-translate-y-1 transition-transform" style={{ zIndex: 5 - idx }}>
-                            <img src={item.productImage} alt="" className="w-full h-full object-cover" />
+                            <img
+                                src={item.productImage || DEFAULT_IMAGE}
+                                alt=""
+                                className="w-full h-full object-cover"
+                                onError={e => { e.target.src = DEFAULT_IMAGE; }}
+                            />
                         </div>
                     ))}
                     {order.items?.length > 2 && (
