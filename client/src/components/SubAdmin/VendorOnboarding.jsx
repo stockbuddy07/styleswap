@@ -1,75 +1,72 @@
 import React, { useState } from 'react';
 import {
     Store, MapPin, Hash, Phone, FileText, User,
-    CheckCircle, ArrowRight, Sparkles, Shield, Star
+    CheckCircle, ArrowRight, Sparkles, Shield, Star, Clock
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
-import Button from '../Shared/Button';
 
 const FIELD_CONFIG = [
     {
         key: 'shopAddress',
-        label: 'Shop / Business Address',
-        placeholder: '123 Fashion Street, Mumbai, Maharashtra 400001',
+        label: 'Establishment Location',
+        placeholder: '123 Avenue de Luxe, Mumbai, MH 400001',
         icon: MapPin,
         type: 'textarea',
         required: true,
-        hint: 'Full address where customers can visit or return items',
+        hint: 'Verified business address for client trust',
     },
     {
         key: 'shopNumber',
-        label: 'Shop Registration Number',
-        placeholder: 'e.g. SHOP/MH/2024/001234',
+        label: 'Official Registration ID',
+        placeholder: 'e.g. REG/MH/2024/001234',
         icon: Hash,
         type: 'text',
         required: true,
-        hint: 'Your official shop registration or trade license number',
+        hint: 'Trade license or Shop Act number',
     },
     {
         key: 'mobileNumber',
-        label: 'Primary Mobile Number',
+        label: 'Direct Contact Line',
         placeholder: '+91 98765 43210',
         icon: Phone,
         type: 'tel',
         required: true,
-        hint: 'Main contact number for customers and StyleSwap',
+        hint: 'Primary line for network communications',
     },
     {
         key: 'salesHandlerMobile',
-        label: 'Sales Handler Mobile Number',
+        label: 'Protocol Manager Contact',
         placeholder: '+91 91234 56789',
         icon: User,
         type: 'tel',
         required: true,
-        hint: 'Person responsible for handling orders and deliveries',
+        hint: 'Lead representative for order fulfillment',
     },
     {
         key: 'gstNumber',
-        label: 'GST Number',
+        label: 'GST Certification',
         placeholder: '22AAAAA0000A1Z5',
         icon: FileText,
         type: 'text',
         required: false,
-        hint: 'Optional — required for businesses with annual turnover > ₹20L',
+        hint: 'Recommended for institutional credibility',
     },
 ];
 
+const darkInputClass = "w-full bg-white/5 border border-white/10 rounded-2xl px-5 py-4 text-white text-sm focus:outline-none focus:ring-2 focus:ring-gold/50 focus:border-gold/50 transition-all placeholder:text-gray-600 pl-12";
+const darkLabelClass = "text-[10px] font-black uppercase tracking-[0.2em] text-gray-500 mb-2 block ml-1";
+
 function FieldInput({ config, value, onChange, error }) {
     const Icon = config.icon;
-    const base = `w-full border rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-gold transition-all pl-11 ${error ? 'border-red-400 bg-red-50' : 'border-gray-200 bg-white hover:border-gray-300 focus:border-gold'}`;
-
     return (
-        <div>
-            <label className="block text-sm font-semibold text-midnight mb-1.5">
+        <div className="group">
+            <label className={darkLabelClass}>
                 {config.label}
-                {config.required
-                    ? <span className="text-red-500 ml-1">*</span>
-                    : <span className="text-gray-400 text-xs font-normal ml-2">(Optional)</span>
-                }
+                {config.required && <span className="text-gold ml-1 text-xs">*</span>}
             </label>
             <div className="relative">
-                <div className="absolute left-3 top-3.5 text-gray-400">
+                <div className="absolute left-4 top-4.5 py-4 text-gray-500 group-focus-within:text-gold transition-colors">
                     <Icon size={16} />
                 </div>
                 {config.type === 'textarea' ? (
@@ -78,7 +75,7 @@ function FieldInput({ config, value, onChange, error }) {
                         onChange={e => onChange(e.target.value)}
                         placeholder={config.placeholder}
                         rows={2}
-                        className={`${base} resize-none`}
+                        className={`${darkInputClass} resize-none`}
                     />
                 ) : (
                     <input
@@ -86,14 +83,15 @@ function FieldInput({ config, value, onChange, error }) {
                         value={value}
                         onChange={e => onChange(e.target.value)}
                         placeholder={config.placeholder}
-                        className={base}
+                        className={darkInputClass}
                     />
                 )}
             </div>
-            {error
-                ? <p className="text-red-500 text-xs mt-1">{error}</p>
-                : <p className="text-gray-400 text-xs mt-1">{config.hint}</p>
-            }
+            {error ? (
+                <p className="text-red-500 text-[10px] mt-2 ml-1 font-bold">{error}</p>
+            ) : (
+                <p className="text-[10px] text-gray-600 font-bold uppercase tracking-wider mt-2 ml-1">{config.hint}</p>
+            )}
         </div>
     );
 }
@@ -120,15 +118,13 @@ export default function VendorOnboarding() {
                 errs[f.key] = `${f.label} is required`;
             }
         });
-        // Basic phone validation
         ['mobileNumber', 'salesHandlerMobile'].forEach(k => {
             if (form[k] && !/^[\d\s\+\-\(\)]{7,15}$/.test(form[k].replace(/\s/g, ''))) {
-                errs[k] = 'Enter a valid phone number';
+                errs[k] = 'Invalid line format';
             }
         });
-        // GST format (if provided)
         if (form.gstNumber && !/^[0-9]{2}[A-Z]{5}[0-9]{4}[A-Z]{1}[1-9A-Z]{1}Z[0-9A-Z]{1}$/.test(form.gstNumber.toUpperCase())) {
-            errs.gstNumber = 'Enter a valid 15-character GST number';
+            errs.gstNumber = 'Invalid GST format';
         }
         return errs;
     };
@@ -137,7 +133,7 @@ export default function VendorOnboarding() {
         const errs = validate();
         if (Object.keys(errs).length) { setErrors(errs); return; }
         setLoading(true);
-        await new Promise(r => setTimeout(r, 700));
+        await new Promise(r => setTimeout(r, 1000));
         updateCurrentUser({
             ...form,
             gstNumber: form.gstNumber.toUpperCase() || null,
@@ -145,105 +141,119 @@ export default function VendorOnboarding() {
         });
         setLoading(false);
         setSubmitted(true);
-        toast.success('Shop profile saved! You can now list products. 🎉');
+        toast.success('Portfolio Status: Active 🎉');
     };
 
     if (submitted) {
         return (
-            <div className="min-h-screen bg-gradient-to-br from-midnight via-blue-900 to-midnight flex items-center justify-center p-6">
-                <div className="bg-white rounded-3xl shadow-2xl p-10 max-w-md w-full text-center">
-                    <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-bounce">
-                        <CheckCircle size={40} className="text-green-500" />
+            <div className="min-h-screen bg-gradient-to-br from-midnight via-midnight-deep to-midnight flex items-center justify-center p-6 text-white overflow-hidden relative">
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(212,175,55,0.05),transparent)] pointer-events-none" />
+                <div className="relative w-full max-w-xl bg-midnight/40 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-12 text-center animate-luxury-pop shadow-3xl group hover:border-gold/30 transition-all duration-1000">
+                    <div className="w-24 h-24 bg-gold rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-glow animate-luxury-entry stagger-1">
+                        <CheckCircle size={48} className="text-midnight" />
                     </div>
-                    <h2 className="font-playfair text-2xl font-bold text-midnight mb-2">You're all set!</h2>
-                    <p className="text-gray-500 text-sm mb-6">Your shop profile is complete. You can now list products and start earning.</p>
-                    <div className="grid grid-cols-3 gap-3 mb-6">
+                    <h2 className="font-playfair text-4xl font-black text-white mb-4 animate-luxury-entry stagger-2">Portfolio Activated</h2>
+                    <p className="text-gray-500 font-bold uppercase text-[10px] tracking-[0.3em] mb-12 animate-luxury-entry stagger-3">Your workshop is now live across the network</p>
+
+                    <div className="grid grid-cols-3 gap-6 mb-12 animate-luxury-entry stagger-4">
                         {[
-                            { icon: Store, label: 'List Products' },
-                            { icon: Star, label: 'Get Reviews' },
-                            { icon: Shield, label: 'Verified Seller' },
+                            { icon: Store, label: 'Market Access' },
+                            { icon: Star, label: 'Curated Status' },
+                            { icon: Shield, label: 'Verified Hub' },
                         ].map(f => (
-                            <div key={f.label} className="flex flex-col items-center gap-1.5 p-3 bg-gray-50 rounded-xl">
-                                <f.icon size={18} className="text-gold" />
-                                <span className="text-xs text-gray-600 font-medium">{f.label}</span>
+                            <div key={f.label} className="flex flex-col items-center gap-3 p-6 bg-white/5 rounded-[2rem] border border-white/5 group/icon hover:border-gold/30 transition-all">
+                                <f.icon size={24} className="text-gold group-hover/icon:scale-110 transition-transform" />
+                                <span className="text-[8px] text-gray-500 font-black uppercase tracking-widest">{f.label}</span>
                             </div>
                         ))}
                     </div>
-                    <p className="text-xs text-gray-400">Redirecting to your dashboard…</p>
+
+                    <div className="flex items-center justify-center gap-3 text-gold/60 text-[10px] font-black uppercase tracking-widest animate-luxury-entry stagger-5">
+                        <Clock size={14} className="animate-spin-slow" />
+                        Initializing Dashboard...
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-midnight via-blue-950 to-midnight flex items-center justify-center p-4">
-            {/* Decorative blobs */}
-            <div className="absolute top-0 left-0 w-96 h-96 bg-gold/5 rounded-full blur-3xl pointer-events-none" />
-            <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="min-h-screen bg-gradient-to-br from-midnight via-midnight-deep to-midnight flex items-center justify-center p-6 text-white relative overflow-hidden">
+            {/* Ambient effects */}
+            <div className="absolute -top-40 -left-40 w-[600px] h-[600px] bg-gold/5 rounded-full blur-[120px] pointer-events-none animate-pulse" />
+            <div className="absolute -bottom-40 -right-40 w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-[120px] pointer-events-none" />
 
-            <div className="w-full max-w-xl relative">
-                {/* Header card */}
-                <div className="bg-gradient-to-r from-gold to-yellow-500 rounded-3xl p-6 mb-4 shadow-xl">
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-12 h-12 bg-white/20 rounded-2xl flex items-center justify-center">
-                            <Store size={24} className="text-white" />
+            <div className="w-full max-w-2xl relative">
+                {/* Visual Header */}
+                <div className="bg-gradient-to-r from-gold via-yellow-500 to-gold-dark rounded-[3rem] p-10 mb-8 shadow-3xl relative overflow-hidden group">
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+                    <div className="relative z-10 flex items-center gap-8">
+                        <div className="w-20 h-20 bg-white/10 backdrop-blur-md rounded-[2rem] flex items-center justify-center border border-white/20 group-hover:scale-105 transition-transform duration-700">
+                            <Store size={40} className="text-white" />
                         </div>
-                        <div>
-                            <div className="flex items-center gap-2">
-                                <h1 className="font-playfair text-xl font-bold text-white">Complete Your Shop Profile</h1>
-                                <Sparkles size={16} className="text-white/70" />
+                        <div className="space-y-2">
+                            <h1 className="font-playfair text-3xl font-black text-white tracking-tight leading-none">Workshop Verification</h1>
+                            <div className="flex items-center gap-3">
+                                <Sparkles size={16} className="text-white/60" />
+                                <p className="text-white/70 text-[10px] font-black uppercase tracking-widest">Finalizing Partner Access Profile</p>
                             </div>
-                            <p className="text-yellow-100 text-xs">Welcome, {currentUser?.name}! One last step before you go live.</p>
                         </div>
-                    </div>
-                    <div className="flex items-center gap-2 bg-white/20 rounded-xl px-3 py-2">
-                        <Shield size={13} className="text-white flex-shrink-0" />
-                        <p className="text-white text-xs">This information helps customers trust your shop and enables StyleSwap to verify your business.</p>
                     </div>
                 </div>
 
-                {/* Form card */}
-                <div className="bg-white rounded-3xl shadow-2xl overflow-hidden">
-                    {/* Progress indicator */}
-                    <div className="bg-gray-50 px-6 py-3 border-b border-gray-100 flex items-center justify-between">
-                        <span className="text-xs text-gray-500 font-medium">Shop Details</span>
-                        <div className="flex items-center gap-1.5">
-                            {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="w-6 h-1.5 rounded-full bg-gold" />
-                            ))}
-                            <div className="w-6 h-1.5 rounded-full bg-gray-200" />
+                {/* Main Form Interface */}
+                <div className="bg-midnight/40 backdrop-blur-3xl rounded-[3rem] border border-white/10 shadow-3xl overflow-hidden animate-luxury-pop">
+                    {/* Header Strip */}
+                    <div className="px-10 py-6 border-b border-white/5 flex items-center justify-between bg-white/5">
+                        <div className="flex items-center gap-3">
+                            <Shield size={14} className="text-gold" />
+                            <span className="text-[10px] font-black text-white uppercase tracking-widest">Business Intelligence Hub</span>
                         </div>
-                        <span className="text-xs text-gray-400">4 of 5 required</span>
+                        <div className="flex items-center gap-2">
+                            {[1, 2, 3, 4].map(i => (
+                                <div key={i} className="w-6 h-1 bg-gold rounded-full shadow-[0_0_10px_rgba(212,175,55,0.4)]" />
+                            ))}
+                            <div className="w-6 h-1 bg-white/10 rounded-full" />
+                        </div>
                     </div>
 
-                    <div className="p-6 space-y-5">
-                        {FIELD_CONFIG.map(config => (
-                            <FieldInput
-                                key={config.key}
-                                config={config}
-                                value={form[config.key]}
-                                onChange={val => {
-                                    setForm(f => ({ ...f, [config.key]: val }));
-                                    if (errors[config.key]) setErrors(e => ({ ...e, [config.key]: null }));
-                                }}
-                                error={errors[config.key]}
-                            />
-                        ))}
+                    <div className="p-10 space-y-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                            {FIELD_CONFIG.map(config => (
+                                <div key={config.key} className={config.key === 'shopAddress' ? 'md:col-span-2' : ''}>
+                                    <FieldInput
+                                        config={config}
+                                        value={form[config.key]}
+                                        onChange={val => {
+                                            setForm(f => ({ ...f, [config.key]: val }));
+                                            if (errors[config.key]) setErrors(e => ({ ...e, [config.key]: null }));
+                                        }}
+                                        error={errors[config.key]}
+                                    />
+                                </div>
+                            ))}
+                        </div>
 
-                        {/* Mandatory note */}
-                        <div className="flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-                            <Shield size={14} className="text-amber-600 flex-shrink-0 mt-0.5" />
-                            <p className="text-xs text-amber-700">
-                                Fields marked <span className="text-red-500 font-bold">*</span> are mandatory. You can explore the dashboard freely, but <strong>product listing requires a complete profile</strong>.
+                        {/* Note */}
+                        <div className="p-6 bg-gold/5 border border-gold/10 rounded-3xl flex items-start gap-4">
+                            <Shield size={18} className="text-gold mt-1 flex-shrink-0" />
+                            <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider leading-relaxed">
+                                Portfolio Authenticity Statement: Complete profile required for asset publication. Data protected by network encryption protocol.
                             </p>
                         </div>
 
-                        <Button fullWidth onClick={handleSubmit} loading={loading} className="!py-3.5 !text-base">
-                            Save & Go to Dashboard <ArrowRight size={16} className="ml-2" />
-                        </Button>
+                        <button
+                            onClick={handleSubmit}
+                            disabled={loading}
+                            className="w-full py-5 bg-gold text-midnight rounded-[2rem] text-[10px] font-black uppercase tracking-[0.3em] hover:scale-105 hover:shadow-glow transition-all duration-500 shadow-2xl flex items-center justify-center gap-3"
+                        >
+                            {loading ? 'Processing Protocol...' : (
+                                <>Verify & Activate Dashboard <ArrowRight size={18} strokeWidth={3} /></>
+                            )}
+                        </button>
 
-                        <p className="text-center text-xs text-gray-400">
-                            You can update these details anytime from your profile settings.
+                        <p className="text-center text-[10px] text-gray-700 font-black uppercase tracking-widest">
+                            StyleSwap Partner Program © 2024
                         </p>
                     </div>
                 </div>

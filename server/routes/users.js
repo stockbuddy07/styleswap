@@ -71,7 +71,7 @@ router.put('/:id', authenticate, async (req, res) => {
         }
 
         const {
-            name, email, password, shopName, shopAddress, shopNumber,
+            name, email, password, role, shopName, shopAddress, shopNumber,
             mobileNumber, salesHandlerMobile, gstNumber, shopDescription,
             status, avatar, onboardedAt,
         } = req.body;
@@ -89,6 +89,7 @@ router.put('/:id', authenticate, async (req, res) => {
                 ...(name !== undefined && { name }),
                 ...(email !== undefined && { email }), // Allow email update
                 ...(hashedPassword !== undefined && { password: hashedPassword }),
+                ...(role !== undefined && req.user.role === 'Admin' && { role }),
                 ...(shopName !== undefined && { shopName }),
                 ...(shopAddress !== undefined && { shopAddress }),
                 ...(shopNumber !== undefined && { shopNumber }),

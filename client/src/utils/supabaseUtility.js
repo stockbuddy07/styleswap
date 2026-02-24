@@ -3,7 +3,17 @@ import { createClient } from '@supabase/supabase-js';
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
 const supabaseKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+let supabaseClient = null;
+
+export const getSupabase = () => {
+    if (!supabaseUrl || !supabaseKey) {
+        return null;
+    }
+    if (!supabaseClient) {
+        supabaseClient = createClient(supabaseUrl, supabaseKey);
+    }
+    return supabaseClient;
+};
 
 /**
  * Uploads an image to Supabase Storage and returns the public URL.
@@ -15,7 +25,8 @@ export const supabase = createClient(supabaseUrl, supabaseKey);
  * @returns {Promise<string>} The optimized public URL of the uploaded image
  */
 export const uploadImageFast = async (file, bucket = 'images') => {
-    if (!supabaseUrl || !supabaseKey) {
+    const supabase = getSupabase();
+    if (!supabase) {
         throw new Error('Supabase credentials are not configured in the frontend environment.');
     }
 

@@ -7,7 +7,7 @@ import { formatCurrency } from '../../utils/helpers';
 
 function MetricCard({ icon: Icon, label, value, sub, color, trend, index }) {
     return (
-        <div className={`animate-luxury-entry stagger-${index + 1} relative overflow-hidden bg-white/50 backdrop-blur-3xl border border-gray-200 rounded-[2rem] p-8 group hover:border-gold/30 transition-all duration-700 shadow-2xl`}>
+        <div className={`animate-luxury-entry stagger-${index + 1} relative overflow-hidden bg-midnight/40 backdrop-blur-3xl border border-white/10 rounded-[2rem] p-8 group hover:border-gold/30 transition-all duration-700 shadow-2xl`}>
             {/* Background Glow */}
             <div className="absolute -right-10 -top-10 w-32 h-32 bg-gold/10 rounded-full blur-3xl group-hover:bg-gold/20 transition-all duration-700"></div>
 

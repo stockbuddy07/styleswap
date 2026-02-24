@@ -190,7 +190,7 @@ export default function UserManagement() {
     const paginated = filtered.slice((page - 1) * PER_PAGE, page * PER_PAGE);
 
     const handleCreate = async (form) => {
-        await createUser({ ...form, id: generateId(), createdAt: new Date().toISOString(), status: 'active', avatar: null });
+        await createUser(form);
         toast.success('User created successfully');
     };
 
@@ -308,9 +308,9 @@ export default function UserManagement() {
                                         </div>
                                     </td>
                                     <td className="px-8 py-5 hidden md:table-cell">
-                                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-current transition-all group-hover:bg-current group-hover:text-midnight ${user.role === 'Admin' ? 'text-purple-400' :
-                                            user.role === 'Sub-Admin' ? 'text-blue-400' :
-                                                'text-emerald-400'
+                                        <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border border-current transition-all group-hover:text-midnight ${user.role === 'Admin' ? 'text-purple-400 group-hover:bg-purple-400' :
+                                            user.role === 'Sub-Admin' ? 'text-blue-400 group-hover:bg-blue-400' :
+                                                'text-emerald-400 group-hover:bg-emerald-400'
                                             }`}>
                                             {user.role}
                                         </span>

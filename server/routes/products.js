@@ -61,6 +61,24 @@ router.get('/', async (req, res) => {
     }
 });
 
+// ─── GET /api/products/mine — Vendor's own products ──────────────────────────
+router.get('/mine', authenticate, requireVendor, async (req, res) => {
+    try {
+        const products = await prisma.product.findMany({
+            where: { subAdminId: req.user.id },
+            orderBy: { createdAt: 'desc' },
+        });
+        const parsed = products.map(p => ({
+            ...p,
+            sizes: p.sizes || [],
+            images: p.images || [],
+        }));
+        res.json(parsed);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to fetch your products' });
+    }
+});
+
 // ─── GET /api/products/:id — Single product (public) ─────────────────────────
 router.get('/:id', async (req, res) => {
     try {
@@ -101,54 +119,6 @@ router.get('/:id', async (req, res) => {
         res.json(responseData);
     } catch (err) {
         res.status(500).json({ error: 'Failed to fetch product details' });
-    }
-});
-
-// ─── POST /api/products/:id/reviews — Post a review (authenticated) ──────────
-router.post('/:id/reviews', authenticate, async (req, res) => {
-    try {
-        const { rating, comment } = req.body;
-        const productId = req.params.id;
-
-        if (!rating || !comment) {
-            return res.status(400).json({ error: 'Rating and comment are required' });
-        }
-
-        const review = await prisma.review.create({
-            data: {
-                rating: Number(rating),
-                comment,
-                productId,
-                userId: req.user.id
-            },
-            include: {
-                user: { select: { name: true, avatar: true } }
-            }
-        });
-
-        cache.del('all_products');
-        cache.del(`product_${productId}`);
-        res.status(201).json(review);
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to post review' });
-    }
-});
-
-// ─── GET /api/products/mine — Vendor's own products ──────────────────────────
-router.get('/mine', authenticate, requireVendor, async (req, res) => {
-    try {
-        const products = await prisma.product.findMany({
-            where: { subAdminId: req.user.id },
-            orderBy: { createdAt: 'desc' },
-        });
-        const parsed = products.map(p => ({
-            ...p,
-            sizes: p.sizes || [],
-            images: p.images || [],
-        }));
-        res.json(parsed);
-    } catch (err) {
-        res.status(500).json({ error: 'Failed to fetch your products' });
     }
 });
 
@@ -239,6 +209,36 @@ router.delete('/:id', authenticate, requireVendor, async (req, res) => {
         res.json({ message: 'Product deleted' });
     } catch (err) {
         res.status(500).json({ error: 'Failed to delete product' });
+    }
+});
+
+// ─── POST /api/products/:id/reviews — Post a review (authenticated) ──────────
+router.post('/:id/reviews', authenticate, async (req, res) => {
+    try {
+        const { rating, comment } = req.body;
+        const productId = req.params.id;
+
+        if (!rating || !comment) {
+            return res.status(400).json({ error: 'Rating and comment are required' });
+        }
+
+        const review = await prisma.review.create({
+            data: {
+                rating: Number(rating),
+                comment,
+                productId,
+                userId: req.user.id
+            },
+            include: {
+                user: { select: { name: true, avatar: true } }
+            }
+        });
+
+        cache.del('all_products');
+        cache.del(`product_${productId}`);
+        res.status(201).json(review);
+    } catch (err) {
+        res.status(500).json({ error: 'Failed to post review' });
     }
 });
 

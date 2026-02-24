@@ -52,6 +52,7 @@ try {
     app.use('/api/cart', require('./routes/cart'));
     app.use('/api/wishlist', require('./routes/wishlist'));
     app.use('/api/settings', require('./routes/settings'));
+    app.use('/api/marketing', require('./routes/marketing'));
 } catch (err) {
     console.error('❌ Route loading failed:', err.message);
 }
