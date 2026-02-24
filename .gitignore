@@ -72,10 +72,16 @@ typings/
 
 # dotenv environment variables file
 .env
-server/.env
-.env.test
-.env.production
-.env.local
+.env.*
+**/.env
+**/.env.*
+
+# Sensitive directories
+.vercel
+.railway
+.render
+.vscode
+.idea
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
