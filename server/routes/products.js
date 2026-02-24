@@ -145,7 +145,7 @@ router.post('/', authenticate, requireVendor, async (req, res) => {
                 availableQuantity: Number(stockQuantity),
                 sizes: sizes || [],
                 images: images || [],
-                subAdminId: req.user.id,
+                subAdminId: (req.user.role === 'Admin' && req.body.subAdminId) ? req.body.subAdminId : req.user.id,
             },
         });
 

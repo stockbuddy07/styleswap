@@ -5,6 +5,10 @@ import { useUsers } from '../../context/UserContext';
 import Modal from '../Shared/Modal';
 import Loader from '../Shared/Loader';
 import { formatCurrency, getStockStatus, DEFAULT_IMAGE } from '../../utils/helpers';
+import ProductFormModal from '../Shared/ProductFormModal';
+import DeleteProductModal from '../Shared/DeleteProductModal';
+import { useToast } from '../../context/ToastContext';
+import { Plus, Edit2, Trash2 } from 'lucide-react';
 
 function ProductDetailModal({ product, onClose }) {
     const { users } = useUsers();
@@ -86,13 +90,34 @@ function ProductDetailModal({ product, onClose }) {
 }
 
 export default function ProductOverview() {
-    const { allProducts, loading: productsLoading } = useProducts();
+    const { allProducts, createProduct, updateProduct, deleteProduct, loading: productsLoading } = useProducts();
     const { users, loading: usersLoading } = useUsers();
+    const toast = useToast();
     const loading = productsLoading || usersLoading;
     const [search, setSearch] = useState('');
     const [vendorFilter, setVendorFilter] = useState('All');
     const [categoryFilter, setCategoryFilter] = useState('All');
     const [selectedProduct, setSelectedProduct] = useState(null);
+    const [createOpen, setCreateOpen] = useState(false);
+    const [editProduct, setEditProduct] = useState(null);
+    const [deleteTarget, setDeleteTarget] = useState(null);
+
+    const handleCreate = async (form) => {
+        await createProduct(form);
+        toast.success('Asset published');
+    };
+
+    const handleEdit = async (form) => {
+        await updateProduct(editProduct.id, form);
+        toast.success('Asset refined');
+        setEditProduct(null);
+    };
+
+    const handleDelete = async () => {
+        await deleteProduct(deleteTarget.id);
+        toast.success('Asset removed');
+        setDeleteTarget(null);
+    };
 
     const vendors = useMemo(() => users.filter(u => u.role === 'Sub-Admin'), [users]);
     const categories = useMemo(() => [...new Set(allProducts.map(p => p.category))], [allProducts]);
@@ -130,6 +155,13 @@ export default function ProductOverview() {
                                 <p className="text-gray-500 text-xs font-bold uppercase tracking-wider">Across {vendors.length} Verified Partners</p>
                             </div>
                         </div>
+                        <button
+                            onClick={() => setCreateOpen(true)}
+                            className="flex items-center gap-2.5 px-8 py-4 bg-gold text-midnight rounded-2xl text-[10px] font-black hover:scale-105 hover:shadow-glow transition-all shadow-2xl uppercase tracking-widest"
+                        >
+                            <Plus size={18} strokeWidth={3} />
+                            List New Asset
+                        </button>
                     </div>
 
                     {/* Vendor summary cards */}
@@ -243,10 +275,20 @@ export default function ProductOverview() {
                                                     </span>
                                                 </td>
                                                 <td className="px-8 py-5 text-right">
-                                                    <button onClick={() => setSelectedProduct(product)}
-                                                        className="p-3 rounded-xl bg-white/5 hover:bg-gold hover:text-midnight hover:shadow-glow text-gray-400 transition-all duration-300 transform group-hover:translate-x-[-8px]" aria-label="Observe product">
-                                                        <Eye size={18} strokeWidth={2.5} />
-                                                    </button>
+                                                    <div className="flex items-center justify-end gap-2">
+                                                        <button onClick={() => setSelectedProduct(product)}
+                                                            className="p-3 rounded-xl bg-white/5 hover:bg-gold hover:text-midnight hover:shadow-glow text-gray-400 transition-all duration-300 transform group-hover:translate-x-[-4px]" aria-label="Observe product">
+                                                            <Eye size={18} strokeWidth={2.5} />
+                                                        </button>
+                                                        <button onClick={() => setEditProduct(product)}
+                                                            className="p-3 rounded-xl bg-white/5 hover:bg-gold hover:text-midnight hover:shadow-glow text-gray-400 transition-all duration-300 transform group-hover:translate-x-[-4px]" aria-label="Refine product">
+                                                            <Edit2 size={18} strokeWidth={2.5} />
+                                                        </button>
+                                                        <button onClick={() => setDeleteTarget(product)}
+                                                            className="p-3 rounded-xl bg-white/5 hover:bg-red-500 hover:text-white hover:shadow-glow text-gray-400 transition-all duration-300 transform group-hover:translate-x-[-4px]" aria-label="Remove product">
+                                                            <Trash2 size={18} strokeWidth={2.5} />
+                                                        </button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         );
@@ -257,6 +299,9 @@ export default function ProductOverview() {
                     </div>
 
                     <ProductDetailModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />
+                    <ProductFormModal isOpen={createOpen} onClose={() => setCreateOpen(false)} onSave={handleCreate} isAdmin={true} />
+                    <ProductFormModal isOpen={!!editProduct} onClose={() => setEditProduct(null)} editProduct={editProduct} onSave={handleEdit} isAdmin={true} />
+                    <DeleteProductModal isOpen={!!deleteTarget} onClose={() => setDeleteTarget(null)} product={deleteTarget} onConfirm={handleDelete} activeRentalCount={0} />
                 </>
             )}
         </div>
