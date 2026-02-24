@@ -315,14 +315,14 @@ export default function Header({
                         >
                             <span className="flex items-center gap-2">
                                 <Zap size={12} className={selectedCategory === 'Great Deals' ? 'animate-pulse' : ''} fill="currentColor" />
-                                Exclusive Yields
+                                Exclusive Discounts
                             </span>
                         </button>
                         <button
                             onClick={() => onCategorySelect && onCategorySelect('Customer Service')}
                             className="px-6 h-full hover:text-gold transition-all text-gray-400 border-l border-gray-100"
                         >
-                            Concierge
+                            Contact-US
                         </button>
                     </div>
                 </div>

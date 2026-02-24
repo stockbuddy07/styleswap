@@ -242,17 +242,14 @@ export default function Register({ onNavigate, onClose }) {
                             <span className="text-xl font-black text-midnight">S</span>
                         </div>
                         <h2 className="font-playfair text-4xl font-black mb-4 leading-none tracking-tighter text-white">Join <br /><span className="text-gold italic underline underline-offset-8 decoration-gold/30">StyleSwap</span></h2>
-                        <ul className="space-y-3 text-gold/40 text-[9px] font-black uppercase tracking-widest">
-                            <li className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-gold/20 flex items-center justify-center text-gold text-[7px]">✓</span> Elite Access</li>
-                            <li className="flex items-center gap-3"><span className="w-3.5 h-3.5 rounded-full bg-gold/20 flex items-center justify-center text-gold text-[7px]">✓</span> Insured Protocol</li>
-                        </ul>
+
                     </div>
                 </div>
 
                 <div className="w-full md:w-7/12 p-10 lg:p-14 flex flex-col justify-center relative z-20 overflow-y-auto custom-scrollbar">
                     <div className="mb-6">
                         <h1 className="font-playfair text-3xl font-black text-white mb-1 leading-none">Create Account</h1>
-                        <p className="text-gray-500 font-medium tracking-tight text-sm">Become part of the StyleSwap elite.</p>
+                        <p className="text-gray-500 font-medium tracking-tight text-sm">Become part of the StyleSwap Community.</p>
                     </div>
 
                     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
@@ -268,7 +265,7 @@ export default function Register({ onNavigate, onClose }) {
                             />
                             <Input
                                 label="EMAIL"
-                                placeholder="you@style.com"
+                                placeholder="you@styleswap.com"
                                 value={form.email}
                                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                                 error={errors.email}
@@ -279,10 +276,10 @@ export default function Register({ onNavigate, onClose }) {
 
                         <div className="p-1 bg-white/5 rounded-2xl border border-white/5 flex gap-1">
                             <button type="button" onClick={() => setForm(f => ({ ...f, role: 'User', shopName: '' }))} className={`flex-1 py-3 rounded-xl transition-all font-black text-[10px] tracking-widest ${form.role === 'User' ? 'bg-gold text-midnight shadow-lg' : 'bg-transparent text-gray-500 hover:text-white'}`}>
-                                RENT
+                                RENT [ You are Buyer ]
                             </button>
                             <button type="button" onClick={() => setForm(f => ({ ...f, role: 'Sub-Admin' }))} className={`flex-1 py-3 rounded-xl transition-all font-black text-[10px] tracking-widest ${form.role === 'Sub-Admin' ? 'bg-gold text-midnight shadow-lg' : 'bg-transparent text-gray-500 hover:text-white'}`}>
-                                LEND
+                                LEND [ You are Seller ]
                             </button>
                         </div>
 
@@ -338,7 +335,7 @@ export default function Register({ onNavigate, onClose }) {
                     </form>
 
                     <p className="mt-8 text-center text-[9px] font-black text-gray-500 uppercase tracking-widest border-t border-white/5 pt-8">
-                        Already Elite?{' '}
+                        Already have Account ?{' '}
                         <button onClick={() => onNavigate('login')} className="text-gold ml-1.5 underline underline-offset-4 decoration-gold/30 hover:decoration-gold transition-all">
                             SIGN IN
                         </button>

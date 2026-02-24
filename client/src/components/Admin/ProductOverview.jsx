@@ -221,8 +221,8 @@ export default function ProductOverview() {
                                 <thead className="bg-white/5 border-b border-white/5">
                                     <tr>
                                         <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest">Asset Details</th>
-                                        <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest hidden md:table-cell">Partner</th>
-                                        <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest hidden lg:table-cell">Tier</th>
+                                        <th className="px-8 py-6 text-xs font-black text-gray-500 uppercase tracking-widest hidden md:table-cell">Partner</th>
+                                        <th className="px-8 py-6 text-xs font-black text-gray-500 uppercase tracking-widest hidden lg:table-cell">Tier</th>
                                         <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Yield/Day</th>
                                         <th className="px-8 py-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right hidden xl:table-cell">Utilization</th>
                                         <th className="px-8 py-6 text-[10px] font-black text-gray-500 uppercase tracking-widest text-right">Observe</th>
@@ -264,7 +264,7 @@ export default function ProductOverview() {
                                                     </div>
                                                 </td>
                                                 <td className="px-8 py-5 hidden lg:table-cell">
-                                                    <span className="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-lg group-hover:bg-blue-400 group-hover:text-midnight transition-all">
+                                                    <span className="px-3 py-1 rounded-lg text-xs font-black uppercase tracking-widest bg-blue-500/10 text-blue-400 border border-blue-500/20 shadow-lg group-hover:bg-blue-400 group-hover:text-midnight transition-all">
                                                         {product.category}
                                                     </span>
                                                 </td>
