@@ -163,7 +163,7 @@ function DeleteModal({ isOpen, onClose, user, onConfirm }) {
 }
 
 export default function UserManagement() {
-    const { users, createUser, updateUser, deleteUser } = useUsers();
+    const { users, loading, error, createUser, updateUser, deleteUser, refetch } = useUsers();
     const toast = useToast();
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('All');
@@ -171,6 +171,11 @@ export default function UserManagement() {
     const [createOpen, setCreateOpen] = useState(false);
     const [editUser, setEditUser] = useState(null);
     const [deleteTarget, setDeleteTarget] = useState(null);
+
+    // Ensure fresh data on mount
+    React.useEffect(() => {
+        refetch();
+    }, []);
 
     const filtered = useMemo(() => {
         return users.filter(u => {
@@ -246,7 +251,23 @@ export default function UserManagement() {
 
             {/* Table */}
             <div className="bg-midnight/40 backdrop-blur-2xl rounded-[2.5rem] shadow-2xl border border-white/5 overflow-hidden animate-luxury-entry stagger-3">
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto relative">
+                    {loading && paginated.length === 0 && (
+                        <div className="absolute inset-0 z-10 bg-midnight/60 backdrop-blur-sm flex items-center justify-center p-20">
+                            <div className="flex flex-col items-center gap-4">
+                                <div className="w-12 h-12 border-4 border-gold/20 border-t-gold rounded-full animate-spin" />
+                                <p className="text-gold font-bold uppercase tracking-widest text-[10px]">Verifying Credentials...</p>
+                            </div>
+                        </div>
+                    )}
+
+                    {error && (
+                        <div className="p-10 bg-red-500/5 border-b border-white/5 text-center">
+                            <p className="text-red-400 font-medium mb-4">Error: {error}</p>
+                            <Button onClick={refetch} variant="glass" size="sm">Retry Connection</Button>
+                        </div>
+                    )}
+
                     <table className="w-full text-sm text-left">
                         <thead className="bg-white/5 border-b border-white/5">
                             <tr>
@@ -263,9 +284,13 @@ export default function UserManagement() {
                                     <td colSpan={5} className="text-center py-16 text-gray-500">
                                         <div className="flex flex-col items-center gap-2">
                                             <div className="w-12 h-12 bg-white/5 rounded-full flex items-center justify-center text-gray-500 mb-2">
-                                                <User size={24} />
+                                                {loading ? (
+                                                    <div className="w-6 h-6 border-2 border-gold/20 border-t-gold rounded-full animate-spin" />
+                                                ) : (
+                                                    <User size={24} />
+                                                )}
                                             </div>
-                                            <p className="font-medium text-gray-300">No users found</p>
+                                            <p className="font-medium text-gray-300">{loading ? 'Loading Users...' : 'No users found'}</p>
                                         </div>
                                     </td>
                                 </tr>

@@ -72,6 +72,7 @@ export const api = {
     // ─── Users ────────────────────────────────────────────────────────────────
     users: {
         list: () => request('GET', '/api/users'),
+        create: (data) => request('POST', '/api/users', data),
         update: (id, data) => request('PUT', `/api/users/${id}`, data),
         delete: (id) => request('DELETE', `/api/users/${id}`),
     },

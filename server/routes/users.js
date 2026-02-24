@@ -24,6 +24,43 @@ router.get('/', authenticate, requireAdmin, async (req, res) => {
     }
 });
 
+// ─── POST /api/users — Admin: create user ─────────────────────────────────────
+router.post('/', authenticate, requireAdmin, async (req, res) => {
+    try {
+        const { name, email, password, role = 'User', shopName } = req.body;
+
+        if (!name || !email || !password) {
+            return res.status(400).json({ error: 'Name, email, and password are required' });
+        }
+
+        const existing = await prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+        if (existing) {
+            return res.status(409).json({ error: 'Email already exists' });
+        }
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const user = await prisma.user.create({
+            data: {
+                name,
+                email: email.toLowerCase(),
+                password: hashedPassword,
+                role,
+                shopName: role === 'Sub-Admin' ? shopName : null,
+                status: 'active',
+            },
+            select: {
+                id: true, name: true, email: true, role: true,
+                shopName: true, status: true, createdAt: true,
+            }
+        });
+
+        res.status(201).json(user);
+    } catch (err) {
+        console.error('Create User Error:', err);
+        res.status(500).json({ error: 'Failed to create user' });
+    }
+});
+
 // ─── PUT /api/users/:id — Update user profile ────────────────────────────────
 router.put('/:id', authenticate, async (req, res) => {
     try {

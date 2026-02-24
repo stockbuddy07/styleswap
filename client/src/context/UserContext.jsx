@@ -1,37 +1,41 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { api } from '../utils/api';
+import { useAuth } from './AuthContext';
 
 const UserContext = createContext(null);
 
 export function UserProvider({ children }) {
+    const { isAdmin, isAuthenticated } = useAuth();
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const fetchUsers = async () => {
+        if (!isAdmin) return;
         setLoading(true);
+        setError(null);
         try {
             const data = await api.users.list();
             setUsers(data);
         } catch (err) {
             setError(err.message);
+            console.error('Fetch Users Error:', err);
         } finally {
             setLoading(false);
         }
     };
 
-    // Fetch users on mount (admin only — API enforces this)
+    // Fetch users when admin status changes or on mount if already admin
     useEffect(() => {
-        const token = localStorage.getItem('styleswap_token');
-        if (token) fetchUsers();
-    }, []);
+        if (isAuthenticated && isAdmin) {
+            fetchUsers();
+        } else {
+            setUsers([]);
+        }
+    }, [isAdmin, isAuthenticated]);
 
     const createUser = async (userData) => {
-        // Admin creates users via the register endpoint
-        const { user } = await api.auth.register(
-            userData.name, userData.email, userData.password,
-            userData.role, userData.shopName || null
-        );
+        const user = await api.users.create(userData);
         setUsers(prev => [user, ...prev]);
         return user;
     };
