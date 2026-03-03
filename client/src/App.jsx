@@ -112,6 +112,8 @@ function AppContent() {
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('All');
     const [selectedProductId, setSelectedProductId] = useState(null);
+    // Pending redirect: where to send user after login { page, productId }
+    const [pendingRedirect, setPendingRedirect] = useState(null);
 
     // Derive unique categories from products, ensuring 'All' is first
     const uniqueCategories = React.useMemo(() => {
@@ -137,12 +139,25 @@ function AppContent() {
 
     React.useEffect(() => {
         if (currentUser && (!currentPage || currentPage === 'login' || currentPage === 'register')) {
-            setCurrentPage(getDefaultPage(currentUser));
+            if (pendingRedirect) {
+                // Redirect to the page the user was trying to access before login
+                setSelectedProductId(pendingRedirect.productId || null);
+                setCurrentPage(pendingRedirect.page || getDefaultPage(currentUser));
+                window.history.pushState(
+                    { page: pendingRedirect.page, productId: pendingRedirect.productId, category: 'All', searchTerm: '' },
+                    ''
+                );
+                setPendingRedirect(null);
+            } else {
+                setCurrentPage(getDefaultPage(currentUser));
+            }
         }
-    }, [currentUser]);
+    }, [currentUser, pendingRedirect]);
 
     // Handle Auth Requirement (from Child components)
-    const handleRequireAuth = () => {
+    // redirectIntent: optional { page, productId } - where to go after login
+    const handleRequireAuth = (redirectIntent) => {
+        if (redirectIntent) setPendingRedirect(redirectIntent);
         setCurrentPage('login');
     };
 
@@ -180,11 +195,6 @@ function AppContent() {
 
     // Handle Product Click
     const handleProductClick = (product) => {
-        if (!currentUser) {
-            setCurrentPage('login');
-            // No pushState for login redirect normally, or we could if we want to return
-            return;
-        }
         setSelectedProductId(product.id);
         setCurrentPage('product-details');
         pushNavigation('product-details', selectedCategory, product.id, searchTerm);
@@ -277,7 +287,7 @@ function AppContent() {
         if (isUser) {
             switch (currentPage) {
                 case 'catalog': return renderCatalog({ onCategorySelect: handleCategorySelect });
-                case 'product-details': return <ProductDetailsPage productId={selectedProductId} onBack={() => window.history.back()} onNavigate={navigate} />;
+                case 'product-details': return <ProductDetailsPage productId={selectedProductId} onBack={() => window.history.back()} onNavigate={navigate} onRequireAuth={handleRequireAuth} />;
                 case 'cart': return <CartPage onNavigate={navigate} onProductClick={handleProductClick} />;
                 case 'rentals': case 'orders': return <OrdersDashboard onNavigate={navigate} />;
                 case 'profile': return <ProfileDashboard onNavigate={navigate} />;
@@ -289,6 +299,7 @@ function AppContent() {
         // Guest pages
         switch (currentPage) {
             case 'catalog': return renderCatalog({ onCategorySelect: handleCategorySelect, onRequireAuth: handleRequireAuth });
+            case 'product-details': return <ProductDetailsPage productId={selectedProductId} onBack={() => window.history.back()} onNavigate={navigate} onRequireAuth={handleRequireAuth} />;
             case 'contact': return <ContactUs />;
             default: return renderCatalog({ onCategorySelect: handleCategorySelect, onRequireAuth: handleRequireAuth });
         }

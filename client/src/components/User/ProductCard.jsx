@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Store, Star, Heart, RefreshCw, ShoppingBag, CheckCircle, ChevronRight, Eye } from 'lucide-react';
+import { Star, Heart } from 'lucide-react';
 import { useWishlist } from '../../context/WishlistContext';
 import { useProducts } from '../../context/ProductContext';
 import Button from '../Shared/Button';
@@ -71,7 +71,7 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
 
     return (
         <div
-            className={`group bg-white rounded-[2rem] border border-gray-100 overflow-hidden transition-all duration-700 flex flex-col relative cursor-pointer active:scale-[0.98] ${isHovered ? `shadow-2xl ${catStyles.glow} -translate-y-2` : 'shadow-sm'}`}
+            className="group bg-white rounded-[2rem] border border-gray-100 overflow-hidden flex flex-col relative cursor-pointer active:scale-[0.98] shadow-sm"
             onMouseEnter={handleMouseEnter}
             onMouseLeave={handleMouseLeave}
             onClick={() => onRent(product)}
@@ -83,12 +83,9 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
                     alt={product.name}
                     loading="lazy"
                     decoding="async"
-                    className="w-full h-full object-cover transition-transform duration-[2s] ease-out md:group-hover:scale-110"
+                    className="w-full h-full object-cover"
                     onError={e => { e.target.src = DEFAULT_IMAGE; }}
                 />
-
-                {/* Thematic Tint Overlay */}
-                <div className={`absolute inset-0 ${catStyles.tint} opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none`} />
 
                 {/* AD Badge */}
                 <div className="absolute top-4 left-4 px-2 py-0.5 bg-black/40 backdrop-blur-md text-white text-[9px] font-black rounded shadow-sm opacity-80 uppercase tracking-widest z-10">
@@ -103,27 +100,7 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
                     <span className="text-[10px] font-bold text-gray-400">{product.reviews?.length || 0}</span>
                 </div>
 
-                {/* Glassmorphic Actions Group - Appear on hover */}
-                <div className={`absolute inset-0 flex items-center justify-center gap-3 z-20 transition-all duration-500 translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100`}>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onRent(product);
-                        }}
-                        className="w-12 h-12 rounded-full bg-white/20 backdrop-blur-3xl border border-white/30 text-white hover:bg-gold hover:text-midnight hover:border-gold transition-all flex items-center justify-center shadow-2xl"
-                    >
-                        <Eye size={20} />
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            onRent(product); // Direct to rent flow as per user's Direct Acquisition preference
-                        }}
-                        className="w-12 h-12 rounded-full bg-midnight/80 backdrop-blur-3xl border border-white/10 text-white hover:bg-gold hover:text-midnight transition-all flex items-center justify-center shadow-2xl"
-                    >
-                        <ShoppingBag size={18} />
-                    </button>
-                </div>
+
 
                 {/* Wishlist Button */}
                 <button
@@ -131,17 +108,17 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
                         e.stopPropagation();
                         toggleWishlist(product);
                     }}
-                    className={`absolute top-4 right-4 w-10 h-10 rounded-full shadow-2xl flex items-center justify-center transition-all duration-500 border z-10 ${isWishlisted
-                        ? 'bg-midnight text-gold border-gold/50 shadow-glow scale-110'
-                        : 'bg-white/80 backdrop-blur-md text-gray-400 border-white/20 hover:text-red-500 hover:scale-110 opacity-0 group-hover:opacity-100'
+                    className={`absolute top-4 right-4 w-10 h-10 rounded-full shadow-2xl flex items-center justify-center border z-10 transition-colors duration-200 ${isWishlisted
+                        ? 'bg-midnight text-gold border-gold/50'
+                        : 'bg-white/80 backdrop-blur-md text-gray-400 border-white/20'
                         }`}
                 >
-                    <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} className="transition-all" />
+                    <Heart size={18} fill={isWishlisted ? "currentColor" : "none"} />
                 </button>
             </div>
 
             {/* Content Area */}
-            <div className={`p-5 flex flex-col flex-1 bg-white transition-colors duration-700 ${isHovered ? catStyles.tint.replace('/5', '/10') : ''}`}>
+            <div className="p-5 flex flex-col flex-1 bg-white">
                 {/* Brand Name */}
                 <div className="flex items-center justify-between mb-1.5 text-[11px] font-black uppercase tracking-[0.2em]">
                     <p className="text-gray-400 truncate max-w-[full]">
@@ -150,7 +127,7 @@ export default function ProductCard({ product, onRent, onAddToCart }) {
                 </div>
 
                 {/* Product Name */}
-                <h4 className="font-playfair font-black text-midnight text-[17px] leading-tight truncate mb-3 group-hover:text-gold transition-colors">
+                <h4 className="font-playfair font-black text-midnight text-[17px] leading-tight truncate mb-3">
                     {product.name}
                 </h4>
 

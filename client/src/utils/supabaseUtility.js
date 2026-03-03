@@ -47,9 +47,11 @@ export const uploadImageFast = async (file, bucket = 'images') => {
 
     const { data } = supabase.storage.from(bucket).getPublicUrl(filePath);
 
-    // Leverage Supabase Image Transformations for native CDN optimization
-    // Transform parameters to force WebP/latest format and compress aggressively
-    const optimizedUrl = `${data.publicUrl}?width=800&quality=80&format=origin`;
+    // Apply image transformation params only for images (not videos)
+    const isVideo = file.type.startsWith('video/');
+    const optimizedUrl = isVideo
+        ? data.publicUrl
+        : `${data.publicUrl}?width=800&quality=80&format=origin`;
 
     return optimizedUrl;
 };

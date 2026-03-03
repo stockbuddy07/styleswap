@@ -8,7 +8,7 @@ import { useAuth } from '../../context/AuthContext';
 import Loader from '../Shared/Loader';
 import { formatCurrency, getTodayString, DEFAULT_IMAGE } from '../../utils/helpers';
 
-export default function ProductDetailsPage({ productId, onBack, onNavigate }) {
+export default function ProductDetailsPage({ productId, onBack, onNavigate, onRequireAuth }) {
     const { addToCart, cartCount } = useCart();
     const { getDetailedProduct, submitReview, allProducts } = useProducts();
     const { currentUser } = useAuth();
@@ -98,8 +98,9 @@ export default function ProductDetailsPage({ productId, onBack, onNavigate }) {
 
     const handleAddToCart = () => {
         if (!currentUser) {
-            toast.info('Initiate session to lock your manifest');
-            onNavigate && onNavigate('login');
+            toast.info('Please login to continue');
+            if (onRequireAuth) onRequireAuth({ page: 'product-details', productId });
+            else if (onNavigate) onNavigate('login');
             return;
         }
         const errs = {};
@@ -124,7 +125,11 @@ export default function ProductDetailsPage({ productId, onBack, onNavigate }) {
     };
 
     const handleAddReview = async () => {
-        if (!currentUser) { toast.info('Please login to review'); return; }
+        if (!currentUser) {
+            toast.info('Please login to write a review');
+            if (onRequireAuth) onRequireAuth({ page: 'product-details', productId });
+            return;
+        }
         if (!newReview.comment.trim()) return;
 
         setIsSubmittingReview(true);

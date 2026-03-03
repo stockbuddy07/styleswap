@@ -83,8 +83,9 @@ export default function ProductFormModal({ isOpen, onClose, editProduct, onSave,
         const file = e.target.files[0];
         if (!file) return;
 
+        const isVideo = file.type.startsWith('video/');
         const localUrl = URL.createObjectURL(file);
-        const newImageObj = { url: localUrl, uploading: true, error: null };
+        const newImageObj = { url: localUrl, uploading: true, error: null, isVideo };
         setForm(f => ({ ...f, images: [...f.images.filter(img => typeof img === 'string' ? img !== '' : true), newImageObj] }));
 
         try {
@@ -193,17 +194,26 @@ export default function ProductFormModal({ isOpen, onClose, editProduct, onSave,
                     </div>
 
                     <div>
-                        <label className={darkLabelClass}>Visual Assets (Limit 5)</label>
+                        <label className={darkLabelClass}>Visual Assets — Photos & Videos (Limit 5)</label>
                         <div className="flex flex-wrap gap-4">
                             {form.images.map((img, i) => {
                                 const url = typeof img === 'string' ? img : img.url;
                                 if (!url || !url.trim()) return null;
                                 const isUploading = typeof img === 'object' && img.uploading;
                                 const hasError = typeof img === 'object' && img.error;
+                                const isVideo = typeof img === 'object' && img.isVideo;
 
                                 return (
                                     <div key={i} className="relative w-24 h-24 rounded-2xl overflow-hidden border border-white/10 group shadow-2xl">
-                                        <img src={url} alt="" className={`w-full h-full object-cover ${isUploading ? 'opacity-40 grayscale' : ''}`} />
+                                        {isVideo ? (
+                                            <video src={url} className={`w-full h-full object-cover ${isUploading ? 'opacity-40 grayscale' : ''}`} muted playsInline />
+                                        ) : (
+                                            <img src={url} alt="" className={`w-full h-full object-cover ${isUploading ? 'opacity-40 grayscale' : ''}`} />
+                                        )}
+
+                                        {isVideo && !isUploading && (
+                                            <div className="absolute bottom-1 left-1 bg-midnight/70 text-gold text-[7px] font-black px-1.5 py-0.5 rounded uppercase tracking-widest">VIDEO</div>
+                                        )}
 
                                         {isUploading && (
                                             <div className="absolute inset-0 flex items-center justify-center bg-midnight/20">
@@ -227,8 +237,8 @@ export default function ProductFormModal({ isOpen, onClose, editProduct, onSave,
                             })}
                             {form.images.length < 5 && (
                                 <label className="w-24 h-24 border-2 border-dashed border-white/10 rounded-2xl flex flex-col items-center justify-center text-gray-500 hover:border-gold hover:text-gold hover:bg-gold/5 cursor-pointer transition-all">
-                                    {uploadingImage ? <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin"></div> : <><UploadCloud size={24} /><span className="text-[8px] font-black uppercase mt-1 tracking-widest">Share</span></>}
-                                    <input type="file" accept="image/*" onChange={handleImageUpload} className="hidden" />
+                                    {uploadingImage ? <div className="w-5 h-5 border-2 border-gold border-t-transparent rounded-full animate-spin"></div> : <><UploadCloud size={24} /><span className="text-[8px] font-black uppercase mt-1 tracking-widest text-center leading-tight">Photo / Video</span></>}
+                                    <input type="file" accept="image/jpeg,image/jpg,image/heic,image/heif,image/png,image/webp,video/mp4,video/quicktime,video/webm,video/avi" onChange={handleImageUpload} className="hidden" />
                                 </label>
                             )}
                         </div>
