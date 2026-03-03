@@ -288,7 +288,7 @@ function AppContent() {
             switch (currentPage) {
                 case 'catalog': return renderCatalog({ onCategorySelect: handleCategorySelect });
                 case 'product-details': return <ProductDetailsPage productId={selectedProductId} onBack={() => window.history.back()} onNavigate={navigate} onRequireAuth={handleRequireAuth} />;
-                case 'cart': return <CartPage onNavigate={navigate} onProductClick={handleProductClick} />;
+                case 'cart': return <CartPage onNavigate={navigate} onProductClick={handleProductClick} onRequireAuth={handleRequireAuth} />;
                 case 'rentals': case 'orders': return <OrdersDashboard onNavigate={navigate} />;
                 case 'profile': return <ProfileDashboard onNavigate={navigate} />;
                 case 'wishlist': return <WishlistDashboard onNavigate={navigate} onProductClick={handleProductClick} />;
@@ -300,6 +300,7 @@ function AppContent() {
         switch (currentPage) {
             case 'catalog': return renderCatalog({ onCategorySelect: handleCategorySelect, onRequireAuth: handleRequireAuth });
             case 'product-details': return <ProductDetailsPage productId={selectedProductId} onBack={() => window.history.back()} onNavigate={navigate} onRequireAuth={handleRequireAuth} />;
+            case 'cart': return <CartPage onNavigate={navigate} onProductClick={handleProductClick} onRequireAuth={handleRequireAuth} />;
             case 'contact': return <ContactUs />;
             default: return renderCatalog({ onCategorySelect: handleCategorySelect, onRequireAuth: handleRequireAuth });
         }

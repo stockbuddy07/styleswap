@@ -5,78 +5,124 @@ import { useToast } from './ToastContext';
 
 const WishlistContext = createContext(null);
 
+const GUEST_KEY = 'styleswap_guest_wishlist';
+
+const getGuestWishlist = () => {
+    try { return JSON.parse(localStorage.getItem(GUEST_KEY) || '[]'); } catch { return []; }
+};
+const saveGuestWishlist = (items) => {
+    localStorage.setItem(GUEST_KEY, JSON.stringify(items));
+};
+
 export function WishlistProvider({ children }) {
     const { currentUser } = useAuth();
     const toast = useToast();
     const [wishlistItems, setWishlistItems] = useState([]);
     const [loading, setLoading] = useState(false);
 
-    const fetchWishlist = async () => {
+    // --- Fetch / merge on auth change ---
+    useEffect(() => {
         if (!currentUser) {
-            setWishlistItems([]);
+            // Guest: load from localStorage
+            setWishlistItems(getGuestWishlist());
             return;
         }
-        setLoading(true);
-        try {
-            const data = await api.wishlist.list();
-            setWishlistItems(Array.isArray(data) ? data : []);
-        } catch (err) {
-            console.error('Failed to fetch wishlist:', err);
-        } finally {
-            setLoading(false);
-        }
-    };
 
-    useEffect(() => {
-        fetchWishlist();
+        // Logged in: fetch from server then merge any guest items
+        const mergeAndFetch = async () => {
+            setLoading(true);
+            try {
+                const serverItems = await api.wishlist.list();
+                const list = Array.isArray(serverItems) ? serverItems : [];
+
+                // Merge guest wishlist items not already on server
+                const guestItems = getGuestWishlist();
+                const serverProductIds = new Set(list.map(i => i.productId));
+
+                for (const gItem of guestItems) {
+                    const pid = gItem.productId || gItem.id;
+                    if (pid && !serverProductIds.has(pid)) {
+                        try {
+                            const added = await api.wishlist.add(pid);
+                            list.unshift(added);
+                        } catch (_) { /* skip individual failures */ }
+                    }
+                }
+
+                // Clear guest list after merge
+                localStorage.removeItem(GUEST_KEY);
+                setWishlistItems(list);
+            } catch (err) {
+                console.error('Failed to fetch wishlist:', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        mergeAndFetch();
     }, [currentUser?.id]);
 
+    // --- Add ---
     const addToWishlist = async (productId) => {
         if (!currentUser) {
-            toast.info('Initiate session to curate your collection');
-            return false;
+            // Guest: store full product id reference in localStorage
+            const existing = getGuestWishlist();
+            if (existing.some(i => (i.productId || i.id) === productId)) return true;
+            const updated = [{ productId, id: productId }, ...existing];
+            saveGuestWishlist(updated);
+            setWishlistItems(updated);
+            toast.success('Added to wishlist');
+            return true;
         }
         try {
             const newItem = await api.wishlist.add(productId);
             setWishlistItems(prev => [newItem, ...prev]);
-            toast.success('Asset added to your collection');
+            toast.success('Added to wishlist');
             return true;
         } catch (err) {
             console.error('Failed to add to wishlist:', err);
-            toast.error('Manifest update failed');
+            toast.error('Could not update wishlist');
             return false;
         }
     };
 
+    // --- Remove ---
     const removeFromWishlist = async (id) => {
+        if (!currentUser) {
+            const updated = getGuestWishlist().filter(i => (i.productId || i.id) !== id && i.id !== id);
+            saveGuestWishlist(updated);
+            setWishlistItems(updated);
+            toast.success('Removed from wishlist');
+            return true;
+        }
         try {
             await api.wishlist.remove(id);
             setWishlistItems(prev => prev.filter(item => item.id !== id));
-            toast.success('Asset removed from collection');
+            toast.success('Removed from wishlist');
             return true;
         } catch (err) {
             console.error('Failed to remove from wishlist:', err);
-            toast.error('Could not modify manifest');
+            toast.error('Could not update wishlist');
             return false;
         }
     };
 
+    // --- Toggle (works for both guests and users) ---
     const toggleWishlist = async (product) => {
-        if (!currentUser) {
-            toast.info('Sign in to preserve your curation');
-            return;
-        }
-
-        const existingItem = wishlistItems.find(item => item.productId === product.id);
+        const existingItem = wishlistItems.find(item =>
+            item.productId === product.id || item.id === product.id
+        );
         if (existingItem) {
-            return await removeFromWishlist(existingItem.id);
+            return await removeFromWishlist(existingItem.id || existingItem.productId);
         } else {
             return await addToWishlist(product.id);
         }
     };
 
     const isInWishlist = (productId) => {
-        return wishlistItems.some(item => item.productId === productId);
+        return wishlistItems.some(item =>
+            item.productId === productId || item.id === productId
+        );
     };
 
     return (
@@ -87,7 +133,7 @@ export function WishlistProvider({ children }) {
             removeFromWishlist,
             toggleWishlist,
             isInWishlist,
-            refetch: fetchWishlist
+            refetch: () => { }
         }}>
             {children}
         </WishlistContext.Provider>

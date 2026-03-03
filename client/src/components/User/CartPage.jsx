@@ -9,6 +9,7 @@ import { useOrders } from '../../context/OrderContext';
 import { useProducts } from '../../context/ProductContext';
 import { useToast } from '../../context/ToastContext';
 import { useUsers } from '../../context/UserContext';
+import { useAuth } from '../../context/AuthContext';
 import Button from '../Shared/Button';
 import Modal from '../Shared/Modal';
 import Loader from '../Shared/Loader';
@@ -348,7 +349,8 @@ function CheckoutModal({ isOpen, onClose, onConfirm, loading }) {
 }
 
 // ─── Main CartPage ──────────────────────────────────────────────────────────────
-export default function CartPage({ onNavigate, onProductClick }) {
+export default function CartPage({ onNavigate, onProductClick, onRequireAuth }) {
+    const { currentUser } = useAuth();
     const {
         cartItems, removeFromCart, clearCart, cartCount,
         totalRentalFees, totalDeposits, grandTotal,
@@ -574,13 +576,23 @@ export default function CartPage({ onNavigate, onProductClick }) {
                                 </div>
                             </div>
 
-                            <button
-                                onClick={() => setCheckoutOpen(true)}
-                                className="w-full h-14 bg-midnight text-white rounded-2xl font-bold text-[15px] hover:bg-blue-900 active:scale-[0.98] transition-all shadow-xl flex items-center justify-center gap-3 group"
-                            >
-                                Proceed to Checkout
-                                <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
-                            </button>
+                            {currentUser ? (
+                                <button
+                                    onClick={() => setCheckoutOpen(true)}
+                                    className="w-full h-14 bg-midnight text-white rounded-2xl font-bold text-[15px] hover:bg-blue-900 active:scale-[0.98] transition-all shadow-xl flex items-center justify-center gap-3 group"
+                                >
+                                    Proceed to Checkout
+                                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => onRequireAuth ? onRequireAuth({ page: 'cart' }) : onNavigate('login')}
+                                    className="w-full h-14 bg-gold text-midnight rounded-2xl font-bold text-[15px] hover:brightness-95 active:scale-[0.98] transition-all shadow-xl flex items-center justify-center gap-3 group"
+                                >
+                                    Login to Checkout
+                                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                </button>
+                            )}
 
                             <button onClick={() => onNavigate('catalog')}
                                 className="w-full text-center text-[11px] font-bold text-[#8B7355] hover:text-midnight uppercase tracking-widest transition-colors py-2">
