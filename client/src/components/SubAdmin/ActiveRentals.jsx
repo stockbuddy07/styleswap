@@ -73,11 +73,11 @@ export default function ActiveRentals() {
                                         const myItems = order.items?.filter(i => i.vendorId === currentUser?.id) || [];
                                         const myRevenue = myItems.reduce((s, i) => s + (i.subtotal || 0), 0);
                                         return (
-                                            <div key={order.orderId} className="bg-midnight/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-8 group hover:border-gold/30 transition-all duration-700 shadow-2xl relative overflow-hidden">
+                                            <div key={order.id} className="bg-midnight/40 backdrop-blur-3xl border border-white/5 rounded-[2.5rem] p-8 group hover:border-gold/30 transition-all duration-700 shadow-2xl relative overflow-hidden">
                                                 {/* Header Info */}
                                                 <div className="flex justify-between items-start mb-6">
                                                     <div className="space-y-1">
-                                                        <span className="text-[10px] font-black text-gold uppercase tracking-widest bg-gold/10 px-3 py-1 rounded-full border border-gold/20">#{order.orderId.slice(-8).toUpperCase()}</span>
+                                                        <span className="text-[10px] font-black text-gold uppercase tracking-widest bg-gold/10 px-3 py-1 rounded-full border border-gold/20">#{order.id?.slice(-8).toUpperCase()}</span>
                                                         <div className="flex items-center gap-2 mt-4">
                                                             <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center text-white border border-white/10 group-hover:border-gold/30 transition-all">
                                                                 <User size={18} />
@@ -122,7 +122,7 @@ export default function ActiveRentals() {
                                                 {/* Action */}
                                                 {order.status !== 'Returned' && (
                                                     <button
-                                                        onClick={() => handleMarkReturned(order.orderId)}
+                                                        onClick={() => handleMarkReturned(order.id)}
                                                         className="w-full mt-8 py-4 bg-white/5 border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-widest text-gold hover:bg-gold hover:text-midnight hover:shadow-glow transition-all flex items-center justify-center gap-3"
                                                     >
                                                         <ShieldCheck size={16} /> Finalize Return & Restore Stock
