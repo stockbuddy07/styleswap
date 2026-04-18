@@ -130,7 +130,7 @@ export default function Footer({ onNavigate, onCategorySelect }) {
             {/* Bottom Bar */}
             <div className="border-t border-white/10 bg-black/20">
                 <div className="max-w-screen-xl mx-auto px-4 py-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-gray-500">
-                    <p>&copy; {new Date().getFullYear()} StyleSwap. All rights reserved.</p>
+                    <p>&copy; {new Date().getFullYear()} Ayush Gajjar. All rights reserved.</p>
                     <div className="flex gap-6">
                         <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-gold transition-colors">Privacy Policy</a>
                         <a href="#" onClick={(e) => e.preventDefault()} className="hover:text-gold transition-colors">Terms of Service</a>

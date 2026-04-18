@@ -4,20 +4,22 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 const SLIDES = [
     {
         id: 1,
-        image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=2883&auto=format&fit=crop',
-        title: 'Wedding Season',
-        subtitle: 'Rent the perfect look for your special day',
-        cta: 'Explore Collection',
-        category: 'Wedding Attire',
-        color: 'text-white'
-    },
-    {
-        id: 2,
+
         image: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?q=80&w=2940&auto=format&fit=crop',
         title: 'New Arrivals',
         subtitle: 'Latest trends from top designers',
         cta: 'Shop Now',
         category: 'All',
+        color: 'text-white'
+    },
+    {
+        id: 2,
+        image: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?q=80&w=2883&auto=format&fit=crop',
+
+        title: 'Wedding Season',
+        subtitle: 'Rent the perfect look for your special day',
+        cta: 'Explore Collection',
+        category: 'Wedding Attire',
         color: 'text-white'
     },
     {
